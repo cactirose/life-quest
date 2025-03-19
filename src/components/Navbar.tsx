@@ -8,7 +8,10 @@ import {
   GitBranch, 
   ShoppingBag, 
   Package,
-  LayoutDashboard
+  LayoutDashboard,
+  Trophy,
+  Calendar,
+  HeartPulse
 } from "lucide-react";
 
 const Navbar = () => {
@@ -21,7 +24,10 @@ const Navbar = () => {
     { path: "/character", label: "Character", icon: <UserCircle size={20} /> },
     { path: "/skills", label: "Skills", icon: <GitBranch size={20} /> },
     { path: "/shop", label: "Shop", icon: <ShoppingBag size={20} /> },
-    { path: "/inventory", label: "Inventory", icon: <Package size={20} /> }
+    { path: "/inventory", label: "Inventory", icon: <Package size={20} /> },
+    { path: "/challenges", label: "Challenges", icon: <Trophy size={20} /> },
+    { path: "/habits", label: "Habits", icon: <Calendar size={20} /> },
+    { path: "/mood", label: "Mood", icon: <HeartPulse size={20} /> }
   ];
 
   return (
@@ -31,7 +37,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <MapPin size={24} className="text-rpg-tan" />
-            <h1 className="text-xl font-pixel text-rpg-tan">Cozy Quest Journal</h1>
+            <h1 className="text-xl font-pixel text-rpg-tan">Life Quest</h1>
           </Link>
           
           {/* Status Bar */}

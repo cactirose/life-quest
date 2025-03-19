@@ -63,9 +63,9 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// RPG theme colors
+				// RPG theme colors with updated chocolate brown
 				rpg: {
-					brown: '#8B4513',
+					brown: '#4A2511', // Updated to more chocolate brown color
 					tan: '#D2B48C',
 					green: '#2E8B57',
 					'light-green': '#6B8E23',
@@ -73,7 +73,7 @@ export default {
 					purple: '#483D8B',
 					yellow: '#DAA520',
 					red: '#A52A2A',
-					'dark-wood': '#5D4037',
+					'dark-wood': '#3B1F0E', // Darker chocolate brown
 					'light-wood': '#A1887F',
 					parchment: '#F5F5DC',
 					'pixel-black': '#130F1C',

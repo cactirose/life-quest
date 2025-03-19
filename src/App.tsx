@@ -15,6 +15,10 @@ import SkillTree from "./pages/SkillTree";
 import Shop from "./pages/Shop";
 import Inventory from "./pages/Inventory";
 import NotFound from "./pages/NotFound";
+import Challenges from "./pages/Challenges";
+import Habits from "./pages/Habits";
+import Mood from "./pages/Mood";
+import Achievements from "./pages/Achievements";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +47,10 @@ const App = () => (
             <Route path="/skills" element={<Layout><SkillTree /></Layout>} />
             <Route path="/shop" element={<Layout><Shop /></Layout>} />
             <Route path="/inventory" element={<Layout><Inventory /></Layout>} />
+            <Route path="/challenges" element={<Layout><Challenges /></Layout>} />
+            <Route path="/habits" element={<Layout><Habits /></Layout>} />
+            <Route path="/mood" element={<Layout><Mood /></Layout>} />
+            <Route path="/achievements" element={<Layout><Achievements /></Layout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
