@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,10 +18,10 @@ import {
   BarChart,
   Shield,
   Sword,
-  Sparkles
+  Sparkles,
+  ScrollText
 } from "lucide-react";
 
-// Stat display component
 const StatDisplay = ({ 
   name, 
   base, 
@@ -61,7 +60,6 @@ const StatDisplay = ({
   );
 };
 
-// Equipped gear component
 const EquippedGear = ({ 
   equippedItems 
 }: { 
@@ -139,10 +137,8 @@ const Character = () => {
   const [editedBio, setEditedBio] = useState(character.bio);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Filter equipped items
   const equippedItems = inventory.filter(item => item.equipped);
   
-  // Calculate stat bonuses from equipped gear
   const calculateStatBonuses = () => {
     const bonuses: Record<StatName, number> = {
       strength: 0,
@@ -201,7 +197,6 @@ const Character = () => {
   return (
     <div className="container mx-auto animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Character Profile */}
         <div className="lg:col-span-1 space-y-6">
           <div className="parchment">
             <div className="flex justify-between items-center mb-4">
@@ -224,7 +219,6 @@ const Character = () => {
               )}
             </div>
             
-            {/* Character Avatar */}
             <div 
               className="w-40 h-40 mx-auto mb-4 bg-rpg-tan border-4 border-rpg-brown rounded-md overflow-hidden cursor-pointer relative"
               onClick={handleAvatarClick}
@@ -254,7 +248,6 @@ const Character = () => {
               />
             </div>
             
-            {/* Character Info */}
             {isEditing ? (
               <div className="space-y-4">
                 <div>
@@ -363,7 +356,6 @@ const Character = () => {
           </div>
         </div>
         
-        {/* Right Column - Equipped Gear & Character Sheet */}
         <div className="lg:col-span-2 space-y-6">
           <div className="parchment">
             <div className="flex items-center gap-2 mb-4">
@@ -376,7 +368,7 @@ const Character = () => {
           
           <div className="parchment">
             <div className="flex items-center gap-2 mb-4">
-              <Scroll className="text-rpg-brown" size={20} />
+              <ScrollText className="text-rpg-brown" size={20} />
               <h2 className="text-2xl font-pixel text-rpg-brown">Character Sheet</h2>
             </div>
             
