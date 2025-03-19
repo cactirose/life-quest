@@ -1,92 +1,89 @@
+
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 42 38% 95%;
+    --foreground: 20 14.3% 4.1%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 42 38% 92%;
+    --card-foreground: 20 14.3% 4.1%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 42 38% 92%;
+    --popover-foreground: 20 14.3% 4.1%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 36 60% 40%;
+    --primary-foreground: 38 92% 95%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 120 25% 60%;
+    --secondary-foreground: 38 92% 95%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 42 12% 89%;
+    --muted-foreground: 20 5.9% 40%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 240 20% 40%;
+    --accent-foreground: 38 92% 95%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 38 92% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 20 5.9% 80%;
+    --input: 20 5.9% 80%;
+    --ring: 36 60% 40%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 36 60% 95%;
+    --sidebar-foreground: 20 14.3% 4.1%;
+    --sidebar-primary: 36 60% 40%;
+    --sidebar-primary-foreground: 38 92% 95%;
+    --sidebar-accent: 36 50% 90%;
+    --sidebar-accent-foreground: 20 14.3% 4.1%;
+    --sidebar-border: 36 50% 80%;
+    --sidebar-ring: 36 60% 40%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 20 14.3% 10%;
+    --foreground: 38 92% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 20 14.3% 15%;
+    --card-foreground: 38 92% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 20 14.3% 15%;
+    --popover-foreground: 38 92% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 36 60% 40%; 
+    --primary-foreground: 38 92% 95%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 120 25% 35%;
+    --secondary-foreground: 38 92% 95%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 20 5.9% 25%;
+    --muted-foreground: 38 92% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 240 20% 40%;
+    --accent-foreground: 38 92% 95%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 38 92% 95%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 20 5.9% 30%;
+    --input: 20 5.9% 30%;
+    --ring: 36 60% 40%;
+
+    --sidebar-background: 20 14.3% 15%;
+    --sidebar-foreground: 38 92% 95%;
+    --sidebar-primary: 36 60% 40%;
+    --sidebar-primary-foreground: 38 92% 95%;
+    --sidebar-accent: 20 5.9% 25%;
+    --sidebar-accent-foreground: 38 92% 95%;
+    --sidebar-border: 20 5.9% 30%;
+    --sidebar-ring: 36 60% 40%;
   }
 }
 
@@ -96,6 +93,99 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-pixel;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d2b48c' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+/* RPG-specific styling */
+@layer components {
+  .pixel-border {
+    @apply border-4 border-rpg-dark-wood shadow-md;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+    image-rendering: pixelated;
+  }
+
+  .pixel-button {
+    @apply font-pixel py-2 px-4 bg-rpg-tan border-2 border-rpg-brown text-rpg-brown
+    hover:bg-rpg-brown hover:text-rpg-tan transition-colors duration-200
+    shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.3)]
+    active:shadow-[inset_2px_2px_0_rgba(0,0,0,0.3)];
+  }
+
+  .parchment {
+    @apply bg-rpg-parchment border-2 border-rpg-tan rounded-md p-4
+    shadow-[inset_0_0_10px_rgba(0,0,0,0.1)];
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  }
+
+  .wood-texture {
+    @apply bg-rpg-tan border-2 border-rpg-brown rounded-md;
+    background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238b4513' fill-opacity='0.15'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .quest-card {
+    @apply wood-texture p-4 relative overflow-hidden animate-scale-in;
+  }
+
+  .pixel-progress-bar {
+    @apply h-6 bg-rpg-tan border-2 border-rpg-brown relative overflow-hidden;
+  }
+
+  .pixel-progress-bar-fill {
+    @apply h-full bg-rpg-green absolute top-0 left-0 transition-all duration-300;
+  }
+
+  .stat-value {
+    @apply text-lg font-semibold text-rpg-brown;
+  }
+
+  .pixel-icon {
+    @apply inline-block align-middle;
+    image-rendering: pixelated;
+  }
+
+  .shimmer {
+    @apply bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%] animate-shimmer;
+  }
+
+  .skill-node {
+    @apply rounded-full border-4 border-rpg-brown bg-rpg-tan p-2 
+    flex items-center justify-center relative
+    hover:scale-110 transition-transform duration-200
+    cursor-pointer;
+  }
+
+  .skill-node.active {
+    @apply border-rpg-green bg-rpg-light-green text-white;
+  }
+
+  .skill-edge {
+    @apply border-2 border-rpg-brown absolute;
+  }
+
+  .skill-edge.active {
+    @apply border-rpg-green;
+  }
+
+  .item-card {
+    @apply wood-texture p-4 flex flex-col gap-2 hover:scale-105 
+    transition-transform duration-200 cursor-pointer;
+  }
+
+  .rarity-common {
+    @apply border-gray-500;
+  }
+
+  .rarity-rare {
+    @apply border-blue-500;
+  }
+
+  .rarity-epic {
+    @apply border-purple-500;
+  }
+
+  .rarity-legendary {
+    @apply border-yellow-500;
   }
 }

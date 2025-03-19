@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,21 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// RPG theme colors
+				rpg: {
+					brown: '#8B4513',
+					tan: '#D2B48C',
+					green: '#2E8B57',
+					'light-green': '#6B8E23',
+					blue: '#4682B4',
+					purple: '#483D8B',
+					yellow: '#DAA520',
+					red: '#A52A2A',
+					'dark-wood': '#5D4037',
+					'light-wood': '#A1887F',
+					parchment: '#F5F5DC',
+					'pixel-black': '#130F1C',
 				}
 			},
 			borderRadius: {
@@ -84,12 +100,65 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-5px)'
+					}
+				},
+				'pulse-gentle': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.8'
+					}
+				},
+				'scale-in': {
+					'0%': {
+						transform: 'scale(0.95)',
+						opacity: '0'
+					},
+					'100%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					}
+				},
+				'shimmer': {
+					'0%': {
+						backgroundPosition: '-200% 0'
+					},
+					'100%': {
+						backgroundPosition: '200% 0'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.5s ease-out',
+				'float': 'float 3s ease-in-out infinite',
+				'pulse-gentle': 'pulse-gentle 2s ease-in-out infinite',
+				'scale-in': 'scale-in 0.3s ease-out',
+				'shimmer': 'shimmer 2s linear infinite'
+			},
+			fontFamily: {
+				pixel: ['VT323', 'monospace'],
+				rpg: ['Press Start 2P', 'cursive']
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
