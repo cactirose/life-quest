@@ -82,6 +82,19 @@ export function ThemeSettings() {
           updatedTheme.positive = value;
         }
       }
+      if (key === "primary") {
+        // Update text color for primary changes if it's the default theme text
+        if (prev.text === THEME_PRESETS.default.text) {
+          // Use a darker version of the primary color for text
+          updatedTheme.text = getDarkerShade(value, 60);
+        }
+      }
+      if (key === "text") {
+        // Ensure text color has good contrast with backgrounds
+        if (!isContrastGoodEnough(value, updatedTheme.primary)) {
+          updatedTheme.text = getContrastColor(updatedTheme.primary);
+        }
+      }
       
       saveTheme(updatedTheme, 'custom');
       return updatedTheme;
@@ -97,6 +110,30 @@ export function ThemeSettings() {
     const b = parseInt(hex.substring(4, 6), 16);
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.5 ? '#3A1F0E' : '#FFF8DC';
+  };
+  
+  // Helper function to check if contrast is good enough
+  const isContrastGoodEnough = (textColor: string, bgColor: string): boolean => {
+    // Simple check - if text color is light and bg is dark or vice versa
+    const textLuminance = getColorLuminance(textColor);
+    const bgLuminance = getColorLuminance(bgColor);
+    const contrastRatio = (Math.max(textLuminance, bgLuminance) + 0.05) / 
+                          (Math.min(textLuminance, bgLuminance) + 0.05);
+    return contrastRatio >= 4.5; // WCAG AA standard
+  };
+  
+  // Helper function to calculate luminance of a color
+  const getColorLuminance = (hex: string): number => {
+    hex = hex.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
+    
+    const R = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+    const G = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+    const B = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+    
+    return 0.2126 * R + 0.7152 * G + 0.0722 * B;
   };
   
   // Helper function to get a darker shade
@@ -153,7 +190,7 @@ export function ThemeSettings() {
   const colorGroups = {
     "Main Colors": ["primary", "secondary", "background", "accent", "text"],
     "Navigation": ["navbar", "nav-hover", "nav-hover-text", "nav-active", "nav-active-text"],
-    "Content": ["parchment", "positive", "negative", "purple"]
+    "Content": ["parchment", "positive", "negative", "purple", "hover", "hover-text", "accent-text"]
   };
 
   return (

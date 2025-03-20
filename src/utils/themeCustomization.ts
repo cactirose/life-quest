@@ -51,7 +51,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     secondary: "#2E8B57",    // Sea green
     background: "#F0FFF0",   // Honeydew
     accent: "#2E8B57",       // Sea green
-    text: "#2F4F4F",         // Dark slate gray
+    text: "#1A5D38",         // Dark green text
     parchment: "#F0FFF0",    // Honeydew
     positive: "#2E8B57",     // Sea green
     negative: "#8B0000",     // Dark red
@@ -70,7 +70,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     secondary: "#4682B4",    // Steel blue
     background: "#F0F8FF",   // Alice blue
     accent: "#4682B4",       // Steel blue
-    text: "#191970",         // Midnight blue
+    text: "#1E4C7B",         // Dark blue text
     parchment: "#F0FFFF",    // Azure
     positive: "#4682B4",     // Steel blue
     negative: "#FF4500",     // Orange red
@@ -89,7 +89,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     secondary: "#CD5C5C",    // Indian red
     background: "#FFF0F5",   // Lavender blush
     accent: "#CD5C5C",       // Indian red
-    text: "#8B4513",         // Saddle brown
+    text: "#943D3D",         // Dark red text
     parchment: "#FFEFD5",    // Papaya whip
     positive: "#CD5C5C",     // Indian red
     negative: "#8B0000",     // Dark red
@@ -108,7 +108,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     secondary: "#673AB7",    // Deep purple
     background: "#F3E5F5",   // Light lavender
     accent: "#673AB7",       // Deep purple
-    text: "#311B92",         // Deep purple
+    text: "#4A2B82",         // Dark purple text
     parchment: "#FFF8E1",    // Light amber
     positive: "#673AB7",     // Deep purple
     negative: "#D32F2F",     // Red

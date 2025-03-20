@@ -12,9 +12,9 @@ const buttonVariants = cva(
       variant: {
         default: "bg-[var(--rpg-accent)] text-[var(--rpg-accent-text)] hover:bg-[var(--rpg-hover)] hover:text-[var(--rpg-hover-text)]",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground",
-        outline: "border border-input bg-background hover:bg-[var(--rpg-hover)] hover:text-[var(--rpg-hover-text)]",
+        outline: "border border-input bg-background text-[var(--rpg-text)] hover:bg-[var(--rpg-hover)] hover:text-[var(--rpg-hover-text)]",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:text-secondary-foreground",
-        ghost: "hover:bg-[var(--rpg-hover)] hover:text-[var(--rpg-hover-text)]",
+        ghost: "text-[var(--rpg-text)] hover:bg-[var(--rpg-hover)] hover:text-[var(--rpg-hover-text)]",
         link: "text-primary underline-offset-4 hover:underline",
         themed: "bg-[var(--rpg-tan)] text-[var(--rpg-text)] hover:bg-[var(--rpg-hover)] hover:text-[var(--rpg-hover-text)]",
       },

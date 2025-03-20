@@ -280,6 +280,7 @@
   .themed-stats-container {
     background-color: var(--rpg-tan);
     border-color: var(--rpg-accent);
+    color: var(--rpg-text);
   }
 }
 
