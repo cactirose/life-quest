@@ -465,5 +465,11 @@ const Character = () => {
       </div>
       
       <div className="mt-6">
-       
+        <CharacterResetDialog />
+      </div>
+    </div>
+  );
+};
+
+export default Character;
 
