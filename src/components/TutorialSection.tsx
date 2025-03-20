@@ -1,38 +1,24 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  Scroll, 
-  ShieldCheck, 
-  Target, 
-  Sparkle, 
-  ShoppingBag, 
-  ListChecks, 
-  Award, 
-  Smile, 
-  Flag, 
-  Backpack 
-} from "lucide-react";
+import { Scroll, ShieldCheck, Target, Sparkle, ShoppingBag, ListChecks, Award, Smile, Flag, Backpack } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGameData } from "@/contexts/DataContext";
-
 export function TutorialSection() {
   const [showTutorial, setShowTutorial] = useState(true);
-  const { character } = useGameData();
-  
+  const {
+    character
+  } = useGameData();
+
   // If the character is above level 3, don't show the tutorial by default
   const isNewUser = character.level <= 3;
-  
+
   // Control visibility with local state
   const [isVisible, setIsVisible] = useState(isNewUser);
-  
   if (!isVisible) return null;
-  
-  return (
-    <div className="mb-12 animate-fade-in">
+  return <div className="mb-12 animate-fade-in">
       <Card className="parchment border-2 border-rpg-brown shadow-lg">
         <CardHeader className="pb-2">
-          <CardTitle className="text-2xl font-pixel text-rpg-brown flex items-center gap-2">
+          <CardTitle className="text-2xl font-pixel flex items-center gap-2 text-rpg-blue">
             <Sparkle className="text-rpg-brown" size={24} />
             Welcome to Your Quest Journal
           </CardTitle>
@@ -96,15 +82,10 @@ export function TutorialSection() {
         </CardContent>
         
         <CardFooter className="flex justify-end pt-0">
-          <Button 
-            variant="outline" 
-            className="text-rpg-brown border-rpg-brown hover:bg-rpg-brown hover:text-rpg-tan"
-            onClick={() => setIsVisible(false)}
-          >
+          <Button variant="outline" className="text-rpg-brown border-rpg-brown hover:bg-rpg-brown hover:text-rpg-tan" onClick={() => setIsVisible(false)}>
             Got it!
           </Button>
         </CardFooter>
       </Card>
-    </div>
-  );
+    </div>;
 }
