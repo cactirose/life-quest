@@ -3,14 +3,7 @@ import { createContext, useContext } from "react";
 import { SkillNode } from "../types/skills";
 import { generateId } from "../utils/idGenerator";
 import { StatName } from "../types/character";
-
-interface SkillTreeContextType {
-  skillTree: SkillNode[];
-  addSkillNode: (node: Omit<SkillNode, "id">) => string;
-  updateSkillNode: (node: SkillNode) => void;
-  deleteSkillNode: (nodeId: string) => void;
-  unlockSkillNode: (nodeId: string) => void;
-}
+import { SkillTreeContextType, GameDataUpdater } from "../utils/contextTypes";
 
 export const SkillTreeContext = createContext<SkillTreeContextType>({} as SkillTreeContextType);
 
@@ -18,7 +11,7 @@ export const useSkillTree = () => useContext(SkillTreeContext);
 
 export const createSkillTreeContextValue = (
   skillTree: SkillNode[],
-  setGameData: React.Dispatch<React.SetStateAction<any>>
+  setGameData: GameDataUpdater
 ): SkillTreeContextType => {
   // SKILL TREE METHODS
   const addSkillNode = (node: Omit<SkillNode, "id">) => {
