@@ -1,3 +1,4 @@
+
 import { StatName } from "../types/character";
 
 // Define available themes
@@ -14,6 +15,7 @@ export interface ThemeColors {
   positive: string;      // Success/positive actions
   negative: string;      // Error/warning
   purple: string;        // For boss quests
+  navbar: string;        // New: Specific color for navbar
 }
 
 // Preset themes
@@ -27,7 +29,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     parchment: "#FFF8DC",    // Cornsilk
     positive: "#4CAF50",     // Green
     negative: "#B22222",     // Firebrick
-    purple: "#8B5CF6"        // Purple for boss quests
+    purple: "#8B5CF6",       // Purple for boss quests
+    navbar: "#8B4513"        // Navbar brown (same as secondary by default)
   },
   forest: {
     primary: "#8FBC8F",      // Dark sea green
@@ -38,7 +41,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     parchment: "#F0FFF0",    // Honeydew
     positive: "#32CD32",     // Lime green
     negative: "#8B0000",     // Dark red
-    purple: "#9C27B0"        // Purple for boss quests
+    purple: "#9C27B0",       // Purple for boss quests
+    navbar: "#2E8B57"        // Navbar green (same as secondary by default)
   },
   ocean: {
     primary: "#87CEEB",      // Sky blue
@@ -49,7 +53,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     parchment: "#F0FFFF",    // Azure
     positive: "#40E0D0",     // Turquoise
     negative: "#FF4500",     // Orange red
-    purple: "#673AB7"        // Purple for boss quests
+    purple: "#673AB7",       // Purple for boss quests
+    navbar: "#4682B4"        // Navbar blue (same as secondary by default)
   },
   sunset: {
     primary: "#FFA07A",      // Light salmon
@@ -60,7 +65,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     parchment: "#FFEFD5",    // Papaya whip
     positive: "#32CD32",     // Lime green
     negative: "#8B0000",     // Dark red
-    purple: "#9C27B0"        // Purple for boss quests
+    purple: "#9C27B0",       // Purple for boss quests
+    navbar: "#CD5C5C"        // Navbar red (same as secondary by default)
   },
   royal: {
     primary: "#B39DDB",      // Light purple
@@ -71,7 +77,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     parchment: "#FFF8E1",    // Light amber
     positive: "#4CAF50",     // Green
     negative: "#D32F2F",     // Red
-    purple: "#6A1B9A"        // Purple for boss quests
+    purple: "#6A1B9A",       // Purple for boss quests
+    navbar: "#673AB7"        // Navbar purple (same as secondary by default)
   },
   custom: {
     primary: "#D2B48C",      // Default values that will be overridden
@@ -82,12 +89,18 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     parchment: "#FFF8DC",
     positive: "#4CAF50",
     negative: "#B22222",
-    purple: "#8B5CF6"        // Purple for boss quests
+    purple: "#8B5CF6",       // Purple for boss quests
+    navbar: "#8B4513"        // Navbar color (default to secondary)
   }
 };
 
 // Function to apply theme to CSS variables
 export function applyTheme(theme: ThemeColors): void {
+  // If navbar is not explicitly set, default to secondary color
+  if (!theme.navbar) {
+    theme.navbar = theme.secondary;
+  }
+
   // Main RPG theme variables
   document.documentElement.style.setProperty('--rpg-tan', theme.primary);
   document.documentElement.style.setProperty('--rpg-brown', theme.secondary);
@@ -117,9 +130,9 @@ export function applyTheme(theme: ThemeColors): void {
   document.documentElement.style.setProperty('--destructive-foreground', convertToHSL(theme.parchment));
   
   // Navigation menu specific variables
-  document.documentElement.style.setProperty('--nav-bg', convertToHSL(theme.secondary));
+  document.documentElement.style.setProperty('--nav-bg', convertToHSL(theme.navbar));
   document.documentElement.style.setProperty('--nav-text', convertToHSL(theme.parchment));
-  document.documentElement.style.setProperty('--nav-hover', convertToHSL(shadeColor(theme.secondary, -20)));
+  document.documentElement.style.setProperty('--nav-hover', convertToHSL(shadeColor(theme.navbar, -20)));
   document.documentElement.style.setProperty('--nav-active', convertToHSL(theme.accent));
   
   // Card related variables

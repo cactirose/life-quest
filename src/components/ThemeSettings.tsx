@@ -86,10 +86,17 @@ export function ThemeSettings() {
     );
   });
 
+  // Group color settings for better organization
+  const colorGroups = {
+    "Main Colors": ["primary", "secondary", "background", "accent", "text"],
+    "Navigation": ["navbar"],
+    "Content": ["parchment", "positive", "negative", "purple"]
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="relative text-rpg-tan">
+        <Button variant="ghost" className="relative text-[hsl(var(--nav-text))]">
           <Palette className="h-5 w-5" />
           <span className="sr-only">Change theme</span>
         </Button>
@@ -118,32 +125,37 @@ export function ThemeSettings() {
           </TabsContent>
           
           <TabsContent value="custom" className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(customTheme).map(([key, value]) => (
-                <div key={key} className="space-y-2">
-                  <Label htmlFor={key} className="text-sm capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      id={key}
-                      value={value}
-                      onChange={(e) => handleColorChange(key as keyof ThemeColors, e.target.value)}
-                      className="w-8 h-8 p-0 border cursor-pointer"
-                      aria-label={`Change ${key} color`}
-                    />
-                    <input
-                      type="text"
-                      value={value}
-                      onChange={(e) => handleColorChange(key as keyof ThemeColors, e.target.value)}
-                      className="flex-1 px-2 py-1 text-sm border rounded"
-                      aria-label={`${key} color hex value`}
-                    />
-                  </div>
+            {Object.entries(colorGroups).map(([groupName, colorKeys]) => (
+              <div key={groupName}>
+                <h3 className="font-bold mb-2">{groupName}</h3>
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  {colorKeys.map(key => (
+                    <div key={key} className="space-y-2">
+                      <Label htmlFor={key} className="text-sm capitalize">
+                        {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          id={key}
+                          value={customTheme[key as keyof ThemeColors]}
+                          onChange={(e) => handleColorChange(key as keyof ThemeColors, e.target.value)}
+                          className="w-8 h-8 p-0 border cursor-pointer"
+                          aria-label={`Change ${key} color`}
+                        />
+                        <input
+                          type="text"
+                          value={customTheme[key as keyof ThemeColors]}
+                          onChange={(e) => handleColorChange(key as keyof ThemeColors, e.target.value)}
+                          className="flex-1 px-2 py-1 text-sm border rounded"
+                          aria-label={`${key} color hex value`}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
             <p className="text-sm text-rpg-brown mt-2">
               Your custom theme will be applied to all elements of the application including the navigation bar, buttons, and content areas.
             </p>

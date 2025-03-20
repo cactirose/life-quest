@@ -62,18 +62,18 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-rpg-brown shadow-md py-2">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] shadow-md py-2">
       <div className="container mx-auto">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <HomeIcon size={24} className="text-rpg-tan" />
-            <h1 className="text-xl font-pixel text-rpg-tan">Life Quest</h1>
+            <HomeIcon size={24} className="text-[hsl(var(--nav-text))]" />
+            <h1 className="text-xl font-pixel text-[hsl(var(--nav-text))]">Life Quest</h1>
           </Link>
           
           {/* Status Bar */}
           <div className="hidden md:flex items-center gap-4">
-            <div className="flex items-center gap-2 text-rpg-tan font-pixel">
+            <div className="flex items-center gap-2 text-[hsl(var(--nav-text))] font-pixel">
               <span>Level: {character.level}</span>
               <span>XP: {character.xp}/{character.nextLevelXp}</span>
               <span>Coins: {character.coins}</span>
@@ -89,8 +89,8 @@ const Navbar = () => {
                   to="/dashboard" 
                   className={cn(
                     navigationMenuTriggerStyle(),
-                    "text-rpg-tan hover:bg-rpg-dark-wood bg-rpg-brown border-none",
-                    location.pathname === "/dashboard" && "bg-rpg-dark-wood"
+                    "text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] bg-[hsl(var(--nav-bg))] border-none",
+                    location.pathname === "/dashboard" && "bg-[hsl(var(--nav-active))]"
                   )}
                 >
                   <span className="flex items-center gap-1">
@@ -106,8 +106,8 @@ const Navbar = () => {
                   to="/quests"
                   className={cn(
                     navigationMenuTriggerStyle(),
-                    "text-rpg-tan hover:bg-rpg-dark-wood bg-rpg-brown border-none",
-                    location.pathname === "/quests" && "bg-rpg-dark-wood"
+                    "text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] bg-[hsl(var(--nav-bg))] border-none",
+                    location.pathname === "/quests" && "bg-[hsl(var(--nav-active))]"
                   )}
                 >
                   <span className="flex items-center gap-1">
@@ -119,9 +119,9 @@ const Navbar = () => {
               
               {/* Dropdown menus */}
               {navStructure.map((item) => (
-                <NavigationMenuItem key={item.label} className="relative group">
+                <NavigationMenuItem key={item.label} className="relative">
                   <NavigationMenuTrigger 
-                    className="text-rpg-tan hover:bg-rpg-dark-wood bg-rpg-brown border-none"
+                    className="text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] bg-[hsl(var(--nav-bg))] border-none"
                   >
                     <span className="flex items-center gap-1">
                       {item.icon}
@@ -129,15 +129,15 @@ const Navbar = () => {
                     </span>
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[220px] p-2 bg-rpg-brown border border-rpg-tan/30">
+                    <ul className="grid w-[220px] p-2 bg-[hsl(var(--nav-bg))] border border-[hsl(var(--nav-hover))]">
                       {item.subnav.map((subItem) => (
                         <li key={subItem.path}>
                           <NavigationMenuLink asChild>
                             <Link
                               to={subItem.path}
                               className={cn(
-                                "block select-none space-y-1 rounded-md p-3 text-rpg-tan no-underline outline-none transition-colors hover:bg-rpg-dark-wood",
-                                location.pathname === subItem.path && "bg-rpg-dark-wood"
+                                "block select-none space-y-1 rounded-md p-3 text-[hsl(var(--nav-text))] no-underline outline-none transition-colors hover:bg-[hsl(var(--nav-hover))]",
+                                location.pathname === subItem.path && "bg-[hsl(var(--nav-active))]"
                               )}
                             >
                               <div className="flex items-center gap-2">
@@ -159,8 +159,8 @@ const Navbar = () => {
                   to="/shop" 
                   className={cn(
                     navigationMenuTriggerStyle(),
-                    "text-rpg-tan hover:bg-rpg-dark-wood bg-rpg-brown border-none",
-                    location.pathname === "/shop" && "bg-rpg-dark-wood"
+                    "text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] bg-[hsl(var(--nav-bg))] border-none",
+                    location.pathname === "/shop" && "bg-[hsl(var(--nav-active))]"
                   )}
                 >
                   <span className="flex items-center gap-1">
