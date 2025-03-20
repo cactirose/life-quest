@@ -1,8 +1,9 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ReactNode, useEffect } from "react";
 import { DataProvider } from "./contexts/DataContext";
 import Navbar from "./components/Navbar";
@@ -20,6 +21,10 @@ import Mood from "./pages/Mood";
 import Achievements from "./pages/Achievements";
 import { ThemeSettings } from "./components/ThemeSettings";
 import { initializeTheme } from "./utils/theme";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { isAuthenticated, logout } from "./utils/auth";
 
 const queryClient = new QueryClient();
 
@@ -44,17 +49,64 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public Routes */}
             <Route path="/" element={<Layout><Index /></Layout>} />
-            <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-            <Route path="/quests" element={<Layout><Quests /></Layout>} />
-            <Route path="/character" element={<Layout><Character /></Layout>} />
-            <Route path="/skills" element={<Layout><SkillTree /></Layout>} />
-            <Route path="/shop" element={<Layout><Shop /></Layout>} />
-            <Route path="/inventory" element={<Layout><Inventory /></Layout>} />
-            <Route path="/challenges" element={<Layout><Challenges /></Layout>} />
-            <Route path="/habits" element={<Layout><Habits /></Layout>} />
-            <Route path="/mood" element={<Layout><Mood /></Layout>} />
-            <Route path="/achievements" element={<Layout><Achievements /></Layout>} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            
+            {/* Protected Routes */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Layout><Dashboard /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/quests" element={
+              <ProtectedRoute>
+                <Layout><Quests /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/character" element={
+              <ProtectedRoute>
+                <Layout><Character /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/skills" element={
+              <ProtectedRoute>
+                <Layout><SkillTree /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/shop" element={
+              <ProtectedRoute>
+                <Layout><Shop /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/inventory" element={
+              <ProtectedRoute>
+                <Layout><Inventory /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/challenges" element={
+              <ProtectedRoute>
+                <Layout><Challenges /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/habits" element={
+              <ProtectedRoute>
+                <Layout><Habits /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/mood" element={
+              <ProtectedRoute>
+                <Layout><Mood /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/achievements" element={
+              <ProtectedRoute>
+                <Layout><Achievements /></Layout>
+              </ProtectedRoute>
+            } />
+            
+            {/* Not Found Route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
