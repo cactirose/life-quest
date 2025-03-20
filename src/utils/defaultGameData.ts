@@ -33,6 +33,9 @@ export const DEFAULT_GAME_DATA: GameData = {
   
   // Shop methods
   purchaseItem: () => false,
+  addShopItem: () => {},       // Added missing method
+  updateShopItem: () => {},    // Added missing method
+  deleteShopItem: () => {},    // Added missing method
   
   // Skill tree methods
   addSkillNode: () => "",
