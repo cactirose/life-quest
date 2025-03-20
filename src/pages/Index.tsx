@@ -4,10 +4,22 @@ import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
 import { ScrollText, Sparkle, Target, Flag } from "lucide-react";
 import { TutorialSection } from "@/components/TutorialSection";
+import { useEffect, useState } from "react";
+import { isAuthenticated } from "@/utils/auth";
 
 const Index = () => {
   const navigate = useNavigate();
   const { character } = useGameData();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authed = await isAuthenticated();
+      setIsLoggedIn(authed);
+    };
+    
+    checkAuth();
+  }, []);
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -19,12 +31,29 @@ const Index = () => {
           </p>
           
           <div className="flex flex-col md:flex-row justify-center gap-4 mb-8">
-            <Button 
-              onClick={() => navigate("/dashboard")} 
-              className="pixel-button text-lg"
-            >
-              Begin Your Journey
-            </Button>
+            {isLoggedIn ? (
+              <Button 
+                onClick={() => navigate("/dashboard")} 
+                className="pixel-button text-lg"
+              >
+                Begin Your Journey
+              </Button>
+            ) : (
+              <div className="flex flex-col md:flex-row gap-4">
+                <Button 
+                  onClick={() => navigate("/login")} 
+                  className="pixel-button text-lg"
+                >
+                  Login
+                </Button>
+                <Button 
+                  onClick={() => navigate("/signup")} 
+                  className="pixel-button text-lg"
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -38,10 +67,10 @@ const Index = () => {
             </div>
             <p className="mb-4">Track daily tasks, habits, and goals through engaging quests that reward you with XP, coins, and stat improvements.</p>
             <Button 
-              onClick={() => navigate("/quests")} 
+              onClick={() => navigate(isLoggedIn ? "/quests" : "/login")} 
               className="pixel-button"
             >
-              View Quests
+              {isLoggedIn ? "View Quests" : "Login to View Quests"}
             </Button>
           </div>
 
@@ -52,10 +81,10 @@ const Index = () => {
             </div>
             <p className="mb-4">Customize your character and watch your stats grow as you complete quests and equip new gear.</p>
             <Button 
-              onClick={() => navigate("/character")} 
+              onClick={() => navigate(isLoggedIn ? "/character" : "/login")} 
               className="pixel-button"
             >
-              View Profile
+              {isLoggedIn ? "View Profile" : "Login to View Profile"}
             </Button>
           </div>
 
@@ -66,10 +95,10 @@ const Index = () => {
             </div>
             <p className="mb-4">Develop new skills and abilities through an interactive skill tree that visualizes your growth journey.</p>
             <Button 
-              onClick={() => navigate("/skills")} 
+              onClick={() => navigate(isLoggedIn ? "/skills" : "/login")} 
               className="pixel-button"
             >
-              Explore Skills
+              {isLoggedIn ? "Explore Skills" : "Login to Explore Skills"}
             </Button>
           </div>
 
@@ -80,33 +109,35 @@ const Index = () => {
             </div>
             <p className="mb-4">Purchase new equipment with coins earned from quests, and manage your inventory to boost your character stats.</p>
             <Button 
-              onClick={() => navigate("/shop")} 
+              onClick={() => navigate(isLoggedIn ? "/shop" : "/login")} 
               className="pixel-button"
             >
-              Visit Shop
+              {isLoggedIn ? "Visit Shop" : "Login to Visit Shop"}
             </Button>
           </div>
         </div>
 
-        <div className="wood-texture p-6 text-center">
-          <h2 className="text-2xl font-pixel text-rpg-brown mb-4">
-            {character.name}'s Journey
-          </h2>
-          <div className="flex flex-wrap justify-center gap-4 text-rpg-brown font-pixel">
-            <div className="flex flex-col items-center">
-              <span className="text-3xl">📊</span>
-              <span>Level {character.level}</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-3xl">✨</span>
-              <span>{character.xp} XP</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-3xl">🪙</span>
-              <span>{character.coins} Coins</span>
+        {isLoggedIn && character && (
+          <div className="wood-texture p-6 text-center">
+            <h2 className="text-2xl font-pixel text-rpg-brown mb-4">
+              {character.name}'s Journey
+            </h2>
+            <div className="flex flex-wrap justify-center gap-4 text-rpg-brown font-pixel">
+              <div className="flex flex-col items-center">
+                <span className="text-3xl">📊</span>
+                <span>Level {character.level}</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-3xl">✨</span>
+                <span>{character.xp} XP</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-3xl">🪙</span>
+                <span>{character.coins} Coins</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

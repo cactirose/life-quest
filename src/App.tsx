@@ -41,6 +41,16 @@ const Layout = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
+// Public Layout - similar to Layout but for public pages
+const PublicLayout = ({ children }: { children: ReactNode }) => (
+  <div className="flex flex-col min-h-screen relative">
+    <Navbar />
+    <main className="flex-grow px-4 pb-16 pt-20">
+      {children}
+    </main>
+  </div>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <DataProvider>
@@ -50,7 +60,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<Layout><Index /></Layout>} />
+            <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             
