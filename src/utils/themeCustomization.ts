@@ -15,7 +15,9 @@ export interface ThemeColors {
   positive: string;      // Success/positive actions
   negative: string;      // Error/warning
   purple: string;        // For boss quests
-  navbar: string;        // New: Specific color for navbar
+  navbar: string;        // Specific color for navbar
+  "nav-hover"?: string;  // Navbar hover state
+  "nav-active"?: string; // Navbar active state
 }
 
 // Preset themes
@@ -24,13 +26,15 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     primary: "#D2B48C",      // Tan
     secondary: "#8B4513",    // Brown
     background: "#F5F5DC",   // Beige
-    accent: "#3A1F0E",       // Dark brown (replacing olive green)
+    accent: "#3A1F0E",       // Dark brown
     text: "#3A3124",         // Dark brown
     parchment: "#FFF8DC",    // Cornsilk
-    positive: "#3A1F0E",     // Dark brown (replacing green)
+    positive: "#3A1F0E",     // Dark brown
     negative: "#B22222",     // Firebrick
     purple: "#8B5CF6",       // Purple for boss quests
-    navbar: "#3f210e"        // Dark brown for navbar
+    navbar: "#3f210e",       // Dark brown for navbar
+    "nav-hover": "#3A1F0E",  // Hover color
+    "nav-active": "#3A1F0E"  // Active color
   },
   forest: {
     primary: "#8FBC8F",      // Dark sea green
@@ -42,7 +46,9 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     positive: "#32CD32",     // Lime green
     negative: "#8B0000",     // Dark red
     purple: "#9C27B0",       // Purple for boss quests
-    navbar: "#2E8B57"        // Navbar green (same as secondary by default)
+    navbar: "#2E8B57",       // Navbar green
+    "nav-hover": "#1A5D38",  // Darker green for hover
+    "nav-active": "#1A5D38"  // Active state
   },
   ocean: {
     primary: "#87CEEB",      // Sky blue
@@ -54,7 +60,9 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     positive: "#40E0D0",     // Turquoise
     negative: "#FF4500",     // Orange red
     purple: "#673AB7",       // Purple for boss quests
-    navbar: "#4682B4"        // Navbar blue (same as secondary by default)
+    navbar: "#4682B4",       // Navbar blue
+    "nav-hover": "#2B5D8C",  // Darker blue for hover
+    "nav-active": "#2B5D8C"  // Active state
   },
   sunset: {
     primary: "#FFA07A",      // Light salmon
@@ -66,7 +74,9 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     positive: "#32CD32",     // Lime green
     negative: "#8B0000",     // Dark red
     purple: "#9C27B0",       // Purple for boss quests
-    navbar: "#CD5C5C"        // Navbar red (same as secondary by default)
+    navbar: "#CD5C5C",       // Navbar red
+    "nav-hover": "#B13E3E",  // Darker red for hover
+    "nav-active": "#B13E3E"  // Active state
   },
   royal: {
     primary: "#B39DDB",      // Light purple
@@ -78,28 +88,31 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     positive: "#4CAF50",     // Green
     negative: "#D32F2F",     // Red
     purple: "#6A1B9A",       // Purple for boss quests
-    navbar: "#673AB7"        // Navbar purple (same as secondary by default)
+    navbar: "#673AB7",       // Navbar purple
+    "nav-hover": "#4A2B82",  // Darker purple for hover
+    "nav-active": "#4A2B82"  // Active state
   },
   custom: {
     primary: "#D2B48C",      // Default values that will be overridden
     secondary: "#8B4513",
     background: "#F5F5DC",
-    accent: "#3A1F0E",       // Updated to dark brown
+    accent: "#3A1F0E",
     text: "#3A3124",
     parchment: "#FFF8DC",
-    positive: "#3A1F0E",     // Updated to dark brown
+    positive: "#3A1F0E",
     negative: "#B22222",
-    purple: "#8B5CF6",       // Purple for boss quests
-    navbar: "#8B4513"        // Navbar color (default to secondary)
+    purple: "#8B5CF6",
+    navbar: "#8B4513",
+    "nav-hover": "#3A1F0E",
+    "nav-active": "#3A1F0E"
   }
 };
 
 // Function to apply theme to CSS variables
 export function applyTheme(theme: ThemeColors): void {
-  // If navbar is not explicitly set, default to secondary color
-  if (!theme.navbar) {
-    theme.navbar = theme.secondary;
-  }
+  // Set default values for nav-hover and nav-active if not provided
+  const navHover = theme["nav-hover"] || shadeColor(theme.navbar, -20);
+  const navActive = theme["nav-active"] || shadeColor(theme.navbar, -30);
 
   // Main RPG theme variables
   document.documentElement.style.setProperty('--rpg-tan', theme.primary);
@@ -116,24 +129,24 @@ export function applyTheme(theme: ThemeColors): void {
   
   // Apply to Tailwind CSS variables as well
   document.documentElement.style.setProperty('--primary', convertToHSL(theme.primary));
-  document.documentElement.style.setProperty('--primary-foreground', convertToHSL(theme.text));
+  document.documentElement.style.setProperty('--primary-foreground', convertToHSL(contrastColor(theme.primary)));
   document.documentElement.style.setProperty('--secondary', convertToHSL(theme.secondary));
-  document.documentElement.style.setProperty('--secondary-foreground', convertToHSL(theme.parchment));
+  document.documentElement.style.setProperty('--secondary-foreground', convertToHSL(contrastColor(theme.secondary)));
   document.documentElement.style.setProperty('--accent', convertToHSL(theme.accent));
-  document.documentElement.style.setProperty('--accent-foreground', convertToHSL(theme.parchment));
+  document.documentElement.style.setProperty('--accent-foreground', convertToHSL(contrastColor(theme.accent)));
   document.documentElement.style.setProperty('--background', convertToHSL(theme.background));
   document.documentElement.style.setProperty('--foreground', convertToHSL(theme.text));
   document.documentElement.style.setProperty('--muted', convertToHSL(lightenColor(theme.secondary, 40)));
   document.documentElement.style.setProperty('--muted-foreground', convertToHSL(theme.text));
   document.documentElement.style.setProperty('--border', convertToHSL(theme.secondary));
   document.documentElement.style.setProperty('--destructive', convertToHSL(theme.negative));
-  document.documentElement.style.setProperty('--destructive-foreground', convertToHSL(theme.parchment));
+  document.documentElement.style.setProperty('--destructive-foreground', convertToHSL(contrastColor(theme.negative)));
   
   // Navigation menu specific variables
   document.documentElement.style.setProperty('--nav-bg', convertToHSL(theme.navbar));
-  document.documentElement.style.setProperty('--nav-text', convertToHSL(theme.parchment));
-  document.documentElement.style.setProperty('--nav-hover', convertToHSL(shadeColor(theme.navbar, -20)));
-  document.documentElement.style.setProperty('--nav-active', convertToHSL(theme.accent));
+  document.documentElement.style.setProperty('--nav-text', convertToHSL(contrastColor(theme.navbar)));
+  document.documentElement.style.setProperty('--nav-hover', convertToHSL(navHover));
+  document.documentElement.style.setProperty('--nav-active', convertToHSL(navActive));
   
   // Card related variables
   document.documentElement.style.setProperty('--card', convertToHSL(lightenColor(theme.primary, 10)));
@@ -147,11 +160,11 @@ export function applyTheme(theme: ThemeColors): void {
   
   // Additional components
   document.documentElement.style.setProperty('--sidebar-background', convertToHSL(theme.secondary));
-  document.documentElement.style.setProperty('--sidebar-foreground', convertToHSL(theme.parchment));
+  document.documentElement.style.setProperty('--sidebar-foreground', convertToHSL(contrastColor(theme.secondary)));
   document.documentElement.style.setProperty('--sidebar-primary', convertToHSL(theme.primary));
   document.documentElement.style.setProperty('--sidebar-primary-foreground', convertToHSL(theme.text));
   document.documentElement.style.setProperty('--sidebar-accent', convertToHSL(theme.accent));
-  document.documentElement.style.setProperty('--sidebar-accent-foreground', convertToHSL(theme.parchment));
+  document.documentElement.style.setProperty('--sidebar-accent-foreground', convertToHSL(contrastColor(theme.accent)));
   document.documentElement.style.setProperty('--sidebar-border', convertToHSL(lightenColor(theme.secondary, 10)));
   document.documentElement.style.setProperty('--sidebar-ring', convertToHSL(theme.accent));
 }
@@ -176,6 +189,23 @@ function shadeColor(color: string, percent: number): string {
 // Helper function to lighten color
 function lightenColor(color: string, percent: number): string {
   return shadeColor(color, Math.abs(percent));
+}
+
+// Function to determine contrasting text color
+function contrastColor(hex: string): string {
+  // Remove the # from the hex color
+  hex = hex.replace('#', '');
+  
+  // Parse the hex values to RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  // Calculate relative luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  
+  // Return white or black based on luminance
+  return luminance > 0.5 ? '#3A1F0E' : '#FFF8DC';
 }
 
 // Helper function to convert hex to HSL string for Tailwind CSS variables
@@ -232,6 +262,14 @@ export function getCurrentTheme(): ThemeColors {
 
 // Save theme to localStorage
 export function saveTheme(theme: ThemeColors, themeName: ThemeName = 'custom'): void {
+  // Ensure nav-hover and nav-active are set
+  if (!theme["nav-hover"]) {
+    theme["nav-hover"] = shadeColor(theme.navbar, -20);
+  }
+  if (!theme["nav-active"]) {
+    theme["nav-active"] = shadeColor(theme.navbar, -30);
+  }
+  
   localStorage.setItem('rpgProductivityTheme', JSON.stringify(theme));
   localStorage.setItem('rpgProductivityThemeName', themeName);
   applyTheme(theme);

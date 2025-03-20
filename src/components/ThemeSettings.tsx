@@ -77,7 +77,10 @@ export function ThemeSettings() {
           ></div>
           <span
             className="text-xs font-bold capitalize"
-            style={{ color: colors.text }}
+            style={{ 
+              color: colors.text,
+              textShadow: '0px 0px 1px rgba(255, 255, 255, 0.5)'  
+            }}
           >
             {name}
           </span>
@@ -89,14 +92,14 @@ export function ThemeSettings() {
   // Group color settings for better organization
   const colorGroups = {
     "Main Colors": ["primary", "secondary", "background", "accent", "text"],
-    "Navigation": ["navbar"],
+    "Navigation": ["navbar", "nav-hover", "nav-active"],
     "Content": ["parchment", "positive", "negative", "purple"]
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="relative text-[hsl(var(--nav-text))]">
+        <Button variant="ghost" className="relative text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))]">
           <Palette className="h-5 w-5" />
           <span className="sr-only">Change theme</span>
         </Button>
@@ -132,20 +135,20 @@ export function ThemeSettings() {
                   {colorKeys.map(key => (
                     <div key={key} className="space-y-2">
                       <Label htmlFor={key} className="text-sm capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                        {key.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/-/g, ' ')}
                       </Label>
                       <div className="flex items-center gap-2">
                         <input
                           type="color"
                           id={key}
-                          value={customTheme[key as keyof ThemeColors]}
+                          value={customTheme[key as keyof ThemeColors] || '#000000'}
                           onChange={(e) => handleColorChange(key as keyof ThemeColors, e.target.value)}
                           className="w-8 h-8 p-0 border cursor-pointer"
                           aria-label={`Change ${key} color`}
                         />
                         <input
                           type="text"
-                          value={customTheme[key as keyof ThemeColors]}
+                          value={customTheme[key as keyof ThemeColors] || '#000000'}
                           onChange={(e) => handleColorChange(key as keyof ThemeColors, e.target.value)}
                           className="flex-1 px-2 py-1 text-sm border rounded"
                           aria-label={`${key} color hex value`}
@@ -167,7 +170,7 @@ export function ThemeSettings() {
                 toast.success('Reset to default theme');
               }}
               variant="outline"
-              className="mt-4"
+              className="mt-4 hover:bg-rpg-brown hover:text-rpg-tan"
             >
               Reset to Default
             </Button>
