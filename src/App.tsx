@@ -23,6 +23,8 @@ import { ThemeSettings } from "./components/ThemeSettings";
 import { initializeTheme } from "./utils/theme";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ResetPassword from "./pages/ResetPassword";
+import UpdatePassword from "./pages/UpdatePassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { isAuthenticated, logout } from "./utils/auth";
 
@@ -63,6 +65,8 @@ const App = () => (
             <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/update-password" element={<UpdatePassword />} />
             
             {/* Protected Routes */}
             <Route path="/dashboard" element={
