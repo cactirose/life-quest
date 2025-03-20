@@ -33,18 +33,18 @@ export function CharacterResetDialog() {
       <DialogTrigger asChild>
         <Button 
           variant="destructive" 
-          className="gap-2 pixel-button bg-rpg-red hover:bg-red-700 text-white border-rpg-brown w-full mt-4"
+          className="gap-2 pixel-button bg-rpg-red hover:bg-red-700 text-white border-[var(--rpg-accent)] w-full mt-4"
         >
           <RefreshCcw size={16} />
           Reset Character
         </Button>
       </DialogTrigger>
-      <DialogContent className="parchment border-rpg-brown">
+      <DialogContent className="parchment border-[var(--rpg-accent)]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-pixel text-rpg-brown">
+          <DialogTitle className="text-2xl font-pixel text-[var(--rpg-text)]">
             Reset Character
           </DialogTitle>
-          <DialogDescription className="text-rpg-brown">
+          <DialogDescription className="text-[var(--rpg-text)]">
             Are you sure you want to reset your character? This will:
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>Reset your level to 1</li>
@@ -61,7 +61,7 @@ export function CharacterResetDialog() {
           <Button 
             variant="outline" 
             onClick={() => setOpen(false)}
-            className="border-rpg-brown text-rpg-brown hover:bg-rpg-brown hover:text-rpg-tan"
+            className="border-[var(--rpg-accent)] text-[var(--rpg-text)] hover:bg-[var(--rpg-hover)] hover:text-[var(--rpg-hover-text)]"
           >
             Cancel
           </Button>

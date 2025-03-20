@@ -256,7 +256,7 @@ function contrastColor(hex: string): string {
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   
   // Return white or black based on luminance
-  return luminance > 0.5 ? '#3A1F0E' : '#FFF8DC';
+  return luminance > 0.5 ? '#222222' : '#FFF8DC';
 }
 
 // Helper function to convert hex to HSL string for Tailwind CSS variables
