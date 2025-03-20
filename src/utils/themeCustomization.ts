@@ -119,8 +119,8 @@ export function applyTheme(theme: ThemeColors): void {
   // Navigation menu specific variables
   document.documentElement.style.setProperty('--nav-bg', convertToHSL(theme.secondary));
   document.documentElement.style.setProperty('--nav-text', convertToHSL(theme.parchment));
-  document.documentElement.style.setProperty('--nav-hover', convertToHSL(lightenColor(theme.secondary, 10)));
-  document.documentElement.style.setProperty('--nav-active', convertToHSL(lightenColor(theme.accent, 10)));
+  document.documentElement.style.setProperty('--nav-hover', convertToHSL(shadeColor(theme.secondary, -20)));
+  document.documentElement.style.setProperty('--nav-active', convertToHSL(theme.accent));
   
   // Card related variables
   document.documentElement.style.setProperty('--card', convertToHSL(lightenColor(theme.primary, 10)));
