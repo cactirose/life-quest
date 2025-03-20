@@ -1,6 +1,5 @@
-
 import { createContext, useContext, ReactNode } from "react";
-import { Character, StatName } from "../types/character";
+import { Character, StatName, DEFAULT_CHARACTER } from "../types/character";
 
 interface CharacterContextType {
   character: Character;
@@ -8,6 +7,7 @@ interface CharacterContextType {
   updateCharacterStat: (stat: StatName, value: number) => void;
   checkDailyLogin: () => void;
   claimDailyBonus: () => void;
+  resetCharacter: () => void;
 }
 
 export const CharacterContext = createContext<CharacterContextType>({} as CharacterContextType);
@@ -153,11 +153,31 @@ export const createCharacterContextValue = (
     });
   };
 
+  // Reset character function
+  const resetCharacter = () => {
+    setGameData(prevData => ({
+      ...prevData,
+      character: { ...DEFAULT_CHARACTER, name: prevData.character.name },
+      inventory: [],
+      quests: prevData.quests.map(quest => ({
+        ...quest,
+        status: "active" as const,
+        steps: quest.steps.map(step => ({ ...step, completed: false }))
+      })),
+      skillTree: prevData.skillTree.map(node => 
+        node.name === "Adventurer Basics" 
+          ? { ...node, unlocked: true } 
+          : { ...node, unlocked: false }
+      )
+    }));
+  };
+
   return {
     character,
     setCharacter,
     updateCharacterStat,
     checkDailyLogin,
-    claimDailyBonus
+    claimDailyBonus,
+    resetCharacter
   };
 };

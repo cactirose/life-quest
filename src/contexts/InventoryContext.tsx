@@ -1,4 +1,3 @@
-
 import { createContext, useContext } from "react";
 import { GearItem, GearType } from "../types/inventory";
 import { generateId } from "../utils/idGenerator";
@@ -11,6 +10,9 @@ interface InventoryContextType {
   equipItem: (itemId: string) => void;
   unequipItem: (itemId: string) => void;
   purchaseItem: (itemId: string) => boolean;
+  addShopItem: (item: Omit<GearItem, "id">) => void;
+  updateShopItem: (item: GearItem) => void;
+  deleteShopItem: (itemId: string) => void;
 }
 
 export const InventoryContext = createContext<InventoryContextType>({} as InventoryContextType);
@@ -94,6 +96,35 @@ export const createInventoryContextValue = (
     return success;
   };
 
+  // SHOP MANAGEMENT METHODS
+  const addShopItem = (item: Omit<GearItem, "id">) => {
+    const newItem = {
+      ...item,
+      id: generateId()
+    };
+    
+    setGameData(prevData => ({
+      ...prevData,
+      shopItems: [...prevData.shopItems, newItem]
+    }));
+  };
+
+  const updateShopItem = (item: GearItem) => {
+    setGameData(prevData => ({
+      ...prevData,
+      shopItems: prevData.shopItems.map(i => 
+        i.id === item.id ? item : i
+      )
+    }));
+  };
+
+  const deleteShopItem = (itemId: string) => {
+    setGameData(prevData => ({
+      ...prevData,
+      shopItems: prevData.shopItems.filter(i => i.id !== itemId)
+    }));
+  };
+
   return {
     inventory,
     shopItems,
@@ -101,6 +132,9 @@ export const createInventoryContextValue = (
     removeFromInventory,
     equipItem,
     unequipItem,
-    purchaseItem
+    purchaseItem,
+    addShopItem,
+    updateShopItem,
+    deleteShopItem
   };
 };

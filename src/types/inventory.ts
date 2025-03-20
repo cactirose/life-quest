@@ -2,7 +2,7 @@
 import { StatName } from "./character";
 
 // Gear types
-export type GearType = "weapon" | "armor" | "accessory";
+export type GearType = "weapon" | "armor" | "accessory" | "real-life";
 export type GearRarity = "common" | "rare" | "epic" | "legendary";
 
 export interface GearItem {
@@ -16,6 +16,7 @@ export interface GearItem {
   statBonuses: Partial<Record<StatName, number>>;
   equipped: boolean;
   levelRequired: number;
+  realLifeReward?: boolean;
 }
 
 // Sample shop items for first run
@@ -91,5 +92,32 @@ export const SAMPLE_SHOP_ITEMS: GearItem[] = [
     statBonuses: { strength: 5, dexterity: 2 },
     equipped: false,
     levelRequired: 5
+  },
+  // Adding sample real-life rewards
+  {
+    id: "",
+    name: "Movie Night",
+    description: "Treat yourself to a movie",
+    type: "real-life",
+    rarity: "common",
+    icon: "🎬",
+    cost: 50,
+    statBonuses: {},
+    equipped: false,
+    levelRequired: 1,
+    realLifeReward: true
+  },
+  {
+    id: "",
+    name: "Coffee Break",
+    description: "Enjoy a nice cup of coffee",
+    type: "real-life",
+    rarity: "common",
+    icon: "☕",
+    cost: 25,
+    statBonuses: {},
+    equipped: false,
+    levelRequired: 1,
+    realLifeReward: true
   }
 ];

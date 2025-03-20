@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
 import { ScrollText, Sparkle, Target, Flag } from "lucide-react";
+import { TutorialSection } from "@/components/TutorialSection";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -26,6 +27,8 @@ const Index = () => {
             </Button>
           </div>
         </div>
+
+        <TutorialSection />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           <div className="wood-texture p-6 animate-fade-in" style={{animationDelay: "0.2s"}}>
