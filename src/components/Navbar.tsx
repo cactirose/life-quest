@@ -83,7 +83,7 @@ const Navbar = () => {
           {/* Navigation */}
           <NavigationMenu className="font-pixel">
             <NavigationMenuList>
-              {/* Standalone pages */}
+              {/* Home page */}
               <NavigationMenuItem>
                 <Link 
                   to="/dashboard" 
@@ -100,6 +100,7 @@ const Navbar = () => {
                 </Link>
               </NavigationMenuItem>
               
+              {/* Quests standalone page */}
               <NavigationMenuItem>
                 <Link
                   to="/quests"
@@ -118,8 +119,10 @@ const Navbar = () => {
               
               {/* Dropdown menus */}
               {navStructure.map((item) => (
-                <NavigationMenuItem key={item.label}>
-                  <NavigationMenuTrigger className="text-rpg-tan hover:bg-rpg-dark-wood bg-rpg-brown border-none">
+                <NavigationMenuItem key={item.label} className="relative">
+                  <NavigationMenuTrigger 
+                    className="text-rpg-tan hover:bg-rpg-dark-wood bg-rpg-brown border-none"
+                  >
                     <span className="flex items-center gap-1">
                       {item.icon}
                       <span className="hidden md:inline">{item.label}</span>
