@@ -7,7 +7,7 @@ import { SAMPLE_SKILL_TREE } from "../types/skills";
 import { SAMPLE_CHALLENGES } from "../types/challenges";
 import { SAMPLE_HABITS } from "../types/habits";
 import { SAMPLE_ACHIEVEMENTS } from "../types/achievements";
-import { GameData } from "../contexts/DataContext";
+import { GameData } from "../types/gameData";
 
 // Load data from localStorage or use defaults with samples
 export const loadInitialData = (): Omit<GameData, keyof Omit<GameData, 'character' | 'quests' | 'inventory' | 'shopItems' | 'skillTree' | 'challenges' | 'habits' | 'moods' | 'achievements'>> => {
