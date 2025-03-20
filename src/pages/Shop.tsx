@@ -12,7 +12,10 @@ import {
   Gem,
   Filter,
   Search,
-  ShoppingCart
+  ShoppingCart,
+  PlusCircle,
+  Gift,
+  Settings
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -31,18 +34,21 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ShopItemEditor } from "@/components/ShopItemEditor";
 
 // Item card component
 const ItemCard = ({
   item,
   onPurchase,
   canAfford,
-  meetsLevelRequirement
+  meetsLevelRequirement,
+  onEdit
 }: {
   item: GearItem;
   onPurchase: () => void;
   canAfford: boolean;
   meetsLevelRequirement: boolean;
+  onEdit?: () => void;
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   
@@ -57,6 +63,7 @@ const ItemCard = ({
   const itemIcon = 
     item.type === "weapon" ? <Sword className="text-rpg-brown" size={16} /> :
     item.type === "armor" ? <Shield className="text-rpg-brown" size={16} /> :
+    item.type === "real-life" ? <Gift className="text-rpg-brown" size={16} /> :
     <Gem className="text-rpg-brown" size={16} />;
 
   return (
@@ -103,6 +110,21 @@ const ItemCard = ({
             )
           ))}
         </div>
+        
+        {onEdit && (
+          <div className="mb-2">
+            <Button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              className="w-full"
+              variant="outline"
+            >
+              Edit Item
+            </Button>
+          </div>
+        )}
         
         {!meetsLevelRequirement ? (
           <div className="text-xs text-center text-red-500 font-pixel">
@@ -171,6 +193,16 @@ const ItemCard = ({
           </div>
           
           <DialogFooter className="pt-4">
+            {onEdit && (
+              <Button onClick={(e) => {
+                e.stopPropagation();
+                setShowDetails(false);
+                onEdit();
+              }} variant="outline" className="mr-auto">
+                Edit Item
+              </Button>
+            )}
+          
             {!meetsLevelRequirement ? (
               <div className="w-full text-center text-red-500 font-pixel">
                 Requires Level {item.levelRequired}
@@ -192,11 +224,13 @@ const ItemCard = ({
 };
 
 const Shop = () => {
-  const { shopItems, character, purchaseItem } = useGameData();
+  const { shopItems, character, purchaseItem, setGameData } = useGameData();
   const [searchText, setSearchText] = useState("");
   const [filterType, setFilterType] = useState<GearType | "all">("all");
   const [filterRarity, setFilterRarity] = useState<GearRarity | "all">("all");
   const [currentTab, setCurrentTab] = useState<string>("all");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [editingItem, setEditingItem] = useState<GearItem | undefined>(undefined);
   
   // Filter items based on search and filters
   const filteredItems = shopItems.filter(item => {
@@ -217,7 +251,8 @@ const Shop = () => {
       (currentTab === "available" && character.level >= item.levelRequired) ||
       (currentTab === "weapons" && item.type === "weapon") ||
       (currentTab === "armor" && item.type === "armor") ||
-      (currentTab === "accessories" && item.type === "accessory");
+      (currentTab === "accessories" && item.type === "accessory") ||
+      (currentTab === "real-life" && item.type === "real-life");
     
     return matchesSearch && matchesType && matchesRarity && matchesTab;
   });
@@ -243,6 +278,36 @@ const Shop = () => {
     }
   };
   
+  // Save a new or edited item
+  const handleSaveItem = (item: GearItem) => {
+    setGameData(prevData => {
+      // Check if it's an edit (item already exists)
+      const existingItemIndex = prevData.shopItems.findIndex(i => i.id === item.id);
+      
+      if (existingItemIndex >= 0) {
+        // Update existing item
+        const updatedItems = [...prevData.shopItems];
+        updatedItems[existingItemIndex] = item;
+        return { ...prevData, shopItems: updatedItems };
+      } else {
+        // Add new item
+        return { ...prevData, shopItems: [...prevData.shopItems, item] };
+      }
+    });
+    
+    setEditingItem(undefined);
+  };
+  
+  // Delete an item
+  const handleDeleteItem = (itemId: string) => {
+    setGameData(prevData => ({
+      ...prevData,
+      shopItems: prevData.shopItems.filter(item => item.id !== itemId)
+    }));
+    
+    setEditingItem(undefined);
+  };
+  
   // Check if player can afford an item
   const canAfford = (item: GearItem) => character.coins >= item.cost;
   
@@ -258,6 +323,16 @@ const Shop = () => {
         </div>
         
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsAdmin(!isAdmin)}
+            className={isAdmin ? "bg-rpg-brown text-rpg-tan" : ""}
+            title={isAdmin ? "Exit Admin Mode" : "Admin Mode"}
+          >
+            <Settings size={20} />
+          </Button>
+          
           <div className="parchment flex items-center px-4 py-2">
             <Coins size={20} className="text-rpg-brown mr-2" />
             <span className="font-pixel text-lg text-rpg-brown">{character.coins}</span>
@@ -296,6 +371,7 @@ const Shop = () => {
                 <SelectItem value="weapon">Weapons</SelectItem>
                 <SelectItem value="armor">Armor</SelectItem>
                 <SelectItem value="accessory">Accessories</SelectItem>
+                <SelectItem value="real-life">Real Life Rewards</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -319,6 +395,34 @@ const Shop = () => {
           </div>
         </div>
       </div>
+      
+      {isAdmin && (
+        <div className="mb-6 parchment">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-pixel text-rpg-brown">Shop Administration</h2>
+            <ShopItemEditor 
+              onSave={handleSaveItem}
+              trigger={
+                <Button className="pixel-button">
+                  <PlusCircle size={16} className="mr-2" />
+                  Add New Item
+                </Button>
+              }
+            />
+          </div>
+          <p className="text-sm text-rpg-brown mb-2">You can add, edit, or remove shop items in admin mode.</p>
+        </div>
+      )}
+      
+      {/* Shop Item Editor Dialog for editing */}
+      {editingItem && (
+        <ShopItemEditor
+          item={editingItem}
+          onSave={handleSaveItem}
+          onDelete={handleDeleteItem}
+          trigger={<div style={{ display: 'none' }}></div>}
+        />
+      )}
       
       <Tabs value={currentTab} onValueChange={setCurrentTab}>
         <TabsList className="w-full mb-6 font-pixel bg-rpg-tan text-rpg-brown border-2 border-rpg-brown">
@@ -352,6 +456,12 @@ const Shop = () => {
           >
             Accessories
           </TabsTrigger>
+          <TabsTrigger 
+            value="real-life" 
+            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
+          >
+            Real Life
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value={currentTab} className="animate-fade-in">
@@ -360,6 +470,15 @@ const Shop = () => {
               <ShoppingCart size={48} className="mx-auto mb-4 text-rpg-brown" />
               <h3 className="text-xl font-pixel text-rpg-brown mb-2">No Items Found</h3>
               <p className="text-rpg-brown">Try adjusting your filters or search terms.</p>
+              {isAdmin && (
+                <Button 
+                  onClick={() => setEditingItem(undefined)}
+                  className="pixel-button mt-4"
+                >
+                  <PlusCircle size={16} className="mr-2" />
+                  Add Your First Item
+                </Button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -370,6 +489,7 @@ const Shop = () => {
                   onPurchase={() => handlePurchase(item.id)}
                   canAfford={canAfford(item)}
                   meetsLevelRequirement={meetsLevelRequirement(item)}
+                  onEdit={isAdmin ? () => setEditingItem(item) : undefined}
                 />
               ))}
             </div>
