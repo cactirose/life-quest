@@ -74,7 +74,7 @@ export function ThemeSettings() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="relative text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))]">
+        <Button variant="ghost" className="relative text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-text))]">
           <Palette className="h-5 w-5" />
           <span className="sr-only">Change theme</span>
         </Button>

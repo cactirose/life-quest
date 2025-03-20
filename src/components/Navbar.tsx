@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { useGameData } from "@/contexts/DataContext";
 import { 
@@ -28,50 +27,52 @@ const Navbar = () => {
   } = useGameData();
   const location = useLocation();
   
-  const navStructure = [{
-    label: "Milestones",
-    icon: <Target size={20} />,
-    path: "/skills",
-    subnav: [{
-      label: "Skills",
+  const navStructure = [
+    {
+      label: "Milestones",
+      icon: <Target size={20} />,
       path: "/skills",
-      icon: <Target size={18} />
+      subnav: [{
+        label: "Skills",
+        path: "/skills",
+        icon: <Target size={18} />
+      }, {
+        label: "Achievements",
+        path: "/achievements",
+        icon: <Award size={18} />
+      }]
     }, {
-      label: "Achievements",
-      path: "/achievements",
-      icon: <Award size={18} />
-    }]
-  }, {
-    label: "Character",
-    icon: <UserCircle size={20} />,
-    path: "/character",
-    subnav: [{
-      label: "Profile",
+      label: "Character",
+      icon: <UserCircle size={20} />,
       path: "/character",
-      icon: <UserCircle size={18} />
+      subnav: [{
+        label: "Profile",
+        path: "/character",
+        icon: <UserCircle size={18} />
+      }, {
+        label: "Inventory",
+        path: "/inventory",
+        icon: <Backpack size={18} />
+      }]
     }, {
-      label: "Inventory",
-      path: "/inventory",
-      icon: <Backpack size={18} />
-    }]
-  }, {
-    label: "Journey",
-    icon: <MapPin size={20} />,
-    path: "/habits",
-    subnav: [{
-      label: "Habits",
+      label: "Journey",
+      icon: <MapPin size={20} />,
       path: "/habits",
-      icon: <ListChecks size={18} />
-    }, {
-      label: "Mood",
-      path: "/mood",
-      icon: <Smile size={18} />
-    }, {
-      label: "Challenges",
-      path: "/challenges",
-      icon: <Flag size={18} />
-    }]
-  }];
+      subnav: [{
+        label: "Habits",
+        path: "/habits",
+        icon: <ListChecks size={18} />
+      }, {
+        label: "Mood",
+        path: "/mood",
+        icon: <Smile size={18} />
+      }, {
+        label: "Challenges",
+        path: "/challenges",
+        icon: <Flag size={18} />
+      }]
+    }
+  ];
 
   return <header className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] shadow-md py-2">
       <div className="container mx-auto">
@@ -96,7 +97,7 @@ const Navbar = () => {
               {/* Home page */}
               <NavigationMenuItem className="relative">
                 <Link to="/dashboard" className={cn(navigationMenuTriggerStyle(), 
-                  "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))] border-none", 
+                  "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-text))] border-none", 
                   location.pathname === "/dashboard" && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
                   <span className="flex items-center gap-1">
                     <HomeIcon size={20} />
@@ -108,7 +109,7 @@ const Navbar = () => {
               {/* Quests standalone page */}
               <NavigationMenuItem className="relative">
                 <Link to="/quests" className={cn(navigationMenuTriggerStyle(), 
-                  "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))] border-none", 
+                  "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-text))] border-none", 
                   location.pathname === "/quests" && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
                   <span className="flex items-center gap-1">
                     <Scroll size={20} />
@@ -120,7 +121,7 @@ const Navbar = () => {
               {/* Dropdown menus */}
               {navStructure.map(item => <NavigationMenuItem key={item.label} className="relative">
                   <NavigationMenuTrigger className={cn(
-                    "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))] border-none", 
+                    "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-text))] border-none", 
                     location.pathname.startsWith(item.path) && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
                     <span className="flex items-center gap-1">
                       {item.icon}
@@ -132,7 +133,7 @@ const Navbar = () => {
                       {item.subnav.map(subItem => <li key={subItem.path}>
                           <NavigationMenuLink asChild>
                             <Link to={subItem.path} className={cn(
-                              "block select-none space-y-1 rounded-md p-3 text-[hsl(var(--nav-text))] no-underline outline-none transition-colors hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))]", 
+                              "block select-none space-y-1 rounded-md p-3 text-[hsl(var(--nav-text))] no-underline outline-none transition-colors hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-text))]", 
                               location.pathname === subItem.path && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
                               <div className="flex items-center gap-2">
                                 {subItem.icon}
@@ -148,7 +149,7 @@ const Navbar = () => {
               {/* Shop standalone page */}
               <NavigationMenuItem className="relative">
                 <Link to="/shop" className={cn(navigationMenuTriggerStyle(), 
-                  "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))] border-none", 
+                  "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-text))] border-none", 
                   location.pathname === "/shop" && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
                   <span className="flex items-center gap-1">
                     <ShoppingCart size={20} />
@@ -169,3 +170,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

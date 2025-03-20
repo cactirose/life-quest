@@ -1,4 +1,3 @@
-
 import { ThemeColors, ThemeName } from "./types";
 import { THEME_PRESETS } from "./presets";
 import { shadeColor, contrastColor, convertToHSL, lightenColor } from "./colorUtils";
@@ -10,8 +9,8 @@ export function applyTheme(theme: ThemeColors): void {
   const navActive = theme["nav-active"] || shadeColor(theme.navbar, -30);
   
   // Set default values for hover/active text colors if not provided
-  const navHoverText = theme["nav-hover-text"] || "#222222";
-  const navActiveText = theme["nav-active-text"] || "#222222";
+  const navHoverText = theme["nav-hover-text"] || theme["nav-text"] || contrastColor(theme.navbar);
+  const navActiveText = theme["nav-active-text"] || contrastColor(navActive);
 
   // Main RPG theme variables
   document.documentElement.style.setProperty('--rpg-tan', theme.primary);

@@ -16,7 +16,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     navbar: "#3f210e",       // Dark brown for navbar
     "nav-hover": "#3A1F0E",  // Hover color
     "nav-active": "#3A1F0E", // Active color
-    "nav-hover-text": "#FFF8DC", // White text on dark hover
+    "nav-hover-text": "#FFF8DC", // Same text color on hover as normal
     "nav-active-text": "#FFF8DC"  // White text on dark active
   },
   forest: {
@@ -32,8 +32,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     navbar: "#2E8B57",       // Navbar green
     "nav-hover": "#1A5D38",  // Darker green for hover
     "nav-active": "#1A5D38", // Active state
-    "nav-hover-text": "#222222", // Dark text for better readability
-    "nav-active-text": "#222222"  // Dark text for better readability
+    "nav-hover-text": "#F0FFF0", // Keep the same text color on hover
+    "nav-active-text": "#F0FFF0"  // Keep the same text color on active
   },
   ocean: {
     primary: "#87CEEB",      // Sky blue
@@ -48,8 +48,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     navbar: "#4682B4",       // Navbar blue
     "nav-hover": "#2B5D8C",  // Darker blue for hover
     "nav-active": "#2B5D8C", // Active state
-    "nav-hover-text": "#222222", // Dark text for better readability
-    "nav-active-text": "#222222"  // Dark text for better readability
+    "nav-hover-text": "#F0F8FF", // Keep the same text color on hover
+    "nav-active-text": "#F0F8FF"  // Keep the same text color on active
   },
   sunset: {
     primary: "#FFA07A",      // Light salmon
@@ -64,8 +64,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     navbar: "#CD5C5C",       // Navbar red
     "nav-hover": "#B13E3E",  // Darker red for hover
     "nav-active": "#B13E3E", // Active state
-    "nav-hover-text": "#222222", // Dark text for better readability
-    "nav-active-text": "#222222"  // Dark text for better readability
+    "nav-hover-text": "#FFF0F5", // Keep the same text color on hover
+    "nav-active-text": "#FFF0F5"  // Keep the same text color on active
   },
   royal: {
     primary: "#B39DDB",      // Light purple
@@ -80,8 +80,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     navbar: "#673AB7",       // Navbar purple
     "nav-hover": "#4A2B82",  // Darker purple for hover
     "nav-active": "#4A2B82", // Active state
-    "nav-hover-text": "#222222", // Dark text for better readability
-    "nav-active-text": "#222222"  // Dark text for better readability
+    "nav-hover-text": "#F3E5F5", // Keep the same text color on hover
+    "nav-active-text": "#F3E5F5"  // Keep the same text color on active
   },
   custom: {
     primary: "#D2B48C",      // Default values that will be overridden
@@ -96,7 +96,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     navbar: "#8B4513",
     "nav-hover": "#3A1F0E",
     "nav-active": "#3A1F0E",
-    "nav-hover-text": "#222222",
-    "nav-active-text": "#222222"
+    "nav-hover-text": "#F5F5DC", // Light text for custom theme hover
+    "nav-active-text": "#F5F5DC"  // Light text for custom theme active
   }
 };
