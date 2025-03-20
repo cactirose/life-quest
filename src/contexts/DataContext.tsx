@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { DEFAULT_CHARACTER, Character, StatName } from "../types/character";
 import { Quest } from "../types/quests";
@@ -252,18 +251,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [gameData.character.xp]);
 
-  // Check daily login on mount
-  useEffect(() => {
-    checkDailyLogin();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Daily reset challenges check
-  useEffect(() => {
-    resetChallenges();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Create contexts
   const characterContextValue = createCharacterContextValue(gameData.character, setGameData);
   const questContextValue = createQuestContextValue(gameData.quests, setGameData);
@@ -273,6 +260,16 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const habitContextValue = createHabitContextValue(gameData.habits, setGameData);
   const moodContextValue = createMoodContextValue(gameData.moods, setGameData);
   const achievementContextValue = createAchievementContextValue(gameData.achievements, setGameData);
+
+  // Check daily login on mount
+  useEffect(() => {
+    characterContextValue.checkDailyLogin();
+  }, []);
+
+  // Daily reset challenges check
+  useEffect(() => {
+    challengeContextValue.resetChallenges();
+  }, []);
 
   // Combined context value
   const contextValue: GameData = {
