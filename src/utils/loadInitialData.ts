@@ -40,7 +40,7 @@ export const loadInitialData = (): Omit<GameData, keyof Omit<GameData, 'characte
       id: generateId(),
       steps: quest.steps.map(step => ({ ...step, id: step.id || generateId() }))
     })),
-    inventory: [], // Add empty inventory array
+    inventory: [], // Ensure inventory is explicitly set
     shopItems: SAMPLE_SHOP_ITEMS.map(item => ({ ...item, id: generateId() })),
     skillTree: SAMPLE_SKILL_TREE.map(node => ({ ...node, id: generateId() })),
     challenges: SAMPLE_CHALLENGES.map(challenge => ({

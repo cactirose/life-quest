@@ -5,6 +5,7 @@ import { useGameDataManager } from "../hooks/useGameDataManager";
 import { DEFAULT_GAME_DATA } from "../utils/defaultGameData";
 import { useDataEffects } from "../hooks/useDataEffects";
 import { GameData } from "../types/gameData";
+import { DEFAULT_CHARACTER } from "../types/character"; // Add missing import
 
 // Create context providers
 import { createCharacterContextValue, CharacterContext } from "./CharacterContext";
@@ -17,7 +18,7 @@ import { createMoodContextValue, MoodContext } from "./MoodContext";
 import { createAchievementContextValue, AchievementContext } from "./AchievementContext";
 
 // Create context
-export const DataContext = createContext<GameData>(DEFAULT_GAME_DATA);
+export const DataContext = createContext<GameData>(DEFAULT_GAME_DATA); // Add export keyword
 
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const { gameData, setGameData } = useGameDataManager();
