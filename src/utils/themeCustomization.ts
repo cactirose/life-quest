@@ -1,4 +1,3 @@
-
 import { StatName } from "../types/character";
 
 // Define available themes
@@ -116,6 +115,32 @@ export function applyTheme(theme: ThemeColors): void {
   document.documentElement.style.setProperty('--border', convertToHSL(theme.secondary));
   document.documentElement.style.setProperty('--destructive', convertToHSL(theme.negative));
   document.documentElement.style.setProperty('--destructive-foreground', convertToHSL(theme.parchment));
+  
+  // Navigation menu specific variables
+  document.documentElement.style.setProperty('--nav-bg', convertToHSL(theme.secondary));
+  document.documentElement.style.setProperty('--nav-text', convertToHSL(theme.parchment));
+  document.documentElement.style.setProperty('--nav-hover', convertToHSL(lightenColor(theme.secondary, 10)));
+  document.documentElement.style.setProperty('--nav-active', convertToHSL(lightenColor(theme.accent, 10)));
+  
+  // Card related variables
+  document.documentElement.style.setProperty('--card', convertToHSL(lightenColor(theme.primary, 10)));
+  document.documentElement.style.setProperty('--card-foreground', convertToHSL(theme.text));
+  document.documentElement.style.setProperty('--popover', convertToHSL(theme.primary));
+  document.documentElement.style.setProperty('--popover-foreground', convertToHSL(theme.text));
+  
+  // Input related
+  document.documentElement.style.setProperty('--input', convertToHSL(theme.secondary));
+  document.documentElement.style.setProperty('--ring', convertToHSL(theme.accent));
+  
+  // Additional components
+  document.documentElement.style.setProperty('--sidebar-background', convertToHSL(theme.secondary));
+  document.documentElement.style.setProperty('--sidebar-foreground', convertToHSL(theme.parchment));
+  document.documentElement.style.setProperty('--sidebar-primary', convertToHSL(theme.primary));
+  document.documentElement.style.setProperty('--sidebar-primary-foreground', convertToHSL(theme.text));
+  document.documentElement.style.setProperty('--sidebar-accent', convertToHSL(theme.accent));
+  document.documentElement.style.setProperty('--sidebar-accent-foreground', convertToHSL(theme.parchment));
+  document.documentElement.style.setProperty('--sidebar-border', convertToHSL(lightenColor(theme.secondary, 10)));
+  document.documentElement.style.setProperty('--sidebar-ring', convertToHSL(theme.accent));
 }
 
 // Helper function to shade color (darken)
