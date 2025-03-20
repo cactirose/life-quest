@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -34,6 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const QuestForm = ({ 
   onSubmit, 
@@ -468,14 +470,16 @@ const Quests = () => {
               New Quest
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md parchment border-none">
+          <DialogContent className="max-w-md parchment border-none max-h-[85vh]">
             <DialogHeader>
               <DialogTitle className="text-2xl font-pixel text-rpg-brown">Create New Quest</DialogTitle>
             </DialogHeader>
-            <QuestForm 
-              onSubmit={handleAddQuest} 
-              onCancel={() => setShowAddDialog(false)}
-            />
+            <ScrollArea className="max-h-[60vh] pr-4">
+              <QuestForm 
+                onSubmit={handleAddQuest} 
+                onCancel={() => setShowAddDialog(false)}
+              />
+            </ScrollArea>
           </DialogContent>
         </Dialog>
         
@@ -483,16 +487,18 @@ const Quests = () => {
           open={!!editingQuest} 
           onOpenChange={(open) => !open && setEditingQuest(null)}
         >
-          <DialogContent className="max-w-md parchment border-none">
+          <DialogContent className="max-w-md parchment border-none max-h-[85vh]">
             <DialogHeader>
               <DialogTitle className="text-2xl font-pixel text-rpg-brown">Edit Quest</DialogTitle>
             </DialogHeader>
             {editingQuest && (
-              <QuestForm 
-                initialData={editingQuest}
-                onSubmit={handleEditQuest} 
-                onCancel={() => setEditingQuest(null)}
-              />
+              <ScrollArea className="max-h-[60vh] pr-4">
+                <QuestForm 
+                  initialData={editingQuest}
+                  onSubmit={handleEditQuest} 
+                  onCancel={() => setEditingQuest(null)}
+                />
+              </ScrollArea>
             )}
           </DialogContent>
         </Dialog>
