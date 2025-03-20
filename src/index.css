@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
 
 @tailwind base;
@@ -62,10 +61,7 @@
     --rpg-red: #B22222;
     --rpg-parchment: #FFF8DC;
     --rpg-accent: #3A1F0E;
-    --rpg-accent-text: #FFF8DC;
-    --rpg-hover: #2A1600;
-    --rpg-hover-text: #FFF8DC;
-    --rpg-text: #3A1F0E;
+    --rpg-text: #3A3124;
     --rpg-light-green: #6B4D38;
     --rpg-blue: #2196F3;
     --rpg-purple: #9C27B0;
@@ -129,17 +125,13 @@
     @apply bg-background text-foreground font-pixel;
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d2b48c' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
-  
-  svg {
-    @apply text-[var(--rpg-text)];
-  }
 }
 
 /* RPG-specific styling */
 @layer components {
   .pixel-border {
     @apply border-4 shadow-md;
-    border-color: var(--rpg-accent);
+    border-color: var(--rpg-dark-wood);
     box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
     image-rendering: pixelated;
   }
@@ -149,56 +141,55 @@
     shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.3)]
     active:shadow-[inset_2px_2px_0_rgba(0,0,0,0.3)];
     background-color: var(--rpg-tan);
-    border-color: var(--rpg-accent);
-    color: var(--rpg-text);
+    border-color: var(--rpg-brown);
+    color: var(--rpg-brown);
   }
   
   .pixel-button:hover {
-    background-color: var(--rpg-hover);
-    color: var(--rpg-hover-text);
+    background-color: var(--rpg-brown);
+    color: var(--rpg-tan);
   }
 
   .parchment {
     @apply rounded-md p-4 shadow-[inset_0_0_10px_rgba(0,0,0,0.1)];
     background-color: var(--rpg-parchment);
     border: 2px solid var(--rpg-tan);
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='var(--rpg-accent)' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%238b4513' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
   }
 
   .wood-texture {
     @apply rounded-md;
     background-color: var(--rpg-tan);
-    border: 2px solid var(--rpg-accent);
-    background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='var(--rpg-accent)' fill-opacity='0.15'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    border: 2px solid var(--rpg-brown);
+    background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238b4513' fill-opacity='0.15'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 
   .quest-card {
     @apply p-4 relative overflow-hidden animate-scale-in;
     background-color: var(--rpg-tan);
-    border: 2px solid var(--rpg-accent);
-    background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='var(--rpg-accent)' fill-opacity='0.15'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    border: 2px solid var(--rpg-brown);
+    background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238b4513' fill-opacity='0.15'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 
   .pixel-progress-bar {
     @apply h-6 relative overflow-hidden;
     background-color: var(--rpg-tan);
-    border: 2px solid var(--rpg-accent);
+    border: 2px solid var(--rpg-brown);
   }
 
   .pixel-progress-bar-fill {
     @apply h-full absolute top-0 left-0 transition-all duration-300;
-    background-color: var(--rpg-accent);
+    background-color: var(--rpg-green);
   }
 
   .stat-value {
     @apply text-lg font-semibold;
-    color: var(--rpg-text);
+    color: var(--rpg-brown);
   }
 
   .pixel-icon {
     @apply inline-block align-middle;
     image-rendering: pixelated;
-    color: var(--rpg-text);
   }
 
   .shimmer {
@@ -210,30 +201,30 @@
     flex items-center justify-center relative
     hover:scale-110 transition-transform duration-200
     cursor-pointer;
-    border: 4px solid var(--rpg-accent);
+    border: 4px solid var(--rpg-brown);
     background-color: var(--rpg-tan);
   }
 
   .skill-node.active {
-    border-color: var(--rpg-accent);
-    background-color: var(--rpg-accent);
-    color: var(--rpg-accent-text);
+    border-color: var(--rpg-green);
+    background-color: var(--rpg-light-green);
+    color: white;
   }
 
   .skill-edge {
     @apply absolute;
-    border: 2px solid var(--rpg-accent);
+    border: 2px solid var(--rpg-brown);
   }
 
   .skill-edge.active {
-    border-color: var(--rpg-accent);
+    border-color: var(--rpg-green);
   }
 
   .item-card {
     @apply p-4 flex flex-col gap-2 hover:scale-105 
     transition-transform duration-200 cursor-pointer;
     background-color: var(--rpg-tan);
-    border: 2px solid var(--rpg-accent);
+    border: 2px solid var(--rpg-brown);
   }
 
   .rarity-common {
@@ -250,88 +241,6 @@
 
   .rarity-legendary {
     @apply border-yellow-500;
-  }
-  
-  /* Theme-consistent tab styling */
-  .themed-tabs {
-    @apply w-full mb-6 font-pixel bg-[var(--rpg-tan)] text-[var(--rpg-text)] border-2;
-    border-color: var(--rpg-accent);
-  }
-  
-  .themed-tab-trigger {
-    @apply flex-1;
-    color: var(--rpg-text);
-  }
-  
-  .themed-tab-trigger[data-state=active] {
-    background-color: var(--rpg-accent);
-    color: var(--rpg-accent-text);
-  }
-  
-  /* Theme-consistent button styling */
-  .themed-button {
-    @apply transition-colors;
-    background-color: var(--rpg-tan);
-    color: var(--rpg-text);
-    border-color: var(--rpg-accent);
-  }
-  
-  .themed-button:hover {
-    background-color: var(--rpg-hover);
-    color: var(--rpg-hover-text);
-  }
-  
-  /* Theme-consistent stats containers */
-  .themed-stats-container {
-    background-color: var(--rpg-tan);
-    border-color: var(--rpg-accent);
-    color: var(--rpg-text);
-  }
-  
-  /* SVG icons should inherit text color to match theme */
-  svg {
-    color: currentColor;
-  }
-  
-  /* Quest tab styling with theme colors */
-  .quest-tab {
-    background-color: var(--rpg-tan);
-    color: var(--rpg-text);
-    border-color: var(--rpg-accent);
-  }
-  
-  .quest-tab.active {
-    background-color: var(--rpg-accent);
-    color: var(--rpg-accent-text);
-  }
-  
-  /* Navigation and tab elements */
-  .tab-nav-item {
-    color: var(--rpg-text);
-    border-color: var(--rpg-accent);
-  }
-  
-  .tab-nav-item.active {
-    background-color: var(--rpg-accent);
-    color: var(--rpg-accent-text);
-  }
-  
-  /* Headers and titles */
-  h1, h2, h3, h4, h5, h6,
-  .title, .subtitle {
-    color: var(--rpg-text);
-  }
-  
-  /* All icons should respect the theme */
-  [class*="icon-"], 
-  .icon, 
-  svg {
-    color: var(--rpg-text);
-  }
-  
-  /* Strong emphasis and important content */
-  strong, b, .important {
-    color: var(--rpg-text);
   }
 }
 

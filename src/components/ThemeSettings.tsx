@@ -57,44 +57,6 @@ export function ThemeSettings() {
       if (key === "nav-active") {
         updatedTheme["nav-active-text"] = getContrastColor(value);
       }
-      if (key === "navbar") {
-        // Update nav-hover and nav-active if navbar changes
-        if (!updatedTheme["nav-hover"] || updatedTheme["nav-hover"] === prev.navbar) {
-          updatedTheme["nav-hover"] = getDarkerShade(value, 20);
-          updatedTheme["nav-hover-text"] = getContrastColor(updatedTheme["nav-hover"]);
-        }
-        if (!updatedTheme["nav-active"] || updatedTheme["nav-active"] === prev.navbar) {
-          updatedTheme["nav-active"] = getDarkerShade(value, 30);
-          updatedTheme["nav-active-text"] = getContrastColor(updatedTheme["nav-active"]);
-        }
-      }
-      if (key === "accent") {
-        // Update accent-text for better contrast
-        updatedTheme["accent-text"] = getContrastColor(value);
-        
-        // Update hover colors based on accent
-        updatedTheme["hover"] = getDarkerShade(value, 20);
-        updatedTheme["hover-text"] = getContrastColor(updatedTheme["hover"]);
-      }
-      if (key === "secondary") {
-        // Update positive color to match the theme if it's the default brown
-        if (prev.positive === THEME_PRESETS.default.positive) {
-          updatedTheme.positive = value;
-        }
-      }
-      if (key === "primary") {
-        // Update text color for primary changes if it's the default theme text
-        if (prev.text === THEME_PRESETS.default.text) {
-          // Use a darker version of the primary color for text
-          updatedTheme.text = getDarkerShade(value, 60);
-        }
-      }
-      if (key === "text") {
-        // Ensure text color has good contrast with backgrounds
-        if (!isContrastGoodEnough(value, updatedTheme.primary)) {
-          updatedTheme.text = getContrastColor(updatedTheme.primary);
-        }
-      }
       
       saveTheme(updatedTheme, 'custom');
       return updatedTheme;
@@ -111,46 +73,6 @@ export function ThemeSettings() {
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance > 0.5 ? '#3A1F0E' : '#FFF8DC';
   };
-  
-  // Helper function to check if contrast is good enough
-  const isContrastGoodEnough = (textColor: string, bgColor: string): boolean => {
-    // Simple check - if text color is light and bg is dark or vice versa
-    const textLuminance = getColorLuminance(textColor);
-    const bgLuminance = getColorLuminance(bgColor);
-    const contrastRatio = (Math.max(textLuminance, bgLuminance) + 0.05) / 
-                          (Math.min(textLuminance, bgLuminance) + 0.05);
-    return contrastRatio >= 4.5; // WCAG AA standard
-  };
-  
-  // Helper function to calculate luminance of a color
-  const getColorLuminance = (hex: string): number => {
-    hex = hex.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16) / 255;
-    const g = parseInt(hex.substring(2, 4), 16) / 255;
-    const b = parseInt(hex.substring(4, 6), 16) / 255;
-    
-    const R = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
-    const G = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
-    const B = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
-    
-    return 0.2126 * R + 0.7152 * G + 0.0722 * B;
-  };
-  
-  // Helper function to get a darker shade
-  const getDarkerShade = (hex: string, percent: number): string => {
-    hex = hex.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    
-    const factor = 1 - percent / 100;
-    
-    const newR = Math.floor(r * factor);
-    const newG = Math.floor(g * factor);
-    const newB = Math.floor(b * factor);
-    
-    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
-  };
 
   const presetButtons = Object.entries(THEME_PRESETS).map(([name, colors]) => {
     if (name === 'custom') return null;
@@ -162,7 +84,7 @@ export function ThemeSettings() {
         }`}
         style={{
           backgroundColor: colors.primary,
-          borderColor: colors.accent,
+          borderColor: colors.secondary,
         }}
         onClick={() => handleThemeSelect(name as ThemeName)}
         aria-label={`Select ${name} theme`}
@@ -190,36 +112,36 @@ export function ThemeSettings() {
   const colorGroups = {
     "Main Colors": ["primary", "secondary", "background", "accent", "text"],
     "Navigation": ["navbar", "nav-hover", "nav-hover-text", "nav-active", "nav-active-text"],
-    "Content": ["parchment", "positive", "negative", "purple", "hover", "hover-text", "accent-text"]
+    "Content": ["parchment", "positive", "negative", "purple"]
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="relative text-[var(--nav-text)] hover:bg-[var(--nav-hover)] hover:text-[var(--nav-hover-text)]">
+        <Button variant="ghost" className="relative text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))]">
           <Palette className="h-5 w-5" />
           <span className="sr-only">Change theme</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] parchment border-[var(--rpg-accent)]">
+      <DialogContent className="sm:max-w-[600px] parchment border-rpg-brown">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-pixel text-[var(--rpg-text)]">Appearance</DialogTitle>
-          <DialogDescription className="text-[var(--rpg-text)]">
+          <DialogTitle className="text-2xl font-pixel text-rpg-brown">Appearance</DialogTitle>
+          <DialogDescription className="text-rpg-brown">
             Customize the visual theme of your adventure
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="presets" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="presets" className="themed-tab-trigger">Theme Presets</TabsTrigger>
-            <TabsTrigger value="custom" className="themed-tab-trigger">Custom Theme</TabsTrigger>
+            <TabsTrigger value="presets">Theme Presets</TabsTrigger>
+            <TabsTrigger value="custom">Custom Theme</TabsTrigger>
           </TabsList>
           
           <TabsContent value="presets" className="space-y-4 py-4">
             <div className="grid grid-cols-3 gap-4">
               {presetButtons}
             </div>
-            <p className="text-sm text-[var(--rpg-text)] mt-4">
+            <p className="text-sm text-rpg-brown mt-4">
               Select a preset theme to instantly change the appearance of the entire application.
             </p>
           </TabsContent>
@@ -227,11 +149,11 @@ export function ThemeSettings() {
           <TabsContent value="custom" className="space-y-4 py-4">
             {Object.entries(colorGroups).map(([groupName, colorKeys]) => (
               <div key={groupName}>
-                <h3 className="font-bold mb-2 text-[var(--rpg-text)]">{groupName}</h3>
+                <h3 className="font-bold mb-2">{groupName}</h3>
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   {colorKeys.map(key => (
                     <div key={key} className="space-y-2">
-                      <Label htmlFor={key} className="text-sm capitalize text-[var(--rpg-text)]">
+                      <Label htmlFor={key} className="text-sm capitalize">
                         {key.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/-/g, ' ')}
                       </Label>
                       <div className="flex items-center gap-2">
@@ -256,7 +178,7 @@ export function ThemeSettings() {
                 </div>
               </div>
             ))}
-            <p className="text-sm text-[var(--rpg-text)] mt-2">
+            <p className="text-sm text-rpg-brown mt-2">
               Your custom theme will be applied to all elements of the application including the navigation bar, buttons, and content areas.
             </p>
             <Button 
@@ -267,7 +189,7 @@ export function ThemeSettings() {
                 toast.success('Reset to default theme');
               }}
               variant="outline"
-              className="mt-4 hover:bg-[var(--rpg-hover)] hover:text-[var(--rpg-hover-text)]"
+              className="mt-4 hover:bg-rpg-brown hover:text-rpg-tan"
             >
               Reset to Default
             </Button>
