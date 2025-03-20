@@ -21,6 +21,7 @@ import {
   Sparkles,
   ScrollText
 } from "lucide-react";
+import { CharacterResetDialog } from "@/components/CharacterResetDialog";
 
 const StatDisplay = ({ 
   name, 
@@ -462,8 +463,7 @@ const Character = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
-};
+      
+      <div className="mt-6">
+       
 
-export default Character;

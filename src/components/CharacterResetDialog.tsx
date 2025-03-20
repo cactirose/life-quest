@@ -33,7 +33,7 @@ export function CharacterResetDialog() {
       <DialogTrigger asChild>
         <Button 
           variant="destructive" 
-          className="gap-2 pixel-button bg-rpg-red hover:bg-red-700 text-white border-rpg-brown"
+          className="gap-2 pixel-button bg-rpg-red hover:bg-red-700 text-white border-rpg-brown w-full mt-4"
         >
           <RefreshCcw size={16} />
           Reset Character

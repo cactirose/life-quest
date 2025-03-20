@@ -85,15 +85,15 @@ export function ThemeSettings() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" className="relative text-rpg-tan">
           <Palette className="h-5 w-5" />
           <span className="sr-only">Change theme</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] parchment border-rpg-brown">
         <DialogHeader>
-          <DialogTitle>Appearance</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-2xl font-pixel text-rpg-brown">Appearance</DialogTitle>
+          <DialogDescription className="text-rpg-brown">
             Customize the visual theme of your adventure
           </DialogDescription>
         </DialogHeader>

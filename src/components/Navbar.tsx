@@ -1,33 +1,80 @@
 
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useGameData } from "@/contexts/DataContext";
 import { 
-  MapPin, 
+  HomeIcon,
   UserCircle, 
   Scroll, 
-  GitBranch, 
-  ShoppingBag, 
-  Package,
+  Settings,
   LayoutDashboard,
-  Trophy,
-  Calendar,
-  HeartPulse
+  BarChart,
+  ChevronDown,
+  ChevronUp,
+  Palette
 } from "lucide-react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import { cn } from "@/lib/utils";
+import { ThemeSettings } from "./ThemeSettings";
 
 const Navbar = () => {
   const { character } = useGameData();
   const location = useLocation();
   
-  const navItems = [
-    { path: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={20} /> },
-    { path: "/quests", label: "Quests", icon: <Scroll size={20} /> },
-    { path: "/character", label: "Character", icon: <UserCircle size={20} /> },
-    { path: "/skills", label: "Skills", icon: <GitBranch size={20} /> },
-    { path: "/shop", label: "Shop", icon: <ShoppingBag size={20} /> },
-    { path: "/inventory", label: "Inventory", icon: <Package size={20} /> },
-    { path: "/challenges", label: "Challenges", icon: <Trophy size={20} /> },
-    { path: "/habits", label: "Habits", icon: <Calendar size={20} /> },
-    { path: "/mood", label: "Mood", icon: <HeartPulse size={20} /> }
+  const navStructure = [
+    {
+      label: "Home",
+      icon: <HomeIcon size={20} />,
+      path: "/dashboard",
+      subnav: [
+        { label: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={18} /> }
+      ]
+    },
+    {
+      label: "Quests",
+      icon: <Scroll size={20} />,
+      path: "/quests",
+      subnav: [
+        { label: "Quest Journal", path: "/quests", icon: <Scroll size={18} /> },
+        { label: "Skills", path: "/skills", icon: <BarChart size={18} /> },
+        { label: "Achievements", path: "/achievements", icon: <BarChart size={18} /> }
+      ]
+    },
+    {
+      label: "Character",
+      icon: <UserCircle size={20} />,
+      path: "/character",
+      subnav: [
+        { label: "Profile", path: "/character", icon: <UserCircle size={18} /> },
+        { label: "Inventory", path: "/inventory", icon: <BarChart size={18} /> }
+      ]
+    },
+    {
+      label: "Progress",
+      icon: <BarChart size={20} />,
+      path: "/habits",
+      subnav: [
+        { label: "Habits", path: "/habits", icon: <BarChart size={18} /> },
+        { label: "Mood", path: "/mood", icon: <BarChart size={18} /> }
+      ]
+    },
+    {
+      label: "System",
+      icon: <Settings size={20} />,
+      path: "/shop",
+      subnav: [
+        { label: "Shop", path: "/shop", icon: <BarChart size={18} /> },
+        { label: "Challenges", path: "/challenges", icon: <BarChart size={18} /> }
+      ]
+    }
   ];
 
   return (
@@ -36,7 +83,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <MapPin size={24} className="text-rpg-tan" />
+            <HomeIcon size={24} className="text-rpg-tan" />
             <h1 className="text-xl font-pixel text-rpg-tan">Life Quest</h1>
           </Link>
           
@@ -50,25 +97,47 @@ const Navbar = () => {
           </div>
           
           {/* Navigation */}
-          <nav className="font-pixel">
-            <ul className="flex space-x-1">
-              {navItems.map((item) => (
-                <li key={item.path}>
-                  <Link 
-                    to={item.path} 
-                    className={`flex items-center px-2 py-1 rounded transition-colors ${
-                      location.pathname === item.path 
-                        ? "bg-rpg-tan text-rpg-brown" 
-                        : "text-rpg-tan hover:bg-rpg-dark-wood"
-                    }`}
-                  >
-                    <span className="hidden md:block mr-1">{item.label}</span>
-                    <span className="block">{item.icon}</span>
-                  </Link>
-                </li>
+          <NavigationMenu className="font-pixel">
+            <NavigationMenuList>
+              {navStructure.map((item) => (
+                <NavigationMenuItem key={item.label}>
+                  <NavigationMenuTrigger className="text-rpg-tan hover:bg-rpg-dark-wood">
+                    <span className="flex items-center gap-1">
+                      {item.icon}
+                      <span className="hidden md:inline">{item.label}</span>
+                    </span>
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[220px] p-2 bg-rpg-parchment">
+                      {item.subnav.map((subItem) => (
+                        <li key={subItem.path}>
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to={subItem.path}
+                              className={cn(
+                                "block select-none space-y-1 rounded-md p-3 text-rpg-brown no-underline outline-none transition-colors hover:bg-rpg-tan/30",
+                                location.pathname === subItem.path && "bg-rpg-tan/40"
+                              )}
+                            >
+                              <div className="flex items-center gap-2">
+                                {subItem.icon}
+                                <span className="text-sm font-medium">{subItem.label}</span>
+                              </div>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
               ))}
-            </ul>
-          </nav>
+            </NavigationMenuList>
+          </NavigationMenu>
+          
+          {/* Theme Settings */}
+          <div className="flex items-center">
+            <ThemeSettings />
+          </div>
         </div>
       </div>
     </header>

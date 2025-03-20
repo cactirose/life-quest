@@ -14,6 +14,7 @@ export interface ThemeColors {
   parchment: string;     // Parchment background
   positive: string;      // Success/positive actions
   negative: string;      // Error/warning
+  purple: string;        // For boss quests
 }
 
 // Preset themes
@@ -26,7 +27,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     text: "#3A3124",         // Dark brown
     parchment: "#FFF8DC",    // Cornsilk
     positive: "#4CAF50",     // Green
-    negative: "#B22222"      // Firebrick
+    negative: "#B22222",     // Firebrick
+    purple: "#8B5CF6"        // Purple for boss quests
   },
   forest: {
     primary: "#8FBC8F",      // Dark sea green
@@ -36,7 +38,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     text: "#2F4F4F",         // Dark slate gray
     parchment: "#F0FFF0",    // Honeydew
     positive: "#32CD32",     // Lime green
-    negative: "#8B0000"      // Dark red
+    negative: "#8B0000",     // Dark red
+    purple: "#9C27B0"        // Purple for boss quests
   },
   ocean: {
     primary: "#87CEEB",      // Sky blue
@@ -46,7 +49,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     text: "#191970",         // Midnight blue
     parchment: "#F0FFFF",    // Azure
     positive: "#40E0D0",     // Turquoise
-    negative: "#FF4500"      // Orange red
+    negative: "#FF4500",     // Orange red
+    purple: "#673AB7"        // Purple for boss quests
   },
   sunset: {
     primary: "#FFA07A",      // Light salmon
@@ -56,7 +60,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     text: "#8B4513",         // Saddle brown
     parchment: "#FFEFD5",    // Papaya whip
     positive: "#32CD32",     // Lime green
-    negative: "#8B0000"      // Dark red
+    negative: "#8B0000",     // Dark red
+    purple: "#9C27B0"        // Purple for boss quests
   },
   royal: {
     primary: "#B39DDB",      // Light purple
@@ -66,7 +71,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     text: "#311B92",         // Deep purple
     parchment: "#FFF8E1",    // Light amber
     positive: "#4CAF50",     // Green
-    negative: "#D32F2F"      // Red
+    negative: "#D32F2F",     // Red
+    purple: "#6A1B9A"        // Purple for boss quests
   },
   custom: {
     primary: "#D2B48C",      // Default values that will be overridden
@@ -76,7 +82,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     text: "#3A3124",
     parchment: "#FFF8DC",
     positive: "#4CAF50",
-    negative: "#B22222"
+    negative: "#B22222",
+    purple: "#8B5CF6"        // Purple for boss quests
   }
 };
 
@@ -90,6 +97,7 @@ export function applyTheme(theme: ThemeColors): void {
   document.documentElement.style.setProperty('--rpg-parchment', theme.parchment);
   document.documentElement.style.setProperty('--rpg-accent', theme.accent);
   document.documentElement.style.setProperty('--rpg-text', theme.text);
+  document.documentElement.style.setProperty('--rpg-purple', theme.purple);
 }
 
 // Get current theme from localStorage or use default

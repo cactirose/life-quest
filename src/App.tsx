@@ -21,7 +21,6 @@ import Mood from "./pages/Mood";
 import Achievements from "./pages/Achievements";
 import { ThemeSettings } from "./components/ThemeSettings";
 import { initializeTheme } from "./utils/themeCustomization";
-import { CharacterResetDialog } from "./components/CharacterResetDialog";
 
 const queryClient = new QueryClient();
 
@@ -31,10 +30,6 @@ initializeTheme();
 // Layout component that includes the navbar
 const Layout = ({ children }: { children: ReactNode }) => (
   <div className="flex flex-col min-h-screen relative">
-    <div className="fixed top-3 right-3 z-50 flex items-center space-x-2">
-      <ThemeSettings />
-      <CharacterResetDialog />
-    </div>
     <Navbar />
     <main className="flex-grow px-4 pb-16 pt-20">
       {children}

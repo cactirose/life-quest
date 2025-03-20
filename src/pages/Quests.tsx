@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -25,7 +24,8 @@ import {
   Plus, 
   Coins, 
   ListChecks, 
-  MoreHorizontal 
+  MoreHorizontal,
+  Swords
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -54,7 +54,6 @@ const QuestForm = ({
   const [xpReward, setXpReward] = useState(initialData?.xpReward || 20);
   const [coinReward, setCoinReward] = useState(initialData?.coinReward || 10);
   
-  // Initialize stat rewards
   const initialStatRewards = {
     strength: initialData?.statRewards?.strength || 0,
     dexterity: initialData?.statRewards?.dexterity || 0,
@@ -145,6 +144,7 @@ const QuestForm = ({
           <SelectContent>
             <SelectItem value="main">Main Quest</SelectItem>
             <SelectItem value="side">Side Quest</SelectItem>
+            <SelectItem value="boss">Boss Battle</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -268,31 +268,35 @@ const QuestCard = ({
   onStepToggle: (questId: string, stepId: string) => void;
   onComplete: (questId: string) => void;
 }) => {
-  // Calculate progress
   const totalSteps = quest.steps.length;
   const completedSteps = quest.steps.filter(step => step.completed).length;
   const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
   const allStepsCompleted = totalSteps > 0 && completedSteps === totalSteps;
 
+  const getQuestTypeInfo = (type: QuestType) => {
+    switch(type) {
+      case "main":
+        return { icon: <Flag className="text-rpg-brown" size={18} />, bgColor: "bg-rpg-red", label: "Main" };
+      case "boss":
+        return { icon: <Swords className="text-rpg-brown" size={18} />, bgColor: "bg-rpg-purple", label: "Boss" };
+      default: // side quest
+        return { icon: <ListChecks className="text-rpg-brown" size={18} />, bgColor: "bg-rpg-green", label: "Side" };
+    }
+  };
+
+  const questTypeInfo = getQuestTypeInfo(quest.type);
+
   return (
     <div className={`quest-card ${quest.status === "completed" ? "opacity-75" : ""}`}>
       <div className="flex justify-between mb-3">
         <div className="flex items-center gap-2">
-          {quest.type === "main" ? (
-            <Flag className="text-rpg-brown" size={18} />
-          ) : (
-            <ListChecks className="text-rpg-brown" size={18} />
-          )}
+          {questTypeInfo.icon}
           <h3 className="font-pixel text-lg text-rpg-brown">{quest.title}</h3>
         </div>
         
         <div className="flex items-center">
-          <span className={`text-xs px-2 py-0.5 rounded-full ${
-            quest.type === "main" 
-              ? "bg-rpg-red text-white" 
-              : "bg-rpg-green text-white"
-          }`}>
-            {quest.type === "main" ? "Main" : "Side"}
+          <span className={`text-xs px-2 py-0.5 rounded-full ${questTypeInfo.bgColor} text-white`}>
+            {questTypeInfo.label}
           </span>
           
           {quest.status === "active" && (
@@ -436,7 +440,6 @@ const Quests = () => {
     if (!step.completed) {
       completeQuestStep(questId, stepId);
     } else {
-      // Toggle step back to incomplete
       const updatedSteps = quest.steps.map(s => 
         s.id === stepId ? { ...s, completed: false } : s
       );
@@ -476,7 +479,6 @@ const Quests = () => {
           </DialogContent>
         </Dialog>
         
-        {/* Edit Quest Dialog */}
         <Dialog 
           open={!!editingQuest} 
           onOpenChange={(open) => !open && setEditingQuest(null)}
