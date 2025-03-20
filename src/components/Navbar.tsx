@@ -1,5 +1,5 @@
 
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useGameData } from "@/contexts/DataContext";
 import { 
   HomeIcon, 
@@ -16,17 +16,40 @@ import {
   Backpack,
   ListChecks,
   Smile,
-  Flag
+  Flag,
+  LogOut
 } from "lucide-react";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { ThemeSettings } from "./ThemeSettings";
+import { logout } from "@/utils/auth";
+import { toast } from "@/components/ui/use-toast";
+import { Button } from "./ui/button";
 
 const Navbar = () => {
   const {
     character
   } = useGameData();
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Logout error",
+        description: "An error occurred while logging out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
   
   const navStructure = [
     {
@@ -157,6 +180,20 @@ const Navbar = () => {
                     <span className="hidden md:inline">Shop</span>
                   </span>
                 </Link>
+              </NavigationMenuItem>
+              
+              {/* Logout button */}
+              <NavigationMenuItem className="relative">
+                <Button 
+                  variant="ghost" 
+                  className="bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none px-4 py-2 h-10"
+                  onClick={handleLogout}
+                >
+                  <span className="flex items-center gap-1">
+                    <LogOut size={20} />
+                    <span className="hidden md:inline">Logout</span>
+                  </span>
+                </Button>
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
