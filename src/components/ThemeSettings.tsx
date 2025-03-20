@@ -68,6 +68,14 @@ export function ThemeSettings() {
           updatedTheme["nav-active-text"] = getContrastColor(updatedTheme["nav-active"]);
         }
       }
+      if (key === "accent") {
+        // Update accent-text for better contrast
+        updatedTheme["accent-text"] = getContrastColor(value);
+        
+        // Update hover colors based on accent
+        updatedTheme["hover"] = getDarkerShade(value, 20);
+        updatedTheme["hover-text"] = getContrastColor(updatedTheme["hover"]);
+      }
       if (key === "secondary") {
         // Update positive color to match the theme if it's the default brown
         if (prev.positive === THEME_PRESETS.default.positive) {
@@ -117,7 +125,7 @@ export function ThemeSettings() {
         }`}
         style={{
           backgroundColor: colors.primary,
-          borderColor: colors.secondary,
+          borderColor: colors.accent,
         }}
         onClick={() => handleThemeSelect(name as ThemeName)}
         aria-label={`Select ${name} theme`}
@@ -151,12 +159,12 @@ export function ThemeSettings() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="relative text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))]">
+        <Button variant="ghost" className="relative text-[var(--nav-text)] hover:bg-[var(--nav-hover)] hover:text-[var(--nav-hover-text)]">
           <Palette className="h-5 w-5" />
           <span className="sr-only">Change theme</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] parchment border-[var(--rpg-brown)]">
+      <DialogContent className="sm:max-w-[600px] parchment border-[var(--rpg-accent)]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-pixel text-[var(--rpg-text)]">Appearance</DialogTitle>
           <DialogDescription className="text-[var(--rpg-text)]">
@@ -166,8 +174,8 @@ export function ThemeSettings() {
 
         <Tabs defaultValue="presets" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="presets">Theme Presets</TabsTrigger>
-            <TabsTrigger value="custom">Custom Theme</TabsTrigger>
+            <TabsTrigger value="presets" className="themed-tab-trigger">Theme Presets</TabsTrigger>
+            <TabsTrigger value="custom" className="themed-tab-trigger">Custom Theme</TabsTrigger>
           </TabsList>
           
           <TabsContent value="presets" className="space-y-4 py-4">
@@ -182,11 +190,11 @@ export function ThemeSettings() {
           <TabsContent value="custom" className="space-y-4 py-4">
             {Object.entries(colorGroups).map(([groupName, colorKeys]) => (
               <div key={groupName}>
-                <h3 className="font-bold mb-2">{groupName}</h3>
+                <h3 className="font-bold mb-2 text-[var(--rpg-text)]">{groupName}</h3>
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   {colorKeys.map(key => (
                     <div key={key} className="space-y-2">
-                      <Label htmlFor={key} className="text-sm capitalize">
+                      <Label htmlFor={key} className="text-sm capitalize text-[var(--rpg-text)]">
                         {key.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/-/g, ' ')}
                       </Label>
                       <div className="flex items-center gap-2">
@@ -222,7 +230,7 @@ export function ThemeSettings() {
                 toast.success('Reset to default theme');
               }}
               variant="outline"
-              className="mt-4 hover:bg-[var(--rpg-brown)] hover:text-[var(--rpg-tan)]"
+              className="mt-4 hover:bg-[var(--rpg-hover)] hover:text-[var(--rpg-hover-text)]"
             >
               Reset to Default
             </Button>

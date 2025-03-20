@@ -20,6 +20,9 @@ export interface ThemeColors {
   "nav-active"?: string; // Navbar active state
   "nav-hover-text"?: string; // Text color for navbar hover state
   "nav-active-text"?: string; // Text color for navbar active state
+  "accent-text"?: string; // Text color for accent elements
+  "hover"?: string;      // General hover background color
+  "hover-text"?: string; // General hover text color
 }
 
 // Preset themes
@@ -35,16 +38,19 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     negative: "#B22222",     // Firebrick
     purple: "#8B5CF6",       // Purple for boss quests
     navbar: "#3f210e",       // Dark brown for navbar
-    "nav-hover": "#3A1F0E",  // Hover color
-    "nav-active": "#3A1F0E", // Active color
+    "nav-hover": "#2A1600",  // Hover color
+    "nav-active": "#2A1600", // Active color
     "nav-hover-text": "#FFF8DC", // White text on dark hover
-    "nav-active-text": "#FFF8DC"  // White text on dark active
+    "nav-active-text": "#FFF8DC", // White text on dark active
+    "accent-text": "#FFF8DC", // White text on accent color
+    "hover": "#2A1600",      // Hover background
+    "hover-text": "#FFF8DC"  // Hover text
   },
   forest: {
     primary: "#8FBC8F",      // Dark sea green
     secondary: "#2E8B57",    // Sea green
     background: "#F0FFF0",   // Honeydew
-    accent: "#556B2F",       // Dark olive green
+    accent: "#2E8B57",       // Sea green
     text: "#2F4F4F",         // Dark slate gray
     parchment: "#F0FFF0",    // Honeydew
     positive: "#2E8B57",     // Sea green
@@ -54,13 +60,16 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     "nav-hover": "#1A5D38",  // Darker green for hover
     "nav-active": "#1A5D38", // Active state
     "nav-hover-text": "#F0FFF0", // Light text on dark hover
-    "nav-active-text": "#F0FFF0"  // Light text on dark active
+    "nav-active-text": "#F0FFF0", // Light text on dark active
+    "accent-text": "#F0FFF0", // Light text on accent color
+    "hover": "#1A5D38",      // Hover background
+    "hover-text": "#F0FFF0"  // Hover text
   },
   ocean: {
     primary: "#87CEEB",      // Sky blue
     secondary: "#4682B4",    // Steel blue
     background: "#F0F8FF",   // Alice blue
-    accent: "#1E90FF",       // Dodger blue
+    accent: "#4682B4",       // Steel blue
     text: "#191970",         // Midnight blue
     parchment: "#F0FFFF",    // Azure
     positive: "#4682B4",     // Steel blue
@@ -70,13 +79,16 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     "nav-hover": "#2B5D8C",  // Darker blue for hover
     "nav-active": "#2B5D8C", // Active state
     "nav-hover-text": "#F0FFFF", // Light text on dark hover
-    "nav-active-text": "#F0FFFF"  // Light text on dark active
+    "nav-active-text": "#F0FFFF", // Light text on dark active
+    "accent-text": "#F0FFFF", // Light text on accent color
+    "hover": "#2B5D8C",      // Hover background
+    "hover-text": "#F0FFFF"  // Hover text
   },
   sunset: {
     primary: "#FFA07A",      // Light salmon
     secondary: "#CD5C5C",    // Indian red
     background: "#FFF0F5",   // Lavender blush
-    accent: "#FF6347",       // Tomato
+    accent: "#CD5C5C",       // Indian red
     text: "#8B4513",         // Saddle brown
     parchment: "#FFEFD5",    // Papaya whip
     positive: "#CD5C5C",     // Indian red
@@ -86,13 +98,16 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     "nav-hover": "#B13E3E",  // Darker red for hover
     "nav-active": "#B13E3E", // Active state
     "nav-hover-text": "#FFEFD5", // Light text on dark hover
-    "nav-active-text": "#FFEFD5"  // Light text on dark active
+    "nav-active-text": "#FFEFD5", // Light text on dark active
+    "accent-text": "#FFEFD5", // Light text on accent color
+    "hover": "#B13E3E",      // Hover background
+    "hover-text": "#FFEFD5"  // Hover text
   },
   royal: {
     primary: "#B39DDB",      // Light purple
     secondary: "#673AB7",    // Deep purple
     background: "#F3E5F5",   // Light lavender
-    accent: "#9C27B0",       // Purple
+    accent: "#673AB7",       // Deep purple
     text: "#311B92",         // Deep purple
     parchment: "#FFF8E1",    // Light amber
     positive: "#673AB7",     // Deep purple
@@ -102,7 +117,10 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     "nav-hover": "#4A2B82",  // Darker purple for hover
     "nav-active": "#4A2B82", // Active state
     "nav-hover-text": "#FFF8E1", // Light text on dark hover
-    "nav-active-text": "#FFF8E1"  // Light text on dark active
+    "nav-active-text": "#FFF8E1", // Light text on dark active
+    "accent-text": "#FFF8E1", // Light text on accent color
+    "hover": "#4A2B82",      // Hover background
+    "hover-text": "#FFF8E1"  // Hover text
   },
   custom: {
     primary: "#D2B48C",      // Default values that will be overridden
@@ -118,7 +136,10 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     "nav-hover": "#3A1F0E",
     "nav-active": "#3A1F0E",
     "nav-hover-text": "#FFF8DC",
-    "nav-active-text": "#FFF8DC"
+    "nav-active-text": "#FFF8DC",
+    "accent-text": "#FFF8DC",
+    "hover": "#3A1F0E",
+    "hover-text": "#FFF8DC"
   }
 };
 
@@ -131,6 +152,13 @@ export function applyTheme(theme: ThemeColors): void {
   // Set default values for hover/active text colors if not provided
   const navHoverText = theme["nav-hover-text"] || contrastColor(navHover);
   const navActiveText = theme["nav-active-text"] || contrastColor(navActive);
+  
+  // Set default values for accent-text if not provided
+  const accentText = theme["accent-text"] || contrastColor(theme.accent);
+  
+  // Set default values for hover and hover-text if not provided
+  const hover = theme["hover"] || shadeColor(theme.accent, -20);
+  const hoverText = theme["hover-text"] || contrastColor(hover);
 
   // Main RPG theme variables
   document.documentElement.style.setProperty('--rpg-tan', theme.primary);
@@ -140,10 +168,13 @@ export function applyTheme(theme: ThemeColors): void {
   document.documentElement.style.setProperty('--rpg-red', theme.negative);
   document.documentElement.style.setProperty('--rpg-parchment', theme.parchment);
   document.documentElement.style.setProperty('--rpg-accent', theme.accent);
+  document.documentElement.style.setProperty('--rpg-accent-text', accentText);
   document.documentElement.style.setProperty('--rpg-text', theme.text);
   document.documentElement.style.setProperty('--rpg-purple', theme.purple);
   document.documentElement.style.setProperty('--rpg-dark-wood', shadeColor(theme.secondary, -20));
   document.documentElement.style.setProperty('--rpg-light-green', lightenColor(theme.positive, 20));
+  document.documentElement.style.setProperty('--rpg-hover', hover);
+  document.documentElement.style.setProperty('--rpg-hover-text', hoverText);
   
   // Apply to Tailwind CSS variables as well
   document.documentElement.style.setProperty('--primary', convertToHSL(theme.primary));
@@ -151,7 +182,7 @@ export function applyTheme(theme: ThemeColors): void {
   document.documentElement.style.setProperty('--secondary', convertToHSL(theme.secondary));
   document.documentElement.style.setProperty('--secondary-foreground', convertToHSL(contrastColor(theme.secondary)));
   document.documentElement.style.setProperty('--accent', convertToHSL(theme.accent));
-  document.documentElement.style.setProperty('--accent-foreground', convertToHSL(contrastColor(theme.accent)));
+  document.documentElement.style.setProperty('--accent-foreground', convertToHSL(accentText));
   document.documentElement.style.setProperty('--background', convertToHSL(theme.background));
   document.documentElement.style.setProperty('--foreground', convertToHSL(theme.text));
   document.documentElement.style.setProperty('--muted', convertToHSL(lightenColor(theme.secondary, 40)));
@@ -184,7 +215,7 @@ export function applyTheme(theme: ThemeColors): void {
   document.documentElement.style.setProperty('--sidebar-primary', convertToHSL(theme.primary));
   document.documentElement.style.setProperty('--sidebar-primary-foreground', convertToHSL(theme.text));
   document.documentElement.style.setProperty('--sidebar-accent', convertToHSL(theme.accent));
-  document.documentElement.style.setProperty('--sidebar-accent-foreground', convertToHSL(contrastColor(theme.accent)));
+  document.documentElement.style.setProperty('--sidebar-accent-foreground', convertToHSL(accentText));
   document.documentElement.style.setProperty('--sidebar-border', convertToHSL(lightenColor(theme.secondary, 10)));
   document.documentElement.style.setProperty('--sidebar-ring', convertToHSL(theme.accent));
 }
@@ -294,6 +325,15 @@ export function saveTheme(theme: ThemeColors, themeName: ThemeName = 'custom'): 
   }
   if (!theme["nav-active-text"]) {
     theme["nav-active-text"] = contrastColor(theme["nav-active"]);
+  }
+  if (!theme["accent-text"]) {
+    theme["accent-text"] = contrastColor(theme.accent);
+  }
+  if (!theme["hover"]) {
+    theme["hover"] = shadeColor(theme.accent, -20);
+  }
+  if (!theme["hover-text"]) {
+    theme["hover-text"] = contrastColor(theme["hover"]);
   }
   
   localStorage.setItem('rpgProductivityTheme', JSON.stringify(theme));
