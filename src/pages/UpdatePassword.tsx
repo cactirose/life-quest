@@ -49,8 +49,11 @@ const UpdatePassword = () => {
       
       if (error) throw error;
       
+      // Get the current session after password update
+      const { data: sessionData } = await supabase.auth.getSession();
+      
       // Store session
-      storeSession(data.user ? data.session : null);
+      storeSession(sessionData.session);
       
       setIsSuccess(true);
       toast({
