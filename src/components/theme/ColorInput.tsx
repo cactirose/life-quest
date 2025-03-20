@@ -9,7 +9,29 @@ interface ColorInputProps {
 }
 
 export function ColorInput({ colorKey, value, onChange }: ColorInputProps) {
-  const displayName = colorKey.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/-/g, ' ');
+  // Format the colorKey from camelCase to a readable display name
+  const displayName = colorKey
+    .replace(/([A-Z])/g, ' $1')
+    .toLowerCase()
+    .replace(/-/g, ' ');
+  
+  // Ensure the value is a valid hex color
+  const safeValue = value && /^#[0-9A-F]{6}$/i.test(value) ? value : '#000000';
+  
+  // Handle input validation for hex code input
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let newValue = e.target.value;
+    
+    // If user entered a color without #, add it
+    if (newValue.length > 0 && !newValue.startsWith('#')) {
+      newValue = '#' + newValue;
+    }
+    
+    // Only update if it's a valid hex color or empty (which will be converted to #000000)
+    if (newValue === '' || /^#[0-9A-F]{0,6}$/i.test(newValue)) {
+      onChange(colorKey, newValue || '#000000');
+    }
+  };
   
   return (
     <div className="space-y-2">
@@ -20,17 +42,19 @@ export function ColorInput({ colorKey, value, onChange }: ColorInputProps) {
         <input
           type="color"
           id={colorKey}
-          value={value || '#000000'}
+          value={safeValue}
           onChange={(e) => onChange(colorKey, e.target.value)}
           className="w-8 h-8 p-0 border cursor-pointer"
-          aria-label={`Change ${colorKey} color`}
+          aria-label={`Change ${displayName} color`}
         />
         <input
           type="text"
-          value={value || '#000000'}
-          onChange={(e) => onChange(colorKey, e.target.value)}
+          value={safeValue}
+          onChange={handleTextChange}
           className="flex-1 px-2 py-1 text-sm border rounded"
-          aria-label={`${colorKey} color hex value`}
+          aria-label={`${displayName} color hex value`}
+          maxLength={7}
+          placeholder="#000000"
         />
       </div>
     </div>

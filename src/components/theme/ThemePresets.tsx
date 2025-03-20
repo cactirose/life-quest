@@ -1,5 +1,6 @@
 
 import { ThemeName, ThemeColors, THEME_PRESETS } from '@/utils/theme';
+import { Button } from "@/components/ui/button";
 
 interface ThemePresetsProps {
   activeTheme: ThemeName;
@@ -9,18 +10,24 @@ interface ThemePresetsProps {
 export function ThemePresets({ activeTheme, onSelectTheme }: ThemePresetsProps) {
   const presetButtons = Object.entries(THEME_PRESETS).map(([name, colors]) => {
     if (name === 'custom') return null;
+    
+    const isActive = activeTheme === name;
+    const themeName = name as ThemeName;
+    
     return (
-      <button
+      <Button
         key={name}
-        className={`p-4 rounded-md shadow-sm border-2 transition-all ${
-          activeTheme === name ? 'ring-2 ring-offset-2 ring-blue-500 scale-105' : 'opacity-80'
+        variant="ghost"
+        className={`p-4 rounded-md shadow-sm border-2 transition-all h-auto ${
+          isActive ? 'ring-2 ring-offset-2 ring-blue-500 scale-105' : 'opacity-80 hover:opacity-100 hover:scale-102'
         }`}
         style={{
           backgroundColor: colors.primary,
           borderColor: colors.secondary,
         }}
-        onClick={() => onSelectTheme(name as ThemeName)}
+        onClick={() => onSelectTheme(themeName)}
         aria-label={`Select ${name} theme`}
+        aria-pressed={isActive}
       >
         <div className="flex flex-col items-center">
           <div 
@@ -37,7 +44,7 @@ export function ThemePresets({ activeTheme, onSelectTheme }: ThemePresetsProps) 
             {name}
           </span>
         </div>
-      </button>
+      </Button>
     );
   });
 
