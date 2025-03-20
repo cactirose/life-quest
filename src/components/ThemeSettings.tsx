@@ -49,10 +49,29 @@ export function ThemeSettings() {
   const handleColorChange = (key: keyof ThemeColors, value: string) => {
     setCustomTheme((prev) => {
       const updatedTheme = { ...prev, [key]: value };
+      
+      // Auto-update hover/active text color for better contrast when changing bg colors
+      if (key === "nav-hover") {
+        updatedTheme["nav-hover-text"] = getContrastColor(value);
+      }
+      if (key === "nav-active") {
+        updatedTheme["nav-active-text"] = getContrastColor(value);
+      }
+      
       saveTheme(updatedTheme, 'custom');
       return updatedTheme;
     });
     setActiveTheme('custom');
+  };
+  
+  // Helper function to determine contrasting text color
+  const getContrastColor = (hex: string): string => {
+    hex = hex.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#3A1F0E' : '#FFF8DC';
   };
 
   const presetButtons = Object.entries(THEME_PRESETS).map(([name, colors]) => {
@@ -92,14 +111,14 @@ export function ThemeSettings() {
   // Group color settings for better organization
   const colorGroups = {
     "Main Colors": ["primary", "secondary", "background", "accent", "text"],
-    "Navigation": ["navbar", "nav-hover", "nav-active"],
+    "Navigation": ["navbar", "nav-hover", "nav-hover-text", "nav-active", "nav-active-text"],
     "Content": ["parchment", "positive", "negative", "purple"]
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="relative text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))]">
+        <Button variant="ghost" className="relative text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))]">
           <Palette className="h-5 w-5" />
           <span className="sr-only">Change theme</span>
         </Button>

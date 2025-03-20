@@ -18,6 +18,8 @@ export interface ThemeColors {
   navbar: string;        // Specific color for navbar
   "nav-hover"?: string;  // Navbar hover state
   "nav-active"?: string; // Navbar active state
+  "nav-hover-text"?: string; // Text color for navbar hover state
+  "nav-active-text"?: string; // Text color for navbar active state
 }
 
 // Preset themes
@@ -34,7 +36,9 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     purple: "#8B5CF6",       // Purple for boss quests
     navbar: "#3f210e",       // Dark brown for navbar
     "nav-hover": "#3A1F0E",  // Hover color
-    "nav-active": "#3A1F0E"  // Active color
+    "nav-active": "#3A1F0E", // Active color
+    "nav-hover-text": "#FFF8DC", // White text on dark hover
+    "nav-active-text": "#FFF8DC"  // White text on dark active
   },
   forest: {
     primary: "#8FBC8F",      // Dark sea green
@@ -48,7 +52,9 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     purple: "#9C27B0",       // Purple for boss quests
     navbar: "#2E8B57",       // Navbar green
     "nav-hover": "#1A5D38",  // Darker green for hover
-    "nav-active": "#1A5D38"  // Active state
+    "nav-active": "#1A5D38", // Active state
+    "nav-hover-text": "#F0FFF0", // Light text on dark hover
+    "nav-active-text": "#F0FFF0"  // Light text on dark active
   },
   ocean: {
     primary: "#87CEEB",      // Sky blue
@@ -62,7 +68,9 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     purple: "#673AB7",       // Purple for boss quests
     navbar: "#4682B4",       // Navbar blue
     "nav-hover": "#2B5D8C",  // Darker blue for hover
-    "nav-active": "#2B5D8C"  // Active state
+    "nav-active": "#2B5D8C", // Active state
+    "nav-hover-text": "#F0FFFF", // Light text on dark hover
+    "nav-active-text": "#F0FFFF"  // Light text on dark active
   },
   sunset: {
     primary: "#FFA07A",      // Light salmon
@@ -76,7 +84,9 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     purple: "#9C27B0",       // Purple for boss quests
     navbar: "#CD5C5C",       // Navbar red
     "nav-hover": "#B13E3E",  // Darker red for hover
-    "nav-active": "#B13E3E"  // Active state
+    "nav-active": "#B13E3E", // Active state
+    "nav-hover-text": "#FFEFD5", // Light text on dark hover
+    "nav-active-text": "#FFEFD5"  // Light text on dark active
   },
   royal: {
     primary: "#B39DDB",      // Light purple
@@ -90,7 +100,9 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     purple: "#6A1B9A",       // Purple for boss quests
     navbar: "#673AB7",       // Navbar purple
     "nav-hover": "#4A2B82",  // Darker purple for hover
-    "nav-active": "#4A2B82"  // Active state
+    "nav-active": "#4A2B82", // Active state
+    "nav-hover-text": "#FFF8E1", // Light text on dark hover
+    "nav-active-text": "#FFF8E1"  // Light text on dark active
   },
   custom: {
     primary: "#D2B48C",      // Default values that will be overridden
@@ -104,7 +116,9 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     purple: "#8B5CF6",
     navbar: "#8B4513",
     "nav-hover": "#3A1F0E",
-    "nav-active": "#3A1F0E"
+    "nav-active": "#3A1F0E",
+    "nav-hover-text": "#FFF8DC",
+    "nav-active-text": "#FFF8DC"
   }
 };
 
@@ -113,6 +127,10 @@ export function applyTheme(theme: ThemeColors): void {
   // Set default values for nav-hover and nav-active if not provided
   const navHover = theme["nav-hover"] || shadeColor(theme.navbar, -20);
   const navActive = theme["nav-active"] || shadeColor(theme.navbar, -30);
+  
+  // Set default values for hover/active text colors if not provided
+  const navHoverText = theme["nav-hover-text"] || contrastColor(navHover);
+  const navActiveText = theme["nav-active-text"] || contrastColor(navActive);
 
   // Main RPG theme variables
   document.documentElement.style.setProperty('--rpg-tan', theme.primary);
@@ -142,11 +160,13 @@ export function applyTheme(theme: ThemeColors): void {
   document.documentElement.style.setProperty('--destructive', convertToHSL(theme.negative));
   document.documentElement.style.setProperty('--destructive-foreground', convertToHSL(contrastColor(theme.negative)));
   
-  // Navigation menu specific variables
+  // Navigation menu specific variables with improved contrast text colors
   document.documentElement.style.setProperty('--nav-bg', convertToHSL(theme.navbar));
   document.documentElement.style.setProperty('--nav-text', convertToHSL(contrastColor(theme.navbar)));
   document.documentElement.style.setProperty('--nav-hover', convertToHSL(navHover));
+  document.documentElement.style.setProperty('--nav-hover-text', convertToHSL(navHoverText));
   document.documentElement.style.setProperty('--nav-active', convertToHSL(navActive));
+  document.documentElement.style.setProperty('--nav-active-text', convertToHSL(navActiveText));
   
   // Card related variables
   document.documentElement.style.setProperty('--card', convertToHSL(lightenColor(theme.primary, 10)));
@@ -262,12 +282,18 @@ export function getCurrentTheme(): ThemeColors {
 
 // Save theme to localStorage
 export function saveTheme(theme: ThemeColors, themeName: ThemeName = 'custom'): void {
-  // Ensure nav-hover and nav-active are set
+  // Ensure all required properties are set
   if (!theme["nav-hover"]) {
     theme["nav-hover"] = shadeColor(theme.navbar, -20);
   }
   if (!theme["nav-active"]) {
     theme["nav-active"] = shadeColor(theme.navbar, -30);
+  }
+  if (!theme["nav-hover-text"]) {
+    theme["nav-hover-text"] = contrastColor(theme["nav-hover"]);
+  }
+  if (!theme["nav-active-text"]) {
+    theme["nav-active-text"] = contrastColor(theme["nav-active"]);
   }
   
   localStorage.setItem('rpgProductivityTheme', JSON.stringify(theme));

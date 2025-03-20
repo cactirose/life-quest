@@ -49,7 +49,9 @@
     --nav-bg: 36 60% 30%;
     --nav-text: 38 92% 95%;
     --nav-hover: 20 64% 15%;
+    --nav-hover-text: 38 92% 95%;
     --nav-active: 20 64% 20%;
+    --nav-active-text: 38 92% 95%;
     
     /* RPG Theme Custom Variables */
     --rpg-tan: #D2B48C;
@@ -108,7 +110,9 @@
     --nav-bg: 36 60% 20%;
     --nav-text: 38 92% 95%;
     --nav-hover: 20 64% 15%;
+    --nav-hover-text: 38 92% 95%;
     --nav-active: 20 64% 20%;
+    --nav-active-text: 38 92% 95%;
   }
 }
 

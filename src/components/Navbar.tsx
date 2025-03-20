@@ -78,7 +78,6 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            
             <h1 className="text-xl font-pixel text-[hsl(var(--nav-text))]">Life Quest</h1>
           </Link>
           
@@ -96,7 +95,9 @@ const Navbar = () => {
             <NavigationMenuList>
               {/* Home page */}
               <NavigationMenuItem className="relative">
-                <Link to="/dashboard" className={cn(navigationMenuTriggerStyle(), "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-text))] border-none", location.pathname === "/dashboard" && "bg-[hsl(var(--nav-active))]")}>
+                <Link to="/dashboard" className={cn(navigationMenuTriggerStyle(), 
+                  "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))] border-none", 
+                  location.pathname === "/dashboard" && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
                   <span className="flex items-center gap-1">
                     <HomeIcon size={20} />
                     <span className="hidden md:inline">Home</span>
@@ -106,7 +107,9 @@ const Navbar = () => {
               
               {/* Quests standalone page */}
               <NavigationMenuItem className="relative">
-                <Link to="/quests" className={cn(navigationMenuTriggerStyle(), "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-text))] border-none", location.pathname === "/quests" && "bg-[hsl(var(--nav-active))]")}>
+                <Link to="/quests" className={cn(navigationMenuTriggerStyle(), 
+                  "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))] border-none", 
+                  location.pathname === "/quests" && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
                   <span className="flex items-center gap-1">
                     <Scroll size={20} />
                     <span className="hidden md:inline">Quests</span>
@@ -116,7 +119,9 @@ const Navbar = () => {
               
               {/* Dropdown menus */}
               {navStructure.map(item => <NavigationMenuItem key={item.label} className="relative">
-                  <NavigationMenuTrigger className={cn("bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-text))] border-none", location.pathname.startsWith(item.path) && "bg-[hsl(var(--nav-active))]")}>
+                  <NavigationMenuTrigger className={cn(
+                    "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))] border-none", 
+                    location.pathname.startsWith(item.path) && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
                     <span className="flex items-center gap-1">
                       {item.icon}
                       <span className="hidden md:inline">{item.label}</span>
@@ -126,7 +131,9 @@ const Navbar = () => {
                     <ul className="grid w-full p-2 gap-1">
                       {item.subnav.map(subItem => <li key={subItem.path}>
                           <NavigationMenuLink asChild>
-                            <Link to={subItem.path} className={cn("block select-none space-y-1 rounded-md p-3 text-[hsl(var(--nav-text))] no-underline outline-none transition-colors hover:bg-[hsl(var(--nav-hover))]", location.pathname === subItem.path && "bg-[hsl(var(--nav-active))]")}>
+                            <Link to={subItem.path} className={cn(
+                              "block select-none space-y-1 rounded-md p-3 text-[hsl(var(--nav-text))] no-underline outline-none transition-colors hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))]", 
+                              location.pathname === subItem.path && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
                               <div className="flex items-center gap-2">
                                 {subItem.icon}
                                 <span className="text-sm font-medium">{subItem.label}</span>
@@ -140,7 +147,9 @@ const Navbar = () => {
               
               {/* Shop standalone page */}
               <NavigationMenuItem className="relative">
-                <Link to="/shop" className={cn(navigationMenuTriggerStyle(), "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-text))] border-none", location.pathname === "/shop" && "bg-[hsl(var(--nav-active))]")}>
+                <Link to="/shop" className={cn(navigationMenuTriggerStyle(), 
+                  "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))] border-none", 
+                  location.pathname === "/shop" && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
                   <span className="flex items-center gap-1">
                     <ShoppingCart size={20} />
                     <span className="hidden md:inline">Shop</span>
