@@ -119,7 +119,7 @@ const Navbar = () => {
               
               {/* Dropdown menus */}
               {navStructure.map((item) => (
-                <NavigationMenuItem key={item.label} className="relative">
+                <NavigationMenuItem key={item.label}>
                   <NavigationMenuTrigger 
                     className="text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] bg-[hsl(var(--nav-bg))] border-none"
                   >

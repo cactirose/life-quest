@@ -1,4 +1,3 @@
-
 import { StatName } from "../types/character";
 
 // Define available themes
@@ -30,7 +29,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     positive: "#4CAF50",     // Green
     negative: "#B22222",     // Firebrick
     purple: "#8B5CF6",       // Purple for boss quests
-    navbar: "#8B4513"        // Navbar brown (same as secondary by default)
+    navbar: "#3f210e"        // Updated navbar color for default theme
   },
   forest: {
     primary: "#8FBC8F",      // Dark sea green
