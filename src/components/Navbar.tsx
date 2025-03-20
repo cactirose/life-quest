@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useGameData } from "@/contexts/DataContext";
 import { 
@@ -7,11 +6,13 @@ import {
   UserCircle, 
   Scroll, 
   Settings,
-  LayoutDashboard,
   BarChart,
   ChevronDown,
   ChevronUp,
-  Palette
+  Palette,
+  Milestone,
+  ShoppingCart,
+  MapPin
 } from "lucide-react";
 import {
   NavigationMenu,
@@ -31,19 +32,10 @@ const Navbar = () => {
   
   const navStructure = [
     {
-      label: "Home",
-      icon: <HomeIcon size={20} />,
-      path: "/dashboard",
+      label: "Milestones",
+      icon: <Milestone size={20} />,
+      path: "/skills",
       subnav: [
-        { label: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={18} /> }
-      ]
-    },
-    {
-      label: "Quests",
-      icon: <Scroll size={20} />,
-      path: "/quests",
-      subnav: [
-        { label: "Quest Journal", path: "/quests", icon: <Scroll size={18} /> },
         { label: "Skills", path: "/skills", icon: <BarChart size={18} /> },
         { label: "Achievements", path: "/achievements", icon: <BarChart size={18} /> }
       ]
@@ -58,20 +50,12 @@ const Navbar = () => {
       ]
     },
     {
-      label: "Progress",
-      icon: <BarChart size={20} />,
+      label: "Journey",
+      icon: <MapPin size={20} />,
       path: "/habits",
       subnav: [
         { label: "Habits", path: "/habits", icon: <BarChart size={18} /> },
-        { label: "Mood", path: "/mood", icon: <BarChart size={18} /> }
-      ]
-    },
-    {
-      label: "System",
-      icon: <Settings size={20} />,
-      path: "/shop",
-      subnav: [
-        { label: "Shop", path: "/shop", icon: <BarChart size={18} /> },
+        { label: "Mood", path: "/mood", icon: <BarChart size={18} /> },
         { label: "Challenges", path: "/challenges", icon: <BarChart size={18} /> }
       ]
     }
@@ -99,6 +83,40 @@ const Navbar = () => {
           {/* Navigation */}
           <NavigationMenu className="font-pixel">
             <NavigationMenuList>
+              {/* Standalone pages */}
+              <NavigationMenuItem>
+                <Link 
+                  to="/dashboard" 
+                  className={cn(
+                    navigationMenuTriggerStyle(),
+                    "text-rpg-tan hover:bg-rpg-dark-wood bg-rpg-brown border-none",
+                    location.pathname === "/dashboard" && "bg-rpg-dark-wood"
+                  )}
+                >
+                  <span className="flex items-center gap-1">
+                    <HomeIcon size={20} />
+                    <span className="hidden md:inline">Home</span>
+                  </span>
+                </Link>
+              </NavigationMenuItem>
+              
+              <NavigationMenuItem>
+                <Link
+                  to="/quests"
+                  className={cn(
+                    navigationMenuTriggerStyle(),
+                    "text-rpg-tan hover:bg-rpg-dark-wood bg-rpg-brown border-none",
+                    location.pathname === "/quests" && "bg-rpg-dark-wood"
+                  )}
+                >
+                  <span className="flex items-center gap-1">
+                    <Scroll size={20} />
+                    <span className="hidden md:inline">Quests</span>
+                  </span>
+                </Link>
+              </NavigationMenuItem>
+              
+              {/* Dropdown menus */}
               {navStructure.map((item) => (
                 <NavigationMenuItem key={item.label}>
                   <NavigationMenuTrigger className="text-rpg-tan hover:bg-rpg-dark-wood bg-rpg-brown border-none">
@@ -131,6 +149,23 @@ const Navbar = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
               ))}
+              
+              {/* Shop standalone page */}
+              <NavigationMenuItem>
+                <Link 
+                  to="/shop" 
+                  className={cn(
+                    navigationMenuTriggerStyle(),
+                    "text-rpg-tan hover:bg-rpg-dark-wood bg-rpg-brown border-none",
+                    location.pathname === "/shop" && "bg-rpg-dark-wood"
+                  )}
+                >
+                  <span className="flex items-center gap-1">
+                    <ShoppingCart size={20} />
+                    <span className="hidden md:inline">Shop</span>
+                  </span>
+                </Link>
+              </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
           
