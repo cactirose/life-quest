@@ -129,7 +129,7 @@ const Navbar = () => {
                     </span>
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[220px] p-2 bg-[hsl(var(--nav-bg))] border border-[hsl(var(--nav-hover))]">
+                    <ul className="grid w-[220px] p-2 gap-1">
                       {item.subnav.map((subItem) => (
                         <li key={subItem.path}>
                           <NavigationMenuLink asChild>
