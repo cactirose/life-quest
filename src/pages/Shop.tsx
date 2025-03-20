@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useGameData, GearItem, GearRarity, GearType } from "@/contexts/DataContext";
@@ -36,7 +35,6 @@ import {
 } from "@/components/ui/dialog";
 import { ShopItemEditor } from "@/components/ShopItemEditor";
 
-// Item card component
 const ItemCard = ({
   item,
   onPurchase,
@@ -52,14 +50,12 @@ const ItemCard = ({
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   
-  // Determine border class based on rarity
   const rarityBorderClass = 
     item.rarity === "common" ? "rarity-common" :
     item.rarity === "rare" ? "rarity-rare" :
     item.rarity === "epic" ? "rarity-epic" :
     "rarity-legendary";
     
-  // Item icon based on type
   const itemIcon = 
     item.type === "weapon" ? <Sword className="text-rpg-brown" size={16} /> :
     item.type === "armor" ? <Shield className="text-rpg-brown" size={16} /> :
@@ -144,7 +140,6 @@ const ItemCard = ({
         )}
       </div>
       
-      {/* Item Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="parchment border-none">
           <DialogHeader>
@@ -224,7 +219,8 @@ const ItemCard = ({
 };
 
 const Shop = () => {
-  const { shopItems, character, purchaseItem, setGameData } = useGameData();
+  const gameData = useGameData();
+  const { shopItems, character, purchaseItem } = gameData;
   const [searchText, setSearchText] = useState("");
   const [filterType, setFilterType] = useState<GearType | "all">("all");
   const [filterRarity, setFilterRarity] = useState<GearRarity | "all">("all");
@@ -232,20 +228,15 @@ const Shop = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [editingItem, setEditingItem] = useState<GearItem | undefined>(undefined);
   
-  // Filter items based on search and filters
   const filteredItems = shopItems.filter(item => {
-    // First, check against search text
     const matchesSearch = 
       item.name.toLowerCase().includes(searchText.toLowerCase()) ||
       item.description.toLowerCase().includes(searchText.toLowerCase());
     
-    // Then, check against type filter
     const matchesType = filterType === "all" || item.type === filterType;
     
-    // Then, check against rarity filter
     const matchesRarity = filterRarity === "all" || item.rarity === filterRarity;
     
-    // Finally, check against tab filter
     const matchesTab = 
       currentTab === "all" || 
       (currentTab === "available" && character.level >= item.levelRequired) ||
@@ -257,7 +248,6 @@ const Shop = () => {
     return matchesSearch && matchesType && matchesRarity && matchesTab;
   });
   
-  // Handle purchase
   const handlePurchase = (itemId: string) => {
     const success = purchaseItem(itemId);
     
@@ -278,40 +268,33 @@ const Shop = () => {
     }
   };
   
-  // Save a new or edited item
   const handleSaveItem = (item: GearItem) => {
-    setGameData(prevData => {
-      // Check if it's an edit (item already exists)
-      const existingItemIndex = prevData.shopItems.findIndex(i => i.id === item.id);
+    const existingItemIndex = shopItems.findIndex(i => i.id === item.id);
+    
+    if (existingItemIndex >= 0) {
+      const updatedItems = [...shopItems];
+      updatedItems[existingItemIndex] = item;
+      const updatedShopItems = updatedItems;
       
-      if (existingItemIndex >= 0) {
-        // Update existing item
-        const updatedItems = [...prevData.shopItems];
-        updatedItems[existingItemIndex] = item;
-        return { ...prevData, shopItems: updatedItems };
-      } else {
-        // Add new item
-        return { ...prevData, shopItems: [...prevData.shopItems, item] };
-      }
-    });
+      const { addShopItem, updateShopItem } = gameData;
+      updateShopItem(item);
+    } else {
+      const { addShopItem } = gameData;
+      addShopItem(item);
+    }
     
     setEditingItem(undefined);
   };
   
-  // Delete an item
   const handleDeleteItem = (itemId: string) => {
-    setGameData(prevData => ({
-      ...prevData,
-      shopItems: prevData.shopItems.filter(item => item.id !== itemId)
-    }));
+    const { deleteShopItem } = gameData;
+    deleteShopItem(itemId);
     
     setEditingItem(undefined);
   };
   
-  // Check if player can afford an item
   const canAfford = (item: GearItem) => character.coins >= item.cost;
   
-  // Check if player meets level requirement
   const meetsLevelRequirement = (item: GearItem) => character.level >= item.levelRequired;
   
   return (
@@ -414,7 +397,6 @@ const Shop = () => {
         </div>
       )}
       
-      {/* Shop Item Editor Dialog for editing */}
       {editingItem && (
         <ShopItemEditor
           item={editingItem}

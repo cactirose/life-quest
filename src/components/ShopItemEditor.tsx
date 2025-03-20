@@ -40,7 +40,7 @@ export function ShopItemEditor({ item, onSave, onDelete, trigger }: ShopItemEdit
   const [cost, setCost] = useState(item?.cost || 50);
   const [levelRequired, setLevelRequired] = useState(item?.levelRequired || 1);
   const [statBonuses, setStatBonuses] = useState<Record<StatName, number>>(
-    item?.statBonuses || { ...DEFAULT_STATS }
+    item?.statBonuses ? { ...DEFAULT_STATS, ...item.statBonuses } : { ...DEFAULT_STATS }
   );
 
   const handleStatChange = (stat: StatName, value: number) => {

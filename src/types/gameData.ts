@@ -39,6 +39,9 @@ export interface GameData {
   
   // Shop methods
   purchaseItem: (itemId: string) => boolean;
+  addShopItem: (item: Omit<GearItem, "id">) => void;
+  updateShopItem: (item: GearItem) => void;
+  deleteShopItem: (itemId: string) => void;
   
   // Skill tree methods
   addSkillNode: (node: Omit<SkillNode, "id">) => string;
@@ -75,4 +78,7 @@ export interface GameData {
   // Daily login methods
   checkDailyLogin: () => void;
   claimDailyBonus: () => void;
+  
+  // Data access method
+  setGameData?: React.Dispatch<React.SetStateAction<any>>;
 }
