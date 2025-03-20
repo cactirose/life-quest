@@ -8,13 +8,22 @@ import { toast } from "@/components/ui/use-toast";
 const LogoutButton = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Logout error",
+        description: "An error occurred while logging out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

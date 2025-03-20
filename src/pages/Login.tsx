@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, KeyRound, Mail, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { useGameData } from "@/contexts/DataContext";
+import { supabase } from "@/integrations/supabase/client";
+import { storeSession } from "@/utils/auth";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,22 +18,38 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate("/dashboard");
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // For now we'll simulate a login with a timeout
-      // This would be replaced with actual authentication logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       // Simple validation
       if (!email || !password) {
         throw new Error("Please fill in all fields");
       }
       
-      // Simulate a successful login
-      localStorage.setItem("isAuthenticated", "true");
+      // Sign in with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) throw error;
+      
+      // Store session for sync auth checks
+      storeSession(data.session);
       
       // Refresh game data
       if (setGameData) {

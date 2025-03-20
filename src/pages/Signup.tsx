@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, KeyRound, Mail, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { useGameData } from "@/contexts/DataContext";
+import { supabase } from "@/integrations/supabase/client";
+import { storeSession } from "@/utils/auth";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -17,15 +19,23 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate("/dashboard");
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // For now we'll simulate a signup with a timeout
-      // This would be replaced with actual authentication logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       // Simple validation
       if (!username || !email || !password) {
         throw new Error("Please fill in all fields");
@@ -35,8 +45,21 @@ const Signup = () => {
         throw new Error("Password must be at least 6 characters long");
       }
       
-      // Simulate a successful signup
-      localStorage.setItem("isAuthenticated", "true");
+      // Sign up with Supabase
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: username,
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      // Store session for sync auth checks
+      storeSession(data.session);
       
       // Update character name with username
       if (setGameData) {
