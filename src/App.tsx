@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +21,7 @@ import Mood from "./pages/Mood";
 import Achievements from "./pages/Achievements";
 import { ThemeSettings } from "./components/ThemeSettings";
 import { initializeTheme } from "./utils/theme";
+import { useIsMobile } from "./hooks/use-mobile";
 
 const queryClient = new QueryClient();
 
@@ -27,14 +29,18 @@ const queryClient = new QueryClient();
 initializeTheme();
 
 // Layout component that includes the navbar
-const Layout = ({ children }: { children: ReactNode }) => (
-  <div className="flex flex-col min-h-screen relative">
-    <Navbar />
-    <main className="flex-grow px-4 pb-16 pt-20">
-      {children}
-    </main>
-  </div>
-);
+const Layout = ({ children }: { children: ReactNode }) => {
+  const isMobile = useIsMobile();
+  
+  return (
+    <div className="flex flex-col min-h-screen relative">
+      <Navbar />
+      <main className={`flex-grow px-${isMobile ? '2' : '4'} pb-16 pt-${isMobile ? '16' : '20'}`}>
+        {children}
+      </main>
+    </div>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

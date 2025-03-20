@@ -1,6 +1,7 @@
 
 import { ThemeName, ThemeColors, THEME_PRESETS } from '@/utils/theme';
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ThemePresetsProps {
   activeTheme: ThemeName;
@@ -8,6 +9,8 @@ interface ThemePresetsProps {
 }
 
 export function ThemePresets({ activeTheme, onSelectTheme }: ThemePresetsProps) {
+  const isMobile = useIsMobile();
+  
   const presetButtons = Object.entries(THEME_PRESETS).map(([name, colors]) => {
     if (name === 'custom') return null;
     
@@ -18,7 +21,7 @@ export function ThemePresets({ activeTheme, onSelectTheme }: ThemePresetsProps) 
       <Button
         key={name}
         variant="ghost"
-        className={`p-4 rounded-md shadow-sm border-2 transition-all h-auto ${
+        className={`p-3 sm:p-4 rounded-md shadow-sm border-2 transition-all h-auto ${
           isActive ? 'ring-2 ring-offset-2 ring-blue-500 scale-105' : 'opacity-80 hover:opacity-100 hover:scale-102'
         }`}
         style={{
@@ -31,11 +34,11 @@ export function ThemePresets({ activeTheme, onSelectTheme }: ThemePresetsProps) 
       >
         <div className="flex flex-col items-center">
           <div 
-            className="w-full h-4 rounded-sm mb-2" 
+            className="w-full h-3 sm:h-4 rounded-sm mb-1 sm:mb-2" 
             style={{ backgroundColor: colors.accent }}
           ></div>
           <span
-            className="text-xs font-bold capitalize"
+            className="text-[10px] sm:text-xs font-bold capitalize"
             style={{ 
               color: colors.text,
               textShadow: '0px 0px 1px rgba(255, 255, 255, 0.5)'  
@@ -50,10 +53,10 @@ export function ThemePresets({ activeTheme, onSelectTheme }: ThemePresetsProps) 
 
   return (
     <div className="space-y-4 py-4">
-      <div className="grid grid-cols-3 gap-4">
+      <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-3'} gap-2 sm:gap-4`}>
         {presetButtons}
       </div>
-      <p className="text-sm text-rpg-brown mt-4">
+      <p className="text-xs sm:text-sm text-rpg-brown mt-4">
         Select a preset theme to instantly change the appearance of the entire application.
       </p>
     </div>

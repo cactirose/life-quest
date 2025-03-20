@@ -34,24 +34,24 @@ export function ColorInput({ colorKey, value, onChange }: ColorInputProps) {
   };
   
   return (
-    <div className="space-y-2">
-      <Label htmlFor={colorKey} className="text-sm capitalize">
+    <div className="space-y-1 sm:space-y-2">
+      <Label htmlFor={colorKey} className="text-xs sm:text-sm capitalize">
         {displayName}
       </Label>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         <input
           type="color"
           id={colorKey}
           value={safeValue}
           onChange={(e) => onChange(colorKey, e.target.value)}
-          className="w-8 h-8 p-0 border cursor-pointer"
+          className="w-6 h-6 sm:w-8 sm:h-8 p-0 border cursor-pointer"
           aria-label={`Change ${displayName} color`}
         />
         <input
           type="text"
           value={safeValue}
           onChange={handleTextChange}
-          className="flex-1 px-2 py-1 text-sm border rounded"
+          className="flex-1 px-1 sm:px-2 py-1 text-xs sm:text-sm border rounded"
           aria-label={`${displayName} color hex value`}
           maxLength={7}
           placeholder="#000000"
