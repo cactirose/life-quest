@@ -89,7 +89,7 @@ const Navbar = () => {
                   to="/dashboard" 
                   className={cn(
                     navigationMenuTriggerStyle(),
-                    "text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] bg-[hsl(var(--nav-bg))] border-none",
+                    "text-[hsl(var(--nav-text))] hover:bg-[#3a1f0e] bg-[hsl(var(--nav-bg))] border-none",
                     location.pathname === "/dashboard" && "bg-[hsl(var(--nav-active))]"
                   )}
                 >
@@ -106,7 +106,7 @@ const Navbar = () => {
                   to="/quests"
                   className={cn(
                     navigationMenuTriggerStyle(),
-                    "text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] bg-[hsl(var(--nav-bg))] border-none",
+                    "text-[hsl(var(--nav-text))] hover:bg-[#3a1f0e] bg-[hsl(var(--nav-bg))] border-none",
                     location.pathname === "/quests" && "bg-[hsl(var(--nav-active))]"
                   )}
                 >
@@ -119,9 +119,12 @@ const Navbar = () => {
               
               {/* Dropdown menus */}
               {navStructure.map((item) => (
-                <NavigationMenuItem key={item.label}>
+                <NavigationMenuItem key={item.label} className="relative">
                   <NavigationMenuTrigger 
-                    className="text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] bg-[hsl(var(--nav-bg))] border-none"
+                    className={cn(
+                      "text-[hsl(var(--nav-text))] hover:bg-[#3a1f0e] bg-[hsl(var(--nav-bg))] border-none",
+                      location.pathname.startsWith(item.path) && "bg-[hsl(var(--nav-active))]"
+                    )}
                   >
                     <span className="flex items-center gap-1">
                       {item.icon}
@@ -136,7 +139,7 @@ const Navbar = () => {
                             <Link
                               to={subItem.path}
                               className={cn(
-                                "block select-none space-y-1 rounded-md p-3 text-[hsl(var(--nav-text))] no-underline outline-none transition-colors hover:bg-[hsl(var(--nav-hover))]",
+                                "block select-none space-y-1 rounded-md p-3 text-[hsl(var(--nav-text))] no-underline outline-none transition-colors hover:bg-[#3a1f0e]",
                                 location.pathname === subItem.path && "bg-[hsl(var(--nav-active))]"
                               )}
                             >
@@ -159,7 +162,7 @@ const Navbar = () => {
                   to="/shop" 
                   className={cn(
                     navigationMenuTriggerStyle(),
-                    "text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] bg-[hsl(var(--nav-bg))] border-none",
+                    "text-[hsl(var(--nav-text))] hover:bg-[#3a1f0e] bg-[hsl(var(--nav-bg))] border-none",
                     location.pathname === "/shop" && "bg-[hsl(var(--nav-active))]"
                   )}
                 >
