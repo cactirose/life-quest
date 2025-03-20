@@ -129,6 +129,10 @@
     @apply bg-background text-foreground font-pixel;
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d2b48c' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
+  
+  svg {
+    @apply text-[var(--rpg-text)];
+  }
 }
 
 /* RPG-specific styling */
@@ -194,6 +198,7 @@
   .pixel-icon {
     @apply inline-block align-middle;
     image-rendering: pixelated;
+    color: var(--rpg-text);
   }
 
   .shimmer {
@@ -280,6 +285,52 @@
   .themed-stats-container {
     background-color: var(--rpg-tan);
     border-color: var(--rpg-accent);
+    color: var(--rpg-text);
+  }
+  
+  /* SVG icons should inherit text color to match theme */
+  svg {
+    color: currentColor;
+  }
+  
+  /* Quest tab styling with theme colors */
+  .quest-tab {
+    background-color: var(--rpg-tan);
+    color: var(--rpg-text);
+    border-color: var(--rpg-accent);
+  }
+  
+  .quest-tab.active {
+    background-color: var(--rpg-accent);
+    color: var(--rpg-accent-text);
+  }
+  
+  /* Navigation and tab elements */
+  .tab-nav-item {
+    color: var(--rpg-text);
+    border-color: var(--rpg-accent);
+  }
+  
+  .tab-nav-item.active {
+    background-color: var(--rpg-accent);
+    color: var(--rpg-accent-text);
+  }
+  
+  /* Headers and titles */
+  h1, h2, h3, h4, h5, h6,
+  .title, .subtitle {
+    color: var(--rpg-text);
+  }
+  
+  /* All icons should respect the theme */
+  [class*="icon-"], 
+  .icon, 
+  svg {
+    color: var(--rpg-text);
+  }
+  
+  /* Strong emphasis and important content */
+  strong, b, .important {
     color: var(--rpg-text);
   }
 }

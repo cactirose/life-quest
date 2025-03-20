@@ -35,7 +35,7 @@ export function CharacterResetDialog() {
           variant="destructive" 
           className="gap-2 pixel-button bg-rpg-red hover:bg-red-700 text-white border-[var(--rpg-accent)] w-full mt-4"
         >
-          <RefreshCcw size={16} />
+          <RefreshCcw size={16} className="text-current" />
           Reset Character
         </Button>
       </DialogTrigger>

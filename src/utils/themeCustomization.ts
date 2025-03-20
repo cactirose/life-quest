@@ -1,4 +1,3 @@
-
 import { StatName } from "../types/character";
 
 // Define available themes
@@ -54,7 +53,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     text: "#1A5D38",         // Dark green text
     parchment: "#F0FFF0",    // Honeydew
     positive: "#2E8B57",     // Sea green
-    negative: "#8B0000",     // Dark red
+    negative: "#D32F2F",     // Red
     purple: "#9C27B0",       // Purple for boss quests
     navbar: "#2E8B57",       // Navbar green
     "nav-hover": "#1A5D38",  // Darker green for hover
@@ -69,45 +68,45 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     primary: "#87CEEB",      // Sky blue
     secondary: "#4682B4",    // Steel blue
     background: "#F0F8FF",   // Alice blue
-    accent: "#4682B4",       // Steel blue
+    accent: "#1E4C7B",       // Dark blue
     text: "#1E4C7B",         // Dark blue text
     parchment: "#F0FFFF",    // Azure
     positive: "#4682B4",     // Steel blue
     negative: "#FF4500",     // Orange red
     purple: "#673AB7",       // Purple for boss quests
     navbar: "#4682B4",       // Navbar blue
-    "nav-hover": "#2B5D8C",  // Darker blue for hover
-    "nav-active": "#2B5D8C", // Active state
+    "nav-hover": "#1E4C7B",  // Darker blue for hover
+    "nav-active": "#1E4C7B", // Active state
     "nav-hover-text": "#F0FFFF", // Light text on dark hover
     "nav-active-text": "#F0FFFF", // Light text on dark active
     "accent-text": "#F0FFFF", // Light text on accent color
-    "hover": "#2B5D8C",      // Hover background
+    "hover": "#1E4C7B",      // Hover background
     "hover-text": "#F0FFFF"  // Hover text
   },
   sunset: {
     primary: "#FFA07A",      // Light salmon
     secondary: "#CD5C5C",    // Indian red
     background: "#FFF0F5",   // Lavender blush
-    accent: "#CD5C5C",       // Indian red
+    accent: "#943D3D",       // Dark red
     text: "#943D3D",         // Dark red text
     parchment: "#FFEFD5",    // Papaya whip
     positive: "#CD5C5C",     // Indian red
     negative: "#8B0000",     // Dark red
     purple: "#9C27B0",       // Purple for boss quests
     navbar: "#CD5C5C",       // Navbar red
-    "nav-hover": "#B13E3E",  // Darker red for hover
-    "nav-active": "#B13E3E", // Active state
+    "nav-hover": "#943D3D",  // Darker red for hover
+    "nav-active": "#943D3D", // Active state
     "nav-hover-text": "#FFEFD5", // Light text on dark hover
     "nav-active-text": "#FFEFD5", // Light text on dark active
     "accent-text": "#FFEFD5", // Light text on accent color
-    "hover": "#B13E3E",      // Hover background
+    "hover": "#943D3D",      // Hover background
     "hover-text": "#FFEFD5"  // Hover text
   },
   royal: {
     primary: "#B39DDB",      // Light purple
     secondary: "#673AB7",    // Deep purple
     background: "#F3E5F5",   // Light lavender
-    accent: "#673AB7",       // Deep purple
+    accent: "#4A2B82",       // Deep purple
     text: "#4A2B82",         // Dark purple text
     parchment: "#FFF8E1",    // Light amber
     positive: "#673AB7",     // Deep purple
@@ -145,6 +144,9 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
 
 // Function to apply theme to CSS variables
 export function applyTheme(theme: ThemeColors): void {
+  // Skip brown color adjustment for default theme
+  const isDefaultTheme = theme === THEME_PRESETS.default;
+  
   // Set default values for nav-hover and nav-active if not provided
   const navHover = theme["nav-hover"] || shadeColor(theme.navbar, -20);
   const navActive = theme["nav-active"] || shadeColor(theme.navbar, -30);
@@ -162,19 +164,20 @@ export function applyTheme(theme: ThemeColors): void {
 
   // Main RPG theme variables
   document.documentElement.style.setProperty('--rpg-tan', theme.primary);
-  document.documentElement.style.setProperty('--rpg-brown', theme.secondary);
+  document.documentElement.style.setProperty('--rpg-brown', isDefaultTheme ? theme.secondary : theme.accent);
   document.documentElement.style.setProperty('--rpg-background', theme.background);
-  document.documentElement.style.setProperty('--rpg-green', theme.positive);
+  document.documentElement.style.setProperty('--rpg-green', isDefaultTheme ? theme.positive : theme.secondary);
   document.documentElement.style.setProperty('--rpg-red', theme.negative);
   document.documentElement.style.setProperty('--rpg-parchment', theme.parchment);
   document.documentElement.style.setProperty('--rpg-accent', theme.accent);
   document.documentElement.style.setProperty('--rpg-accent-text', accentText);
   document.documentElement.style.setProperty('--rpg-text', theme.text);
   document.documentElement.style.setProperty('--rpg-purple', theme.purple);
-  document.documentElement.style.setProperty('--rpg-dark-wood', shadeColor(theme.secondary, -20));
-  document.documentElement.style.setProperty('--rpg-light-green', lightenColor(theme.positive, 20));
+  document.documentElement.style.setProperty('--rpg-dark-wood', isDefaultTheme ? shadeColor(theme.secondary, -20) : shadeColor(theme.accent, -20));
+  document.documentElement.style.setProperty('--rpg-light-green', isDefaultTheme ? '#6B4D38' : lightenColor(theme.secondary, 20));
   document.documentElement.style.setProperty('--rpg-hover', hover);
   document.documentElement.style.setProperty('--rpg-hover-text', hoverText);
+  document.documentElement.style.setProperty('--rpg-blue', isDefaultTheme ? "#2196F3" : theme.accent);
   
   // Apply to Tailwind CSS variables as well
   document.documentElement.style.setProperty('--primary', convertToHSL(theme.primary));
