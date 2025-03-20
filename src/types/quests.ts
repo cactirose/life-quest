@@ -1,3 +1,4 @@
+
 export type QuestStatus = "active" | "completed";
 
 export interface QuestStep {
@@ -26,3 +27,97 @@ export interface Quest {
     charisma?: number;
   };
 }
+
+// Sample quests data
+export const SAMPLE_QUESTS: Omit<Quest, "id">[] = [
+  {
+    title: "Getting Started",
+    description: "Learn the basics of the RPG Productivity system",
+    type: "main",
+    steps: [
+      {
+        id: "step1",
+        description: "Create your first quest",
+        completed: false
+      },
+      {
+        id: "step2",
+        description: "Complete a daily habit",
+        completed: false
+      },
+      {
+        id: "step3",
+        description: "Spend coins in the shop",
+        completed: false
+      }
+    ],
+    status: "active",
+    xpReward: 100,
+    coinReward: 50,
+    statRewards: {
+      wisdom: 1
+    }
+  },
+  {
+    title: "Organize Your Workspace",
+    description: "Improve your productivity by organizing your workspace",
+    type: "side",
+    steps: [
+      {
+        id: "step1",
+        description: "Clean your desk",
+        completed: false
+      },
+      {
+        id: "step2",
+        description: "Arrange your tools and supplies",
+        completed: false
+      },
+      {
+        id: "step3",
+        description: "Set up a system to maintain organization",
+        completed: false
+      }
+    ],
+    status: "active",
+    xpReward: 75,
+    coinReward: 30,
+    statRewards: {
+      dexterity: 1
+    }
+  },
+  {
+    title: "Defeat Procrastination",
+    description: "Overcome the mighty boss of procrastination",
+    type: "boss",
+    steps: [
+      {
+        id: "step1",
+        description: "Identify your biggest procrastination triggers",
+        completed: false
+      },
+      {
+        id: "step2",
+        description: "Create a strategy to overcome each trigger",
+        completed: false
+      },
+      {
+        id: "step3",
+        description: "Successfully complete a task you've been putting off",
+        completed: false
+      },
+      {
+        id: "step4",
+        description: "Implement a system to prevent future procrastination",
+        completed: false
+      }
+    ],
+    status: "active",
+    xpReward: 200,
+    coinReward: 100,
+    statRewards: {
+      constitution: 2,
+      wisdom: 1
+    }
+  }
+];
