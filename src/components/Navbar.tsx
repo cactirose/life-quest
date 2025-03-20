@@ -101,22 +101,22 @@ const Navbar = () => {
             <NavigationMenuList>
               {navStructure.map((item) => (
                 <NavigationMenuItem key={item.label}>
-                  <NavigationMenuTrigger className="text-rpg-tan hover:bg-rpg-dark-wood">
+                  <NavigationMenuTrigger className="text-rpg-tan hover:bg-rpg-dark-wood bg-rpg-brown border-none">
                     <span className="flex items-center gap-1">
                       {item.icon}
                       <span className="hidden md:inline">{item.label}</span>
                     </span>
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[220px] p-2 bg-rpg-parchment">
+                    <ul className="grid w-[220px] p-2 bg-rpg-brown border border-rpg-tan/30">
                       {item.subnav.map((subItem) => (
                         <li key={subItem.path}>
                           <NavigationMenuLink asChild>
                             <Link
                               to={subItem.path}
                               className={cn(
-                                "block select-none space-y-1 rounded-md p-3 text-rpg-brown no-underline outline-none transition-colors hover:bg-rpg-tan/30",
-                                location.pathname === subItem.path && "bg-rpg-tan/40"
+                                "block select-none space-y-1 rounded-md p-3 text-rpg-tan no-underline outline-none transition-colors hover:bg-rpg-dark-wood",
+                                location.pathname === subItem.path && "bg-rpg-dark-wood"
                               )}
                             >
                               <div className="flex items-center gap-2">

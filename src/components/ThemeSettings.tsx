@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Palette } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   ThemeName,
   ThemeColors,
@@ -38,8 +39,10 @@ export function ThemeSettings() {
     setActiveTheme(themeName);
     if (themeName !== 'custom') {
       saveTheme(THEME_PRESETS[themeName], themeName);
+      toast.success(`${themeName.charAt(0).toUpperCase() + themeName.slice(1)} theme applied!`);
     } else {
       saveTheme(customTheme, 'custom');
+      toast.success('Custom theme applied!');
     }
   };
 
@@ -65,6 +68,7 @@ export function ThemeSettings() {
           borderColor: colors.secondary,
         }}
         onClick={() => handleThemeSelect(name as ThemeName)}
+        aria-label={`Select ${name} theme`}
       >
         <div className="flex flex-col items-center">
           <div 
@@ -108,6 +112,9 @@ export function ThemeSettings() {
             <div className="grid grid-cols-3 gap-4">
               {presetButtons}
             </div>
+            <p className="text-sm text-rpg-brown mt-4">
+              Select a preset theme to instantly change the appearance of the entire application.
+            </p>
           </TabsContent>
           
           <TabsContent value="custom" className="space-y-4 py-4">
@@ -124,22 +131,28 @@ export function ThemeSettings() {
                       value={value}
                       onChange={(e) => handleColorChange(key as keyof ThemeColors, e.target.value)}
                       className="w-8 h-8 p-0 border cursor-pointer"
+                      aria-label={`Change ${key} color`}
                     />
                     <input
                       type="text"
                       value={value}
                       onChange={(e) => handleColorChange(key as keyof ThemeColors, e.target.value)}
                       className="flex-1 px-2 py-1 text-sm border rounded"
+                      aria-label={`${key} color hex value`}
                     />
                   </div>
                 </div>
               ))}
             </div>
+            <p className="text-sm text-rpg-brown mt-2">
+              Your custom theme will be applied to all elements of the application including the navigation bar, buttons, and content areas.
+            </p>
             <Button 
               onClick={() => {
                 setCustomTheme(THEME_PRESETS.default);
                 saveTheme(THEME_PRESETS.default, 'default');
                 setActiveTheme('default');
+                toast.success('Reset to default theme');
               }}
               variant="outline"
               className="mt-4"

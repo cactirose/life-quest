@@ -89,6 +89,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
 
 // Function to apply theme to CSS variables
 export function applyTheme(theme: ThemeColors): void {
+  // Main RPG theme variables
   document.documentElement.style.setProperty('--rpg-tan', theme.primary);
   document.documentElement.style.setProperty('--rpg-brown', theme.secondary);
   document.documentElement.style.setProperty('--rpg-background', theme.background);
@@ -98,6 +99,88 @@ export function applyTheme(theme: ThemeColors): void {
   document.documentElement.style.setProperty('--rpg-accent', theme.accent);
   document.documentElement.style.setProperty('--rpg-text', theme.text);
   document.documentElement.style.setProperty('--rpg-purple', theme.purple);
+  document.documentElement.style.setProperty('--rpg-dark-wood', shadeColor(theme.secondary, -20));
+  document.documentElement.style.setProperty('--rpg-light-green', lightenColor(theme.positive, 20));
+  
+  // Apply to Tailwind CSS variables as well
+  document.documentElement.style.setProperty('--primary', convertToHSL(theme.primary));
+  document.documentElement.style.setProperty('--primary-foreground', convertToHSL(theme.text));
+  document.documentElement.style.setProperty('--secondary', convertToHSL(theme.secondary));
+  document.documentElement.style.setProperty('--secondary-foreground', convertToHSL(theme.parchment));
+  document.documentElement.style.setProperty('--accent', convertToHSL(theme.accent));
+  document.documentElement.style.setProperty('--accent-foreground', convertToHSL(theme.parchment));
+  document.documentElement.style.setProperty('--background', convertToHSL(theme.background));
+  document.documentElement.style.setProperty('--foreground', convertToHSL(theme.text));
+  document.documentElement.style.setProperty('--muted', convertToHSL(lightenColor(theme.secondary, 40)));
+  document.documentElement.style.setProperty('--muted-foreground', convertToHSL(theme.text));
+  document.documentElement.style.setProperty('--border', convertToHSL(theme.secondary));
+  document.documentElement.style.setProperty('--destructive', convertToHSL(theme.negative));
+  document.documentElement.style.setProperty('--destructive-foreground', convertToHSL(theme.parchment));
+}
+
+// Helper function to shade color (darken)
+function shadeColor(color: string, percent: number): string {
+  let R = parseInt(color.substring(1, 3), 16);
+  let G = parseInt(color.substring(3, 5), 16);
+  let B = parseInt(color.substring(5, 7), 16);
+
+  R = Math.max(0, Math.min(255, R + (R * percent / 100)));
+  G = Math.max(0, Math.min(255, G + (G * percent / 100)));
+  B = Math.max(0, Math.min(255, B + (B * percent / 100)));
+
+  const RR = R.toString(16).padStart(2, '0');
+  const GG = G.toString(16).padStart(2, '0');
+  const BB = B.toString(16).padStart(2, '0');
+
+  return `#${RR}${GG}${BB}`;
+}
+
+// Helper function to lighten color
+function lightenColor(color: string, percent: number): string {
+  return shadeColor(color, Math.abs(percent));
+}
+
+// Helper function to convert hex to HSL string for Tailwind CSS variables
+function convertToHSL(hex: string): string {
+  // Remove the # from the hex color
+  hex = hex.replace('#', '');
+  
+  // Parse the hex values to RGB
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  
+  // Find the min and max values to calculate the lightness
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  
+  // Calculate the lightness
+  let h = 0, s = 0, l = (max + min) / 2;
+  
+  if (max !== min) {
+    // Calculate the saturation
+    s = l > 0.5 ? (max - min) / (2 - max - min) : (max - min) / (max + min);
+    
+    // Calculate the hue
+    switch (max) {
+      case r:
+        h = (g - b) / (max - min) + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / (max - min) + 2;
+        break;
+      case b:
+        h = (r - g) / (max - min) + 4;
+        break;
+    }
+    h = Math.round(h * 60);
+  }
+  
+  // Convert saturation and lightness to percentages
+  s = Math.round(s * 100);
+  l = Math.round(l * 100);
+  
+  return `${h} ${s}% ${l}%`;
 }
 
 // Get current theme from localStorage or use default
