@@ -119,7 +119,7 @@ const Navbar = () => {
               
               {/* Dropdown menus */}
               {navStructure.map((item) => (
-                <NavigationMenuItem key={item.label} className="relative group">
+                <NavigationMenuItem key={item.label}>
                   <NavigationMenuTrigger 
                     className={cn(
                       "text-[hsl(var(--nav-text))] hover:bg-[#3a1f0e] bg-[hsl(var(--nav-bg))] border-none",
@@ -131,9 +131,7 @@ const Navbar = () => {
                       <span className="hidden md:inline">{item.label}</span>
                     </span>
                   </NavigationMenuTrigger>
-                  <NavigationMenuContent 
-                    className="w-[220px] absolute left-0 group-hover:!block !animate-none !transition-none"
-                  >
+                  <NavigationMenuContent className="w-[220px]">
                     <ul className="grid w-full p-2 gap-1">
                       {item.subnav.map((subItem) => (
                         <li key={subItem.path}>
