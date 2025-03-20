@@ -1,26 +1,44 @@
 import { Link, useLocation } from "react-router-dom";
 import { useGameData } from "@/contexts/DataContext";
-import { HomeIcon, UserCircle, Scroll, Settings, BarChart, ChevronDown, ChevronUp, Palette, Milestone, ShoppingCart, MapPin } from "lucide-react";
+import { 
+  HomeIcon, 
+  UserCircle, 
+  Scroll, 
+  Settings, 
+  ChevronDown, 
+  ChevronUp, 
+  Palette, 
+  ShoppingCart, 
+  MapPin,
+  Target,
+  Award,
+  Backpack,
+  ListChecks,
+  Smile,
+  Flag
+} from "lucide-react";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { ThemeSettings } from "./ThemeSettings";
+
 const Navbar = () => {
   const {
     character
   } = useGameData();
   const location = useLocation();
+  
   const navStructure = [{
     label: "Milestones",
-    icon: <Milestone size={20} />,
+    icon: <Target size={20} />,
     path: "/skills",
     subnav: [{
       label: "Skills",
       path: "/skills",
-      icon: <BarChart size={18} />
+      icon: <Target size={18} />
     }, {
       label: "Achievements",
       path: "/achievements",
-      icon: <BarChart size={18} />
+      icon: <Award size={18} />
     }]
   }, {
     label: "Character",
@@ -33,7 +51,7 @@ const Navbar = () => {
     }, {
       label: "Inventory",
       path: "/inventory",
-      icon: <BarChart size={18} />
+      icon: <Backpack size={18} />
     }]
   }, {
     label: "Journey",
@@ -42,17 +60,18 @@ const Navbar = () => {
     subnav: [{
       label: "Habits",
       path: "/habits",
-      icon: <BarChart size={18} />
+      icon: <ListChecks size={18} />
     }, {
       label: "Mood",
       path: "/mood",
-      icon: <BarChart size={18} />
+      icon: <Smile size={18} />
     }, {
       label: "Challenges",
       path: "/challenges",
-      icon: <BarChart size={18} />
+      icon: <Flag size={18} />
     }]
   }];
+
   return <header className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] shadow-md py-2">
       <div className="container mx-auto">
         <div className="flex items-center justify-between">
@@ -138,4 +157,5 @@ const Navbar = () => {
       </div>
     </header>;
 };
+
 export default Navbar;

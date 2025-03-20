@@ -1,7 +1,18 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollText, ShieldCheck, Target, Sparkle, ShoppingBag, Calendar, Award, Smile } from "lucide-react";
+import { 
+  Scroll, 
+  ShieldCheck, 
+  Target, 
+  Sparkle, 
+  ShoppingBag, 
+  ListChecks, 
+  Award, 
+  Smile, 
+  Flag, 
+  Backpack 
+} from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGameData } from "@/contexts/DataContext";
 
@@ -33,7 +44,7 @@ export function TutorialSection() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="wood-texture p-4 rounded-lg flex flex-col items-center text-center">
-              <ScrollText className="text-rpg-brown mb-2" size={24} />
+              <Scroll className="text-rpg-brown mb-2" size={24} />
               <h3 className="font-pixel text-rpg-brown text-lg mb-1">Quests</h3>
               <p className="text-xs text-rpg-brown">Track daily tasks as epic quests with rewards</p>
             </div>
@@ -59,7 +70,7 @@ export function TutorialSection() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="wood-texture p-4 rounded-lg flex flex-col items-center text-center">
-              <Calendar className="text-rpg-brown mb-2" size={24} />
+              <ListChecks className="text-rpg-brown mb-2" size={24} />
               <h3 className="font-pixel text-rpg-brown text-lg mb-1">Habits</h3>
               <p className="text-xs text-rpg-brown">Build consistent habits with streak bonuses</p>
             </div>
@@ -74,6 +85,12 @@ export function TutorialSection() {
               <Smile className="text-rpg-brown mb-2" size={24} />
               <h3 className="font-pixel text-rpg-brown text-lg mb-1">Mood</h3>
               <p className="text-xs text-rpg-brown">Track your daily mood and energy levels</p>
+            </div>
+            
+            <div className="wood-texture p-4 rounded-lg flex flex-col items-center text-center">
+              <Flag className="text-rpg-brown mb-2" size={24} />
+              <h3 className="font-pixel text-rpg-brown text-lg mb-1">Challenges</h3>
+              <p className="text-xs text-rpg-brown">Complete special tasks for bonus rewards</p>
             </div>
           </div>
         </CardContent>
