@@ -1,3 +1,4 @@
+
 import { createContext, useContext, ReactNode } from "react";
 import { Character, StatName, DEFAULT_CHARACTER } from "../types/character";
 

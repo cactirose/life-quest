@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   useGameData, 
@@ -56,7 +55,6 @@ const ChallengeCard = ({
     ? Math.min(100, (challenge.currentCount / challenge.requiredCount) * 100) 
     : 0;
   
-  // Get icon based on frequency
   const getFrequencyIcon = (frequency: ChallengeFrequency) => {
     switch (frequency) {
       case "daily":
@@ -70,7 +68,6 @@ const ChallengeCard = ({
     }
   };
   
-  // Format reset date
   const formatResetDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(undefined, { 
@@ -206,7 +203,6 @@ const ChallengeForm = ({
   const [xpReward, setXpReward] = useState(initialData?.xpReward || 25);
   const [coinReward, setCoinReward] = useState(initialData?.coinReward || 15);
   
-  // Initialize stat rewards
   const initialStatRewards = {
     strength: initialData?.statRewards?.strength || 0,
     dexterity: initialData?.statRewards?.dexterity || 0,
@@ -218,7 +214,6 @@ const ChallengeForm = ({
   
   const [statRewards, setStatRewards] = useState(initialStatRewards);
   
-  // Calculate reset date based on frequency
   const calculateResetDate = (freq: ChallengeFrequency): string => {
     const now = new Date();
     let resetDate: Date;
@@ -431,7 +426,8 @@ const Challenges = () => {
     updateChallenge, 
     deleteChallenge, 
     completeChallenge,
-    character
+    character,
+    claimDailyBonus
   } = useGameData();
   
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -445,7 +441,6 @@ const Challenges = () => {
   const weeklyChallenges = activeChallenges.filter(c => c.frequency === "weekly");
   const monthlyChallenges = activeChallenges.filter(c => c.frequency === "monthly");
   
-  // Group completed challenges by type
   const completedDailyChallenges = completedChallenges.filter(c => c.frequency === "daily");
   const completedWeeklyChallenges = completedChallenges.filter(c => c.frequency === "weekly");
   const completedMonthlyChallenges = completedChallenges.filter(c => c.frequency === "monthly");
@@ -475,6 +470,13 @@ const Challenges = () => {
   const handleCompleteChallenge = (challengeId: string) => {
     completeChallenge(challengeId);
     toast.success("Challenge completed! Rewards added to your character.");
+  };
+  
+  const handleClaimDailyBonus = () => {
+    if (claimDailyBonus) {
+      claimDailyBonus();
+      toast.success("Daily bonus claimed!");
+    }
   };
   
   return (
@@ -536,10 +538,7 @@ const Challenges = () => {
           <Button
             disabled={character.dailyBonusClaimed}
             className={`pixel-button ${character.dailyBonusClaimed ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={() => {
-              useGameData().claimDailyBonus();
-              toast.success("Daily bonus claimed!");
-            }}
+            onClick={handleClaimDailyBonus}
           >
             {character.dailyBonusClaimed ? "Already Claimed" : "Claim Daily Bonus"}
           </Button>
