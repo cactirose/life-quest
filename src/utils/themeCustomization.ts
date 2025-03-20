@@ -1,3 +1,4 @@
+
 import { StatName } from "../types/character";
 
 // Define available themes
@@ -23,13 +24,13 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     primary: "#D2B48C",      // Tan
     secondary: "#8B4513",    // Brown
     background: "#F5F5DC",   // Beige
-    accent: "#6B8E23",       // Olive green
+    accent: "#3A1F0E",       // Dark brown (replacing olive green)
     text: "#3A3124",         // Dark brown
     parchment: "#FFF8DC",    // Cornsilk
-    positive: "#4CAF50",     // Green
+    positive: "#3A1F0E",     // Dark brown (replacing green)
     negative: "#B22222",     // Firebrick
     purple: "#8B5CF6",       // Purple for boss quests
-    navbar: "#3f210e"        // Updated navbar color for default theme
+    navbar: "#3f210e"        // Dark brown for navbar
   },
   forest: {
     primary: "#8FBC8F",      // Dark sea green
@@ -83,10 +84,10 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     primary: "#D2B48C",      // Default values that will be overridden
     secondary: "#8B4513",
     background: "#F5F5DC",
-    accent: "#6B8E23",
+    accent: "#3A1F0E",       // Updated to dark brown
     text: "#3A3124",
     parchment: "#FFF8DC",
-    positive: "#4CAF50",
+    positive: "#3A1F0E",     // Updated to dark brown
     negative: "#B22222",
     purple: "#8B5CF6",       // Purple for boss quests
     navbar: "#8B4513"        // Navbar color (default to secondary)
