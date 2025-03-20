@@ -49,7 +49,7 @@ const navigationMenuTriggerStyle = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         accent: "bg-accent text-accent-foreground hover:bg-accent/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        themed: "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-hover-text))] data-[state=open]:bg-[hsl(var(--nav-active))] data-[state=open]:text-[hsl(var(--nav-active-text))]",
+        themed: "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] hover:text-[#222222] data-[state=open]:bg-[hsl(var(--nav-active))] data-[state=open]:text-[#222222]",
       }
     },
     defaultVariants: {

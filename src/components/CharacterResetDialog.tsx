@@ -33,7 +33,7 @@ export function CharacterResetDialog() {
       <DialogTrigger asChild>
         <Button 
           variant="destructive" 
-          className="gap-2 pixel-button bg-rpg-red hover:bg-red-700 text-white border-rpg-brown w-full mt-4"
+          className="gap-2 pixel-button bg-rpg-red hover:bg-red-700 text-white border-rpg-brown w-full mt-4 hover:text-[#222222]"
         >
           <RefreshCcw size={16} />
           Reset Character
@@ -61,14 +61,14 @@ export function CharacterResetDialog() {
           <Button 
             variant="outline" 
             onClick={() => setOpen(false)}
-            className="border-rpg-brown text-rpg-brown hover:bg-rpg-brown hover:text-rpg-tan"
+            className="border-rpg-brown text-rpg-brown hover:bg-rpg-brown hover:text-[#222222]"
           >
             Cancel
           </Button>
           <Button 
             variant="destructive" 
             onClick={handleReset}
-            className="bg-rpg-red hover:bg-red-700 text-white"
+            className="bg-rpg-red hover:bg-red-700 text-white hover:text-[#222222]"
           >
             Reset Character
           </Button>
