@@ -20,7 +20,8 @@ import {
   Filter, 
   Search, 
   ShoppingBag,
-  X
+  X,
+  Gift
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,7 @@ const InventoryItemCard = ({
   const itemIcon = 
     item.type === "weapon" ? <Sword className="text-rpg-brown" size={16} /> :
     item.type === "armor" ? <Shield className="text-rpg-brown" size={16} /> :
+    item.type === "real-life" ? <Gift className="text-rpg-brown" size={16} /> :
     <Gem className="text-rpg-brown" size={16} />;
 
   return (
@@ -172,7 +174,7 @@ const EquipmentSlots = ({
   equippedItems, 
   onUnequip 
 }: { 
-  equippedItems: Record<GearType, GearItem | null>;
+  equippedItems: Partial<Record<GearType, GearItem | null>>;
   onUnequip: (itemId: string) => void;
 }) => {
   const slots = [
@@ -260,13 +262,14 @@ const Inventory = () => {
     .reduce((acc, item) => {
       acc[item.type] = item;
       return acc;
-    }, {} as Record<GearType, GearItem | null>);
+    }, {} as Partial<Record<GearType, GearItem | null>>);
     
   // Initialize empty slots
-  const equipmentSlots: Record<GearType, GearItem | null> = {
+  const equipmentSlots: Partial<Record<GearType, GearItem | null>> = {
     weapon: equippedItemsByType.weapon || null,
     armor: equippedItemsByType.armor || null,
-    accessory: equippedItemsByType.accessory || null
+    accessory: equippedItemsByType.accessory || null,
+    // "real-life" items aren't equippable, so we don't include them in slots
   };
   
   // Filter items based on search and filters
@@ -285,7 +288,8 @@ const Inventory = () => {
       (currentTab === "equipped" && item.equipped) ||
       (currentTab === "weapons" && item.type === "weapon") ||
       (currentTab === "armor" && item.type === "armor") ||
-      (currentTab === "accessories" && item.type === "accessory");
+      (currentTab === "accessories" && item.type === "accessory") ||
+      (currentTab === "real-life" && item.type === "real-life");
     
     return matchesSearch && matchesType && matchesTab;
   });
@@ -349,6 +353,7 @@ const Inventory = () => {
               <SelectItem value="weapon">Weapons</SelectItem>
               <SelectItem value="armor">Armor</SelectItem>
               <SelectItem value="accessory">Accessories</SelectItem>
+              <SelectItem value="real-life">Real Life Rewards</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -385,6 +390,12 @@ const Inventory = () => {
             className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Accessories
+          </TabsTrigger>
+          <TabsTrigger 
+            value="real-life" 
+            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
+          >
+            Real Life
           </TabsTrigger>
         </TabsList>
         
