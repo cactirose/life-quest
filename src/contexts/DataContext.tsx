@@ -1,5 +1,6 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { Character, StatName } from "../types/character";
+import { Character, StatName, DEFAULT_CHARACTER } from "../types/character";
 import { Quest } from "../types/quests";
 import { GearItem } from "../types/inventory";
 import { SkillNode } from "../types/skills";
@@ -159,7 +160,7 @@ const DEFAULT_GAME_DATA: GameData = {
 };
 
 // Create context
-const DataContext = createContext<GameData>(DEFAULT_GAME_DATA);
+export const DataContext = createContext<GameData>(DEFAULT_GAME_DATA);
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [gameData, setGameData] = useState<GameData>(() => loadInitialData() as GameData);
