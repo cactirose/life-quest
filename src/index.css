@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
 
 @tailwind base;
@@ -61,7 +62,7 @@
     --rpg-red: #B22222;
     --rpg-parchment: #FFF8DC;
     --rpg-accent: #3A1F0E;
-    --rpg-text: #3A3124;
+    --rpg-text: var(--rpg-brown);
     --rpg-light-green: #6B4D38;
     --rpg-blue: #2196F3;
     --rpg-purple: #9C27B0;
@@ -142,7 +143,7 @@
     active:shadow-[inset_2px_2px_0_rgba(0,0,0,0.3)];
     background-color: var(--rpg-tan);
     border-color: var(--rpg-brown);
-    color: var(--rpg-brown);
+    color: var(--rpg-text);
   }
   
   .pixel-button:hover {
@@ -241,6 +242,29 @@
 
   .rarity-legendary {
     @apply border-yellow-500;
+  }
+  
+  /* Theme-consistent tab styling */
+  .themed-tabs {
+    @apply w-full mb-6 font-pixel bg-[var(--rpg-tan)] text-[var(--rpg-text)] border-2 border-[var(--rpg-brown)];
+  }
+  
+  .themed-tab-trigger {
+    @apply flex-1 data-[state=active]:bg-[var(--rpg-brown)] data-[state=active]:text-[var(--rpg-tan)];
+  }
+  
+  /* Theme-consistent button styling */
+  .themed-button {
+    @apply transition-colors bg-[var(--rpg-tan)] text-[var(--rpg-text)] border-[var(--rpg-brown)];
+  }
+  
+  .themed-button:hover {
+    @apply bg-[var(--rpg-brown)] text-[var(--rpg-tan)];
+  }
+  
+  /* Theme-consistent stats containers */
+  .themed-stats-container {
+    @apply bg-[var(--rpg-tan)] border-[var(--rpg-brown)];
   }
 }
 

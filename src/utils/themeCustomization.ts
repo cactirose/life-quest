@@ -29,7 +29,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     secondary: "#8B4513",    // Brown
     background: "#F5F5DC",   // Beige
     accent: "#3A1F0E",       // Dark brown
-    text: "#3A3124",         // Dark brown
+    text: "#3A1F0E",         // Dark brown
     parchment: "#FFF8DC",    // Cornsilk
     positive: "#3A1F0E",     // Dark brown
     negative: "#B22222",     // Firebrick
@@ -47,7 +47,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     accent: "#556B2F",       // Dark olive green
     text: "#2F4F4F",         // Dark slate gray
     parchment: "#F0FFF0",    // Honeydew
-    positive: "#32CD32",     // Lime green
+    positive: "#2E8B57",     // Sea green
     negative: "#8B0000",     // Dark red
     purple: "#9C27B0",       // Purple for boss quests
     navbar: "#2E8B57",       // Navbar green
@@ -63,7 +63,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     accent: "#1E90FF",       // Dodger blue
     text: "#191970",         // Midnight blue
     parchment: "#F0FFFF",    // Azure
-    positive: "#40E0D0",     // Turquoise
+    positive: "#4682B4",     // Steel blue
     negative: "#FF4500",     // Orange red
     purple: "#673AB7",       // Purple for boss quests
     navbar: "#4682B4",       // Navbar blue
@@ -79,7 +79,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     accent: "#FF6347",       // Tomato
     text: "#8B4513",         // Saddle brown
     parchment: "#FFEFD5",    // Papaya whip
-    positive: "#32CD32",     // Lime green
+    positive: "#CD5C5C",     // Indian red
     negative: "#8B0000",     // Dark red
     purple: "#9C27B0",       // Purple for boss quests
     navbar: "#CD5C5C",       // Navbar red
@@ -95,7 +95,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     accent: "#9C27B0",       // Purple
     text: "#311B92",         // Deep purple
     parchment: "#FFF8E1",    // Light amber
-    positive: "#4CAF50",     // Green
+    positive: "#673AB7",     // Deep purple
     negative: "#D32F2F",     // Red
     purple: "#6A1B9A",       // Purple for boss quests
     navbar: "#673AB7",       // Navbar purple
@@ -109,7 +109,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     secondary: "#8B4513",
     background: "#F5F5DC",
     accent: "#3A1F0E",
-    text: "#3A3124",
+    text: "#3A1F0E",
     parchment: "#FFF8DC",
     positive: "#3A1F0E",
     negative: "#B22222",
