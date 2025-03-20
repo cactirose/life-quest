@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -19,8 +18,9 @@ import {
   THEME_PRESETS,
   applyTheme,
   saveTheme,
-  getCurrentTheme
-} from '@/utils/themeCustomization';
+  getCurrentTheme,
+  contrastColor as getContrastColor
+} from '@/utils/theme';
 
 export function ThemeSettings() {
   const [open, setOpen] = useState(false);
@@ -28,7 +28,6 @@ export function ThemeSettings() {
   const [activeTheme, setActiveTheme] = useState<ThemeName>("default");
   const [customTheme, setCustomTheme] = useState<ThemeColors>(THEME_PRESETS.default);
 
-  // Load saved theme when component mounts
   useEffect(() => {
     const savedThemeName = localStorage.getItem('rpgProductivityThemeName') as ThemeName || 'default';
     setActiveTheme(savedThemeName);
@@ -50,7 +49,6 @@ export function ThemeSettings() {
     setCustomTheme((prev) => {
       const updatedTheme = { ...prev, [key]: value };
       
-      // Auto-update hover/active text color for better contrast when changing bg colors
       if (key === "nav-hover") {
         updatedTheme["nav-hover-text"] = getContrastColor(value);
       }
@@ -63,8 +61,7 @@ export function ThemeSettings() {
     });
     setActiveTheme('custom');
   };
-  
-  // Helper function to determine contrasting text color
+
   const getContrastColor = (hex: string): string => {
     hex = hex.replace('#', '');
     const r = parseInt(hex.substring(0, 2), 16);
@@ -108,7 +105,6 @@ export function ThemeSettings() {
     );
   });
 
-  // Group color settings for better organization
   const colorGroups = {
     "Main Colors": ["primary", "secondary", "background", "accent", "text"],
     "Navigation": ["navbar", "nav-hover", "nav-hover-text", "nav-active", "nav-active-text"],

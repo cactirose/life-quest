@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,7 +19,7 @@ import Habits from "./pages/Habits";
 import Mood from "./pages/Mood";
 import Achievements from "./pages/Achievements";
 import { ThemeSettings } from "./components/ThemeSettings";
-import { initializeTheme } from "./utils/themeCustomization";
+import { initializeTheme } from "./utils/theme";
 
 const queryClient = new QueryClient();
 
