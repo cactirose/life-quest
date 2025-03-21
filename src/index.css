@@ -242,6 +242,51 @@
   .rarity-legendary {
     @apply border-yellow-500;
   }
+
+  /* Horizontal scrollable container for categories */
+  .scrollable-categories {
+    @apply flex overflow-x-auto pb-2 gap-2 -mx-2 px-2 snap-x;
+    scrollbar-width: thin;
+    -ms-overflow-style: none;
+    scrollbar-color: var(--rpg-brown) transparent;
+  }
+  
+  .scrollable-categories::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  .scrollable-categories::-webkit-scrollbar-thumb {
+    background-color: var(--rpg-brown);
+    border-radius: 3px;
+  }
+  
+  .scrollable-categories::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  
+  .scrollable-categories > * {
+    @apply snap-start flex-shrink-0;
+  }
+  
+  /* Calendar mobile adjustments */
+  .calendar-container {
+    @apply w-full overflow-x-auto pb-2;
+    max-width: 100%;
+  }
+  
+  .calendar-container .rdp {
+    @apply min-w-[300px] max-w-full;
+  }
+  
+  @media (max-width: 640px) {
+    .calendar-container .rdp-months {
+      @apply justify-start;
+    }
+    
+    .calendar-container .rdp-caption {
+      @apply w-full justify-center;
+    }
+  }
 }
 
 /* Custom animations */
