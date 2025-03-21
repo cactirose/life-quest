@@ -98,6 +98,12 @@ export const storeSession = (session: Session | null): void => {
   }
 };
 
+// Clear session from local storage
+export const clearSession = (): void => {
+  localStorage.removeItem("isAuthenticated");
+  console.log("Session cleared from local storage");
+};
+
 // Helper to refresh the session if needed
 export const refreshSession = async (): Promise<boolean> => {
   try {
