@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { loadInitialData } from "@/utils/loadInitialData";
 import { GameData } from "@/types/gameData";
@@ -28,7 +29,7 @@ export function useGameDataManager() {
   // Load data when authenticated and handle auth state changes
   useEffect(() => {
     let isMounted = true;
-    let authSubscription: { unsubscribe: () => void } | null = null;
+    let authSubscription: { data: { subscription: { unsubscribe: () => void } } } | null = null;
     
     const loadData = async () => {
       setIsLoading(true);
@@ -109,8 +110,8 @@ export function useGameDataManager() {
 
     return () => {
       isMounted = false;
-      if (authSubscription) {
-        authSubscription.unsubscribe();
+      if (authSubscription && authSubscription.data.subscription) {
+        authSubscription.data.subscription.unsubscribe();
       }
     };
   }, []);

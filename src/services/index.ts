@@ -52,7 +52,6 @@ export const loadAllGameData = async () => {
     
     try {
       // Run all queries in parallel with the AbortSignal
-      const signal = controller.signal;
       
       const [
         character,
@@ -65,39 +64,39 @@ export const loadAllGameData = async () => {
         moods,
         achievements
       ] = await Promise.all([
-        fetchCharacter(signal).catch(err => {
+        fetchCharacter().catch(err => {
           console.error("Error fetching character:", err);
           return null;
         }),
-        fetchQuests(signal).catch(err => {
+        fetchQuests().catch(err => {
           console.error("Error fetching quests:", err);
           return [];
         }),
-        fetchInventory(signal).catch(err => {
+        fetchInventory().catch(err => {
           console.error("Error fetching inventory:", err);
           return [];
         }),
-        fetchShopItems(signal).catch(err => {
+        fetchShopItems().catch(err => {
           console.error("Error fetching shop items:", err);
           return [];
         }),
-        fetchSkillTree(signal).catch(err => {
+        fetchSkillTree().catch(err => {
           console.error("Error fetching skill tree:", err);
           return [];
         }),
-        fetchChallenges(signal).catch(err => {
+        fetchChallenges().catch(err => {
           console.error("Error fetching challenges:", err);
           return [];
         }),
-        fetchHabits(signal).catch(err => {
+        fetchHabits().catch(err => {
           console.error("Error fetching habits:", err);
           return [];
         }),
-        fetchMoodEntries(signal).catch(err => {
+        fetchMoodEntries().catch(err => {
           console.error("Error fetching moods:", err);
           return [];
         }),
-        fetchAchievements(signal).catch(err => {
+        fetchAchievements().catch(err => {
           console.error("Error fetching achievements:", err);
           return [];
         })
