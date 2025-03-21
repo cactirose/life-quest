@@ -243,6 +243,13 @@
     @apply border-yellow-500;
   }
 
+  /* Tabs styling to fix text cutoff */
+  .tabs-container .TabsTrigger {
+    @apply h-auto min-h-[40px] py-2 flex items-center justify-center;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
   /* Horizontal scrollable container for categories */
   .scrollable-categories {
     @apply flex overflow-x-auto pb-2 gap-2 -mx-2 px-2 snap-x;
