@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { loadAllGameData } from "@/services";
 import { toast } from "sonner";
 import { loadInitialData } from "@/utils/loadInitialData";
+import { storeSession } from "@/utils/auth";
 
 export function useSupabaseSync() {
   const [isLoading, setIsLoading] = useState(true);
@@ -20,6 +21,9 @@ export function useSupabaseSync() {
       if (session) {
         // User is logged in, load their data from Supabase
         const supabaseData = await loadAllGameData();
+        
+        // Store session for sync auth checks
+        storeSession(session);
         
         if (supabaseData.character) {
           // If we have data from Supabase, use it
@@ -69,6 +73,7 @@ export function useSupabaseSync() {
 
   // Subscribe to auth changes
   useEffect(() => {
+    // First set up the auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event);
