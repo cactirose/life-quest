@@ -18,6 +18,10 @@ export interface Achievement {
   dateUnlocked?: string;
   requiredCount?: number;
   currentCount?: number;
+  // Add tracking properties
+  requiredLevel?: number;
+  requiredCoins?: number;
+  requiredChallenges?: number;
 }
 
 // Sample achievements data
@@ -68,6 +72,25 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     xpReward: 150,
     coinReward: 0,
     requiredCount: 500,
-    currentCount: 0
+    currentCount: 0,
+    requiredCoins: 500
+  },
+  {
+    title: "Level Up",
+    description: "Reach level 5",
+    category: "character",
+    icon: "⭐",
+    xpReward: 100,
+    coinReward: 50,
+    requiredLevel: 5
+  },
+  {
+    title: "Challenge Accepted",
+    description: "Complete 3 challenges",
+    category: "general",
+    icon: "🏅",
+    xpReward: 125,
+    coinReward: 75,
+    requiredChallenges: 3
   }
 ];

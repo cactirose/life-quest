@@ -3,13 +3,16 @@ import { useEffect } from "react";
 import { CharacterContext } from "../contexts/CharacterContext";
 import { ChallengeContext } from "../contexts/ChallengeContext";
 import { useDailyLogin } from "../features/character/hooks/useDailyLogin";
-import { useAchievementManager } from "../features/achievements/hooks/useAchievementManager";
 import { useAchievements } from "../contexts/AchievementContext";
 import { useGameData } from "../contexts/DataContext";
 
+// Get the proper return types from the context hooks
+type CharacterContextType = ReturnType<typeof CharacterContext.useContext>;
+type ChallengeContextType = ReturnType<typeof ChallengeContext.useContext>;
+
 export const useDataEffects = (
-  characterContext: ReturnType<typeof CharacterContext.Provider>["props"]["value"],
-  challengeContext: ReturnType<typeof ChallengeContext.Provider>["props"]["value"]
+  characterContext: CharacterContextType,
+  challengeContext: ChallengeContextType
 ) => {
   const { achievements, checkAndUnlockAchievement } = useAchievements();
   const { setGameData } = useGameData();
@@ -31,17 +34,18 @@ export const useDataEffects = (
         // Basic checks for common achievement types
         if (!achievement.unlocked) {
           // Check level-based achievements
-          if (achievement.trackLevel && characterContext.character.level >= achievement.trackLevel) {
+          if ('requiredLevel' in achievement && characterContext.character.level >= achievement.requiredLevel) {
             checkAndUnlockAchievement(achievement.id);
           }
           
           // Check coin-based achievements
-          if (achievement.trackCoins && characterContext.character.coins >= achievement.trackCoins) {
+          if ('requiredCoins' in achievement && characterContext.character.coins >= achievement.requiredCoins) {
             checkAndUnlockAchievement(achievement.id);
           }
           
           // Check challenge-based achievements
-          if (achievement.trackChallenges && challengeContext.challenges.filter(c => c.status === "completed").length >= achievement.trackChallenges) {
+          if ('requiredChallenges' in achievement && 
+              challengeContext.challenges.filter(c => c.status === "completed").length >= achievement.requiredChallenges) {
             checkAndUnlockAchievement(achievement.id);
           }
         }
