@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
@@ -54,7 +53,7 @@ const Dashboard = () => {
                       <div className="flex justify-between mb-2">
                         <h3 className="font-pixel text-lg text-rpg-brown">{quest.title}</h3>
                         <span className="text-xs px-2 py-1 bg-rpg-brown text-rpg-tan rounded-full">
-                          {quest.type === "main" ? "Main" : "Side"}
+                          {(typeof quest.type === 'string') ? quest.type === "main" ? "Main" : "Side" : "Side"}
                         </span>
                       </div>
                       

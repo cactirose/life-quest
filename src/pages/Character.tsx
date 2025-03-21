@@ -195,6 +195,24 @@ const Character = () => {
     toast.success("Character updated successfully!");
   };
   
+  const handleStatUpgrade = (stat: StatName) => {
+    if (character.coins < 25) {
+      toast.error("Not enough coins!");
+      return;
+    }
+    
+    setCharacter({
+      ...character,
+      coins: character.coins - 25,
+      stats: {
+        ...character.stats,
+        [stat]: (character.stats[stat] || 0) + 1
+      }
+    });
+    
+    toast.success(`${stat} increased by 1!`);
+  };
+  
   return (
     <div className="container mx-auto animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -472,4 +490,3 @@ const Character = () => {
 };
 
 export default Character;
-

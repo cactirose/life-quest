@@ -20,15 +20,6 @@ import { createAchievementContextValue, AchievementContext } from "./Achievement
 // Create context
 export const DataContext = createContext<GameData>(DEFAULT_GAME_DATA);
 
-// Initialize an empty context for the hook
-const EmptyContext = createContext<{
-  gameData: GameData;
-  setGameData: React.Dispatch<React.SetStateAction<GameData>>;
-}>({
-  gameData: DEFAULT_GAME_DATA,
-  setGameData: () => {},
-});
-
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const { gameData, setGameData } = useGameDataManager();
 
@@ -59,14 +50,9 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     setGameData: setGameData
   };
 
-  const emptyContextValue = {
-    gameData: contextValue,
-    setGameData
-  };
-
   // Use combined provider pattern
   return (
-    <EmptyContext.Provider value={emptyContextValue}>
+    <DataContext.Provider value={contextValue}>
       <CombinedProvider
         contextValue={contextValue}
         characterContextValue={characterContextValue}
@@ -80,13 +66,13 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       >
         {children}
       </CombinedProvider>
-    </EmptyContext.Provider>
+    </DataContext.Provider>
   );
 };
 
-// Custom hook for using the context - for backward compatibility
+// Custom hook for using the context - this is what we're modifying
 export const useGameData = () => {
-  const context = useContext(EmptyContext);
+  const context = useContext(DataContext);
   if (context === undefined) {
     throw new Error('useGameData must be used within a DataProvider');
   }
