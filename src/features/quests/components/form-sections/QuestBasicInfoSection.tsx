@@ -9,70 +9,83 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { QuestType } from "@/types/quests";
+import { useFormContext } from "react-hook-form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage
+} from "@/components/ui/form";
 
-interface QuestBasicInfoSectionProps {
-  title: string;
-  description: string;
-  type: QuestType;
-  onTitleChange: (value: string) => void;
-  onDescriptionChange: (value: string) => void;
-  onTypeChange: (value: QuestType) => void;
-}
+export const QuestBasicInfoSection = () => {
+  const { control } = useFormContext();
 
-export const QuestBasicInfoSection = ({
-  title,
-  description,
-  type,
-  onTitleChange,
-  onDescriptionChange,
-  onTypeChange
-}: QuestBasicInfoSectionProps) => {
   return (
     <div className="space-y-4">
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium mb-1">
-          Quest Title
-        </label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => onTitleChange(e.target.value)}
-          placeholder="Enter quest title"
-          className="w-full"
-        />
-      </div>
+      <FormField
+        control={control}
+        name="title"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel htmlFor="title">Quest Title</FormLabel>
+            <FormControl>
+              <Input
+                id="title"
+                placeholder="Enter quest title"
+                className="w-full"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium mb-1">
-          Description
-        </label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => onDescriptionChange(e.target.value)}
-          placeholder="Enter quest description"
-          className="w-full"
-        />
-      </div>
+      <FormField
+        control={control}
+        name="description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel htmlFor="description">Description</FormLabel>
+            <FormControl>
+              <Textarea
+                id="description"
+                placeholder="Enter quest description"
+                className="w-full"
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      <div>
-        <label htmlFor="type" className="block text-sm font-medium mb-1">
-          Quest Type
-        </label>
-        <Select
-          value={type}
-          onValueChange={(value: QuestType) => onTypeChange(value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="main">Main Quest</SelectItem>
-            <SelectItem value="side">Side Quest</SelectItem>
-            <SelectItem value="boss">Boss Battle</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <FormField
+        control={control}
+        name="type"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel htmlFor="type">Quest Type</FormLabel>
+            <Select
+              onValueChange={field.onChange}
+              defaultValue={field.value}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="main">Main Quest</SelectItem>
+                <SelectItem value="side">Side Quest</SelectItem>
+                <SelectItem value="boss">Boss Battle</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 };

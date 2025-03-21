@@ -5,12 +5,40 @@ import { Quest, QuestStep, QuestType } from "@/types/quests";
 import { StatName } from "@/types/character";
 import { DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
-// Import our new components
+// Import our components
 import { QuestBasicInfoSection } from "./form-sections/QuestBasicInfoSection";
 import { QuestStepsSection } from "./form-sections/QuestStepsSection";
 import { BasicRewardsSection } from "./form-sections/BasicRewardsSection";
 import { StatRewardsSection } from "./form-sections/StatRewardsSection";
+
+// Define validation schema
+const questFormSchema = z.object({
+  title: z.string().min(1, { message: "Title is required" }),
+  description: z.string().optional(),
+  type: z.enum(["main", "side", "boss"] as const),
+  steps: z.array(
+    z.object({
+      id: z.string(),
+      description: z.string().min(1, { message: "Step description is required" })
+    })
+  ),
+  xpReward: z.number().int().min(0),
+  coinReward: z.number().int().min(0),
+  statRewards: z.object({
+    strength: z.number().int().min(0).max(5).optional(),
+    dexterity: z.number().int().min(0).max(5).optional(),
+    constitution: z.number().int().min(0).max(5).optional(),
+    intelligence: z.number().int().min(0).max(5).optional(),
+    wisdom: z.number().int().min(0).max(5).optional(),
+    charisma: z.number().int().min(0).max(5).optional()
+  }).optional()
+});
+
+type QuestFormValues = z.infer<typeof questFormSchema>;
 
 type QuestFormProps = { 
   onSubmit: (quest: Omit<Quest, "id" | "status">) => void;
@@ -23,88 +51,78 @@ export const QuestForm = ({
   initialData = null,
   onCancel
 }: QuestFormProps) => {
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [description, setDescription] = useState(initialData?.description || "");
-  const [type, setType] = useState<QuestType>(initialData?.type || "side");
-  const [steps, setSteps] = useState<Omit<QuestStep, "completed">[]>(
-    initialData?.steps?.map(step => ({ id: step.id, description: step.description })) || []
-  );
-  const [xpReward, setXpReward] = useState(initialData?.xpReward || 20);
-  const [coinReward, setCoinReward] = useState(initialData?.coinReward || 10);
-  
-  const initialStatRewards = {
-    strength: initialData?.statRewards?.strength || 0,
-    dexterity: initialData?.statRewards?.dexterity || 0,
-    constitution: initialData?.statRewards?.constitution || 0,
-    intelligence: initialData?.statRewards?.intelligence || 0,
-    wisdom: initialData?.statRewards?.wisdom || 0,
-    charisma: initialData?.statRewards?.charisma || 0
-  };
-  
-  const [statRewards, setStatRewards] = useState(initialStatRewards);
-
-  const handleStatChange = (stat: StatName, value: number) => {
-    setStatRewards(prev => ({
-      ...prev,
-      [stat]: Math.max(0, value)
-    }));
-  };
-
-  const handleSubmit = () => {
-    if (!title.trim()) {
-      toast.error("Please enter a quest title");
-      return;
+  // Create initial values for the form
+  const defaultValues: QuestFormValues = {
+    title: initialData?.title || "",
+    description: initialData?.description || "",
+    type: initialData?.type || "side",
+    steps: initialData?.steps?.map(step => ({ 
+      id: step.id, 
+      description: step.description 
+    })) || [],
+    xpReward: initialData?.xpReward || 20,
+    coinReward: initialData?.coinReward || 10,
+    statRewards: {
+      strength: initialData?.statRewards?.strength || 0,
+      dexterity: initialData?.statRewards?.dexterity || 0,
+      constitution: initialData?.statRewards?.constitution || 0,
+      intelligence: initialData?.statRewards?.intelligence || 0,
+      wisdom: initialData?.statRewards?.wisdom || 0,
+      charisma: initialData?.statRewards?.charisma || 0
     }
+  };
 
-    onSubmit({
-      title,
-      description,
-      type,
-      steps: steps.map(step => ({ ...step, completed: false })),
-      xpReward,
-      coinReward,
+  // Setup form with validation
+  const methods = useForm<QuestFormValues>({
+    resolver: zodResolver(questFormSchema),
+    defaultValues,
+    mode: "onChange"
+  });
+
+  // Define all available stat names
+  const statNames: StatName[] = [
+    "strength", "dexterity", "constitution", 
+    "intelligence", "wisdom", "charisma"
+  ];
+
+  const handleFormSubmit = (data: QuestFormValues) => {
+    // Transform the form data to match the expected Quest format
+    const questData: Omit<Quest, "id" | "status"> = {
+      title: data.title,
+      description: data.description || "",
+      type: data.type,
+      steps: data.steps.map(step => ({ ...step, completed: false })),
+      xpReward: data.xpReward,
+      coinReward: data.coinReward,
+      // Filter out zero-value stat rewards
       statRewards: Object.fromEntries(
-        Object.entries(statRewards).filter(([_, value]) => value > 0)
+        Object.entries(data.statRewards || {}).filter(([_, value]) => value > 0)
       )
-    });
+    };
+
+    onSubmit(questData);
   };
 
   return (
-    <div className="space-y-4">
-      <QuestBasicInfoSection
-        title={title}
-        description={description}
-        type={type}
-        onTitleChange={setTitle}
-        onDescriptionChange={setDescription}
-        onTypeChange={setType}
-      />
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(handleFormSubmit)} className="space-y-4">
+        <QuestBasicInfoSection />
 
-      <QuestStepsSection 
-        steps={steps}
-        onStepsChange={setSteps}
-      />
+        <QuestStepsSection />
 
-      <BasicRewardsSection
-        xpReward={xpReward}
-        coinReward={coinReward}
-        onXpChange={setXpReward}
-        onCoinChange={setCoinReward}
-      />
+        <BasicRewardsSection />
 
-      <StatRewardsSection
-        statRewards={statRewards}
-        onStatChange={handleStatChange}
-      />
+        <StatRewardsSection statNames={statNames} />
 
-      <DialogFooter className="flex justify-between">
-        <Button variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button onClick={handleSubmit}>
-          {initialData ? 'Update Quest' : 'Create Quest'}
-        </Button>
-      </DialogFooter>
-    </div>
+        <DialogFooter className="flex justify-between">
+          <Button variant="outline" onClick={onCancel} type="button">
+            Cancel
+          </Button>
+          <Button type="submit">
+            {initialData ? 'Update Quest' : 'Create Quest'}
+          </Button>
+        </DialogFooter>
+      </form>
+    </FormProvider>
   );
 };

@@ -1,48 +1,62 @@
 
 import { Input } from "@/components/ui/input";
+import { useFormContext } from "react-hook-form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage
+} from "@/components/ui/form";
 
-interface BasicRewardsSectionProps {
-  xpReward: number;
-  coinReward: number;
-  onXpChange: (value: number) => void;
-  onCoinChange: (value: number) => void;
-}
+export const BasicRewardsSection = () => {
+  const { control } = useFormContext();
 
-export const BasicRewardsSection = ({ 
-  xpReward, 
-  coinReward, 
-  onXpChange, 
-  onCoinChange 
-}: BasicRewardsSectionProps) => {
   return (
     <div className="grid grid-cols-2 gap-4">
-      <div>
-        <label htmlFor="xpReward" className="block text-sm font-medium mb-1">
-          XP Reward
-        </label>
-        <Input
-          id="xpReward"
-          type="number"
-          min="0"
-          value={xpReward}
-          onChange={(e) => onXpChange(Number(e.target.value))}
-          className="w-full"
-        />
-      </div>
+      <FormField
+        control={control}
+        name="xpReward"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel htmlFor="xpReward">XP Reward</FormLabel>
+            <FormControl>
+              <Input
+                id="xpReward"
+                type="number"
+                min="0"
+                className="w-full"
+                {...field}
+                value={field.value || 0}
+                onChange={(e) => field.onChange(Number(e.target.value))}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
       
-      <div>
-        <label htmlFor="coinReward" className="block text-sm font-medium mb-1">
-          Coin Reward
-        </label>
-        <Input
-          id="coinReward"
-          type="number"
-          min="0"
-          value={coinReward}
-          onChange={(e) => onCoinChange(Number(e.target.value))}
-          className="w-full"
-        />
-      </div>
+      <FormField
+        control={control}
+        name="coinReward"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel htmlFor="coinReward">Coin Reward</FormLabel>
+            <FormControl>
+              <Input
+                id="coinReward"
+                type="number"
+                min="0"
+                className="w-full"
+                {...field}
+                value={field.value || 0}
+                onChange={(e) => field.onChange(Number(e.target.value))}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 };
