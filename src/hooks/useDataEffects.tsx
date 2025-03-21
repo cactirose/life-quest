@@ -5,10 +5,7 @@ import { ChallengeContext } from "../contexts/ChallengeContext";
 import { useDailyLogin } from "../features/character/hooks/useDailyLogin";
 import { useAchievements } from "../contexts/AchievementContext";
 import { useGameData } from "../contexts/DataContext";
-
-// Get the proper return types from the context hooks
-type CharacterContextType = ReturnType<typeof CharacterContext.useContext>;
-type ChallengeContextType = ReturnType<typeof ChallengeContext.useContext>;
+import { CharacterContextType, ChallengeContextType } from "../utils/contextTypes";
 
 export const useDataEffects = (
   characterContext: CharacterContextType,
