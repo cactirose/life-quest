@@ -1,3 +1,4 @@
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useGameData } from "@/contexts/DataContext";
 import { 
@@ -141,14 +142,14 @@ const Navbar = () => {
       <SheetTrigger asChild>
         <Button 
           variant="ghost" 
-          className="text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none p-2 h-10 w-10"
+          className="text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none p-2 h-10 w-10 flex items-center justify-center"
         >
           <Menu size={24} />
         </Button>
       </SheetTrigger>
       <SheetContent 
         side="right" 
-        className="w-[280px] bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] p-0 border-l border-[hsl(var(--nav-hover))]"
+        className="bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] p-0 border-l border-[hsl(var(--nav-hover))]"
       >
         <div className="flex flex-col h-full">
           <div className="p-4 border-b border-[hsl(var(--nav-hover))]">
@@ -288,7 +289,7 @@ const Navbar = () => {
           )}
           
           {isMobile && (
-            <div className="z-50">
+            <div className="flex items-center ml-auto z-50">
               <MobileMenu />
             </div>
           )}
