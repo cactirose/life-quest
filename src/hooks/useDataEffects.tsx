@@ -18,11 +18,38 @@ export const useDataEffects = (
   useEffect(() => {
     // Only check daily login if character data is available
     if (characterContext.character) {
-      const { checkDailyLogin } = useDailyLogin(characterContext.character, setGameData);
-      checkDailyLogin();
+      // Create a function to check daily login within the effect
+      const checkDailyLoginStatus = () => {
+        // Get the current date as a string
+        const today = new Date().toISOString().split('T')[0];
+        const lastLogin = characterContext.character?.lastLoginDate 
+          ? new Date(characterContext.character.lastLoginDate).toISOString().split('T')[0]
+          : null;
+        
+        // Only update if it's a new day (player hasn't logged in today)
+        if (lastLogin !== today) {
+          // Update the character's lastLoginDate and streak
+          const updatedCharacter = {
+            ...characterContext.character,
+            lastLoginDate: new Date().toISOString(),
+            loginStreak: lastLogin ? characterContext.character.loginStreak + 1 : 1,
+            dailyBonusClaimed: false
+          };
+          
+          // Update the game data with the new character information
+          if (setGameData) {
+            setGameData(prevData => ({
+              ...prevData,
+              character: updatedCharacter
+            }));
+          }
+        }
+      };
+      
+      checkDailyLoginStatus();
     }
   // Use lastLoginDate instead of id since Character doesn't have an id property
-  }, [characterContext.character?.lastLoginDate]); 
+  }, [characterContext.character?.lastLoginDate, characterContext.character, setGameData]); 
 
   // Check achievements when challenges or character changes
   useEffect(() => {
