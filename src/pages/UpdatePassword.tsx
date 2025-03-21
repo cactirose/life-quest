@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { KeyRound, Shield, ArrowLeft, Check } from "lucide-react";
+import { KeyRound, Shield, ArrowLeft, Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,15 +17,32 @@ const UpdatePassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [hasSession, setHasSession] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // Check if the user has a valid recovery session
   useEffect(() => {
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setHasSession(!!data.session);
+      try {
+        setIsCheckingAuth(true);
+        const { data } = await supabase.auth.getSession();
+        console.log("Auth session check:", data.session ? "Session exists" : "No session");
+        setHasSession(!!data.session);
+      } catch (error) {
+        console.error("Error checking session:", error);
+      } finally {
+        setIsCheckingAuth(false);
+      }
     };
     
     checkSession();
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state change event:", event);
+      setHasSession(!!session);
+    });
+    
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -77,6 +94,24 @@ const UpdatePassword = () => {
     }
   };
 
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-3xl font-pixel text-primary">Checking Auth Status</CardTitle>
+            <CardDescription>
+              Please wait while we verify your session...
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center py-6">
+            <div className="animate-spin text-3xl">⌛</div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!hasSession && !isSuccess) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
@@ -88,6 +123,9 @@ const UpdatePassword = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center py-6">
+            <div className="mx-auto bg-destructive/10 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+            </div>
             <p className="mb-4">Please request a new password reset link</p>
           </CardContent>
           <CardFooter className="flex justify-center">

@@ -25,9 +25,12 @@ const ResetPassword = () => {
         throw new Error("Please enter your email address");
       }
       
-      // Send password reset email
+      // Get the base URL for redirects
+      const baseUrl = window.location.origin;
+      
+      // Send password reset email with absolute URL for redirect
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/update-password`,
+        redirectTo: `${baseUrl}/update-password`,
       });
       
       if (error) throw error;
