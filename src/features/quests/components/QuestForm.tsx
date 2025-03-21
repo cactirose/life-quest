@@ -91,7 +91,11 @@ export const QuestForm = ({
       title: data.title,
       description: data.description || "",
       type: data.type,
-      steps: data.steps.map(step => ({ ...step, completed: false })),
+      steps: data.steps.map(step => ({ 
+        id: step.id || Date.now().toString(), // Ensure id is always present
+        description: step.description,
+        completed: false 
+      })),
       xpReward: data.xpReward,
       coinReward: data.coinReward,
       // Filter out zero-value stat rewards
