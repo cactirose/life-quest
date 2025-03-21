@@ -74,26 +74,74 @@ export const upsertCharacter = async (character: Character): Promise<void> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No authenticated user");
 
-    const { error } = await supabase
+    // First check if the user already has a character
+    const { data: existingCharacter, error: checkError } = await supabase
       .from("characters")
-      .upsert({
-        user_id: user.id,
-        name: character.name,
-        level: character.level,
-        xp: character.xp,
-        next_level_xp: character.nextLevelXp,
-        coins: character.coins,
-        portrait: character.portrait,
-        bio: character.bio,
-        stats: character.stats,
-        last_login_date: character.lastLoginDate,
-        login_streak: character.loginStreak,
-        daily_bonus_claimed: character.dailyBonusClaimed
-      });
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-    if (error) {
-      console.error("Error upserting character:", error);
-      toast.error("Failed to save character data");
+    if (checkError) {
+      console.error("Error checking for existing character:", checkError);
+      throw checkError;
+    }
+
+    // Prepare the data for upsert
+    const characterData = {
+      user_id: user.id,
+      name: character.name,
+      level: character.level,
+      xp: character.xp,
+      next_level_xp: character.nextLevelXp,
+      coins: character.coins,
+      portrait: character.portrait,
+      bio: character.bio,
+      stats: character.stats,
+      last_login_date: character.lastLoginDate,
+      login_streak: character.loginStreak,
+      daily_bonus_claimed: character.dailyBonusClaimed
+    };
+
+    // If character exists, do an update instead of upsert to avoid conflicts
+    if (existingCharacter) {
+      const { error: updateError } = await supabase
+        .from("characters")
+        .update(characterData)
+        .eq("user_id", user.id);
+
+      if (updateError) {
+        console.error("Error updating character:", updateError);
+        toast.error("Failed to update character data");
+        return;
+      }
+    } else {
+      // Only try to insert if no existing character
+      const { error: insertError } = await supabase
+        .from("characters")
+        .insert([characterData]);
+
+      if (insertError) {
+        // Check for duplicate key violation
+        if (insertError.code === '23505') {
+          console.log("Duplicate character detected. Another process may have created it. Updating instead.");
+          
+          // Try updating instead
+          const { error: updateError } = await supabase
+            .from("characters")
+            .update(characterData)
+            .eq("user_id", user.id);
+            
+          if (updateError) {
+            console.error("Error updating character after duplicate detection:", updateError);
+            toast.error("Failed to save character data");
+            return;
+          }
+        } else {
+          console.error("Error inserting character:", insertError);
+          toast.error("Failed to save character data");
+          return;
+        }
+      }
     }
   } catch (error) {
     console.error("Error in upsertCharacter:", error);

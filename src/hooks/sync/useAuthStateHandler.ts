@@ -1,49 +1,50 @@
 
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { storeSession } from "@/utils/auth";
 import { toast } from "sonner";
-import { loadInitialData } from "@/utils/loadInitialData";
+import { storeSession, clearSession } from "@/utils/auth";
 
-export function useAuthStateHandler(loadUserData: () => Promise<void>, setGameData: React.Dispatch<React.SetStateAction<any>>) {
-  const hasLoadedData = useRef(false);
-
-  const handleAuthStateChange = useCallback((event: string, session: any) => {
-    console.log("Auth state changed:", event);
-    
-    // Use setTimeout to prevent deadlocks with Supabase
-    setTimeout(() => {
-      if (event === 'SIGNED_IN') {
-        hasLoadedData.current = false;
-        loadUserData();
-      } else if (event === 'SIGNED_OUT') {
-        const initialData = loadInitialData();
-        setGameData(prevData => ({
-          ...prevData,
-          ...initialData,
-        }));
-        hasLoadedData.current = true;
-        toast.info("Signed out - using local data");
-      }
-    }, 0);
-  }, [loadUserData, setGameData]);
-
+export const useAuthStateHandler = (
+  loadUserData: () => void,
+  setGameData: React.Dispatch<React.SetStateAction<any>>
+) => {
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
-
-    if (!hasLoadedData.current) {
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event);
+      
+      // Use setTimeout to prevent potential deadlocks with Supabase
       setTimeout(() => {
-        if (hasLoadedData.current) return;
-        loadUserData();
-      }, 300);
-    }
-
+        if (event === 'SIGNED_IN') {
+          console.log("User signed in - session:", session?.user?.id);
+          if (session) {
+            storeSession(session);
+            loadUserData();
+          }
+        } 
+        else if (event === 'TOKEN_REFRESHED') {
+          console.log("Token refreshed - session:", session?.user?.id);
+          if (session) {
+            storeSession(session);
+          }
+        }
+        else if (event === 'SIGNED_OUT') {
+          console.log("User signed out");
+          clearSession();
+          toast.info("You've been signed out");
+        }
+        else if (event === 'USER_UPDATED') {
+          console.log("User updated");
+          if (session) {
+            storeSession(session);
+          }
+        }
+      }, 0);
+    });
+    
+    // Cleanup subscription
     return () => {
       subscription.unsubscribe();
     };
-  }, [handleAuthStateChange, loadUserData]);
-
-  return {
-    hasLoadedData
-  };
-}
+  }, [loadUserData, setGameData]);
+};
