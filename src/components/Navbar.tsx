@@ -26,10 +26,8 @@ import { ThemeSettings } from "./ThemeSettings";
 import { logout } from "@/utils/auth";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "./ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import MobileNavMenu from "./MobileNavMenu";
 
 const Navbar = () => {
   const {
@@ -137,60 +135,6 @@ const Navbar = () => {
     </div>
   );
 
-  const MobileMenu = () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none p-2 h-10 w-10 flex items-center justify-center"
-        >
-          <Menu size={24} />
-        </Button>
-      </SheetTrigger>
-      <SheetContent 
-        side="right" 
-        className="bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] p-0 border-l border-[hsl(var(--nav-hover))]"
-      >
-        <div className="flex flex-col h-full">
-          <div className="p-4 border-b border-[hsl(var(--nav-hover))]">
-            <h2 className="text-xl font-pixel mb-2">Life Quest</h2>
-            <StatusBar />
-          </div>
-          
-          <ScrollArea className="flex-1 p-4">
-            <div className="flex flex-col space-y-1">
-              {mobileMenuItems.map((item) => (
-                <Link 
-                  key={item.path} 
-                  to={item.path}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-md font-pixel hover:bg-[hsl(var(--nav-hover))]",
-                    location.pathname === item.path && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]"
-                  )}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Link>
-              ))}
-              <Button 
-                variant="ghost" 
-                className="flex w-full justify-start items-center gap-3 p-3 rounded-md font-pixel hover:bg-[hsl(var(--nav-hover))] h-auto text-[hsl(var(--nav-text))]"
-                onClick={handleLogout}
-              >
-                <LogOut size={20} />
-                <span>Logout</span>
-              </Button>
-            </div>
-          </ScrollArea>
-          
-          <div className="mt-auto p-4 border-t border-[hsl(var(--nav-hover))]">
-            <ThemeSettings />
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] shadow-md py-2">
       <div className="container mx-auto">
@@ -289,8 +233,12 @@ const Navbar = () => {
           )}
           
           {isMobile && (
-            <div className="flex items-center ml-auto z-50">
-              <MobileMenu />
+            <div className="flex items-center ml-auto z-[100]">
+              <MobileNavMenu 
+                items={mobileMenuItems} 
+                onLogout={handleLogout} 
+                statusBar={<StatusBar />} 
+              />
             </div>
           )}
           
