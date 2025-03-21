@@ -104,7 +104,7 @@ const Navbar = () => {
     }
   ];
 
-  // Mobile menu items
+  // Mobile menu items - flattened for better mobile navigation
   const mobileMenuItems = [
     {
       label: "Home",
@@ -139,30 +139,35 @@ const Navbar = () => {
     </div>
   );
 
-  // Mobile menu component
+  // Mobile menu component - updated with proper styling and positioning
   const MobileMenu = () => (
-    <div className="block md:hidden">
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button 
-            variant="ghost" 
-            className="bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none px-4 py-2 h-10"
-          >
-            <Menu />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-[80%] bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] pt-10">
-          <h2 className="text-xl font-pixel mb-4">Life Quest</h2>
-          <StatusBar />
-          <Separator className="my-4" />
-          <ScrollArea className="h-[calc(100vh-180px)]">
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button 
+          variant="ghost" 
+          className="text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none px-2"
+        >
+          <Menu size={24} />
+        </Button>
+      </SheetTrigger>
+      <SheetContent 
+        side="right" 
+        className="w-[280px] bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] p-0 border-l border-[hsl(var(--nav-hover))]"
+      >
+        <div className="flex flex-col h-full">
+          <div className="p-4 border-b border-[hsl(var(--nav-hover))]">
+            <h2 className="text-xl font-pixel mb-2">Life Quest</h2>
+            <StatusBar />
+          </div>
+          
+          <ScrollArea className="flex-1 p-4">
             <div className="flex flex-col space-y-1">
               {mobileMenuItems.map((item) => (
                 <Link 
                   key={item.path} 
                   to={item.path}
                   className={cn(
-                    "flex items-center gap-2 p-3 rounded-md hover:bg-[hsl(var(--nav-hover))]",
+                    "flex items-center gap-3 p-3 rounded-md font-pixel hover:bg-[hsl(var(--nav-hover))]",
                     location.pathname === item.path && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]"
                   )}
                 >
@@ -172,7 +177,7 @@ const Navbar = () => {
               ))}
               <Button 
                 variant="ghost" 
-                className="flex items-center justify-start gap-2 p-3 rounded-md hover:bg-[hsl(var(--nav-hover))] w-full h-auto text-[hsl(var(--nav-text))]"
+                className="flex w-full justify-start items-center gap-3 p-3 rounded-md font-pixel hover:bg-[hsl(var(--nav-hover))] h-auto text-[hsl(var(--nav-text))]"
                 onClick={handleLogout}
               >
                 <LogOut size={20} />
@@ -180,21 +185,21 @@ const Navbar = () => {
               </Button>
             </div>
           </ScrollArea>
-          <div className="absolute bottom-4 left-0 right-0 px-6">
+          
+          <div className="mt-auto p-4 border-t border-[hsl(var(--nav-hover))]">
             <ThemeSettings />
           </div>
-        </SheetContent>
-      </Sheet>
-    </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] shadow-md py-2">
       <div className="container mx-auto">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <MobileMenu />
+          {/* Logo - no longer includes mobile menu */}
+          <div className="flex items-center">
             <Link to="/" className="flex items-center gap-2">
               <h1 className="text-xl font-pixel text-[hsl(var(--nav-text))]">Life Quest</h1>
             </Link>
@@ -294,9 +299,14 @@ const Navbar = () => {
             </NavigationMenu>
           )}
           
-          {/* Theme Settings - hidden on mobile and shown inside the mobile menu */}
-          <div className="flex items-center md:block">
-            {!isMobile && <ThemeSettings />}
+          {/* Mobile menu button - now on the right side */}
+          {isMobile && (
+            <MobileMenu />
+          )}
+          
+          {/* Theme Settings - hidden on mobile and shown inside mobile menu */}
+          <div className="hidden md:block">
+            <ThemeSettings />
           </div>
         </div>
       </div>
