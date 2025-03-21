@@ -1,7 +1,7 @@
 
 import { createContext, useContext } from "react";
 import { CombinedProvider } from "./CombinedProvider";
-import { useGameDataManager } from "../hooks/useGameDataManager";
+import { useGameDataManager } from "../hooks/gameData";
 import { DEFAULT_GAME_DATA } from "../utils/defaultGameData";
 import { useDataEffects } from "../hooks/useDataEffects";
 import { GameData } from "../types/gameData";
@@ -70,7 +70,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Custom hook for using the context - this is what we're modifying
+// Custom hook for using the context
 export const useGameData = () => {
   const context = useContext(DataContext);
   if (context === undefined) {
