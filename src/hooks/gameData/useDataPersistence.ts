@@ -259,9 +259,9 @@ export function useDataPersistence(gameData: GameData) {
       
       // If we have no more fields to sync, we're done
       if (changedFields.current.size === 0) {
-        console.log("All data synced successfully");
+        console.log("All data synced successfully to Supabase");
       } else {
-        console.log("Some fields failed to sync:", Array.from(changedFields.current));
+        console.log("Some fields failed to sync to Supabase:", Array.from(changedFields.current));
       }
       
     } catch (error) {
@@ -288,19 +288,19 @@ export function useDataPersistence(gameData: GameData) {
       const changes = detectChangedFields(previousData.current, gameData);
       changes.forEach(field => changedFields.current.add(field));
       
-      // Save to localStorage immediately
+      // Save to localStorage as a fallback, but prioritize Supabase
       localStorage.setItem("rpgProductivityData", JSON.stringify(gameData));
       
       // Update previous data by deep cloning
       previousData.current = JSON.parse(JSON.stringify(gameData));
       
-      // Sync with Supabase if authenticated (debounced)
-      if (isAuthenticatedSync() && changedFields.current.size > 0) {
-        console.log("Changed fields, triggering sync:", Array.from(changedFields.current));
+      // Always attempt to sync with Supabase if there are changes
+      if (changedFields.current.size > 0) {
+        console.log("Changed fields, triggering sync with Supabase:", Array.from(changedFields.current));
         syncWithSupabase();
       }
     } catch (error) {
-      console.error("Error saving data:", error);
+      console.error("Error during data persistence cycle:", error);
     }
   }, [gameData, syncWithSupabase]);
 

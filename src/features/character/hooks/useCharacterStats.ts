@@ -1,7 +1,6 @@
 
 import { Character, StatName } from "@/types/character";
 import { GameDataUpdater } from "@/utils/contextTypes";
-import { upsertCharacter } from "@/services/characterService";
 
 export const useCharacterStats = (
   character: Character,
@@ -12,9 +11,7 @@ export const useCharacterStats = (
       ...prevData,
       character
     }));
-
-    // Sync with Supabase
-    upsertCharacter(character);
+    // The upsertCharacter call is removed as it's now handled by useDataPersistence
   };
 
   const updateCharacterStat = (stat: StatName, value: number) => {
@@ -27,8 +24,7 @@ export const useCharacterStats = (
         }
       };
 
-      // Sync with Supabase
-      upsertCharacter(updatedCharacter);
+      // The upsertCharacter call is removed as it's now handled by useDataPersistence
 
       return {
         ...prevData,

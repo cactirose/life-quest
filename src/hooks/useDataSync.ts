@@ -21,7 +21,7 @@ export const useDataSync = () => {
 
   // Define loadLocalData first to avoid the "used before declaration" error
   const loadLocalData = useCallback(() => {
-    console.log("Loading local data");
+    console.log("Loading local data as fallback due to Supabase data sync failure");
     try {
       const localData = localStorage.getItem("rpgProductivityData");
       const initialData = localData ? JSON.parse(localData) : loadInitialData();
@@ -31,9 +31,12 @@ export const useDataSync = () => {
         ...initialData,
       }));
       
-      console.log("Using local data (user not logged in or data sync failed)");
+      console.log("Using local data as fallback (user not logged in or Supabase data sync failed)");
+      toast.warning("Using locally saved data. Some changes may not be synced.", {
+        id: "using-local-data"
+      });
     } catch (error) {
-      console.error("Error loading local data:", error);
+      console.error("Error loading local fallback data:", error);
       const initialData = loadInitialData();
       setGameData(prevData => ({
         ...prevData,
@@ -60,6 +63,18 @@ export const useDataSync = () => {
     setIsSyncing(true);
     
     try {
+      // Check Supabase connection first
+      const isConnected = await supabase.auth.getSession()
+        .then(res => !res.error)
+        .catch(() => false);
+      
+      if (!isConnected) {
+        console.log("Supabase connection failed, loading local data as fallback");
+        loadLocalData();
+        setIsSyncing(false);
+        return;
+      }
+      
       const fetchPromises = [
         dataFetchers.fetchCharacter(signal),
         dataFetchers.fetchQuests(signal),
@@ -74,44 +89,44 @@ export const useDataSync = () => {
       
       if (isMobile) {
         const results = await Promise.allSettled(fetchPromises);
-        console.log("Mobile data sync results:", 
+        console.log("Mobile Supabase data sync results:", 
           results.map((r, i) => `${i}: ${r.status}`).join(', '));
         
         const successCount = results.filter(r => r.status === 'fulfilled').length;
         
         if (successCount > 0) {
-          toast.success(`Synced ${successCount} of ${fetchPromises.length} data types`);
+          toast.success(`Synced ${successCount} of ${fetchPromises.length} data types from Supabase`);
         } else {
-          toast.error("Could not sync your data. Using cached data instead.");
+          toast.error("Could not sync your data from Supabase. Using cached data instead.");
           loadLocalData();
         }
       } else {
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Data sync timeout")), 15000)
+          setTimeout(() => reject(new Error("Supabase data sync timeout")), 15000)
         );
         
         try {
           await Promise.race([Promise.all(fetchPromises), timeoutPromise]);
-          toast.success("Your data has been synced from the cloud");
+          toast.success("Your data has been synced from Supabase");
         } catch (error) {
           if (signal.aborted) {
-            console.log("Data sync was cancelled");
+            console.log("Supabase data sync was cancelled");
             return;
           }
           
-          if ((error as Error).message === "Data sync timeout") {
-            console.warn("Data sync timed out, continuing with partial data");
+          if ((error as Error).message === "Supabase data sync timeout") {
+            console.warn("Supabase data sync timed out, continuing with partial data");
             toast.info("Sync taking longer than expected. Some data may still be loading.");
           } else {
-            console.error("Error during data sync:", error);
-            toast.error("Error syncing data. Using cached data instead.");
+            console.error("Error during Supabase data sync:", error);
+            toast.error("Error syncing data from Supabase. Using cached data as fallback.");
             loadLocalData();
           }
         }
       }
     } catch (error) {
-      console.error("Error syncing data:", error);
-      toast.error("There was an issue syncing your data");
+      console.error("Error syncing data from Supabase:", error);
+      toast.error("There was an issue syncing your data from Supabase");
       loadLocalData();
     } finally {
       setIsSyncing(false);

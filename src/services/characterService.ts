@@ -104,6 +104,7 @@ export const upsertCharacter = async (character: Character): Promise<void> => {
 
     // If character exists, do an update instead of upsert to avoid conflicts
     if (existingCharacter) {
+      console.log("Existing character found, updating instead of inserting");
       const { error: updateError } = await supabase
         .from("characters")
         .update(characterData)
@@ -116,6 +117,7 @@ export const upsertCharacter = async (character: Character): Promise<void> => {
       }
     } else {
       // Only try to insert if no existing character
+      console.log("No existing character found, inserting new record");
       const { error: insertError } = await supabase
         .from("characters")
         .insert([characterData]);
@@ -142,6 +144,7 @@ export const upsertCharacter = async (character: Character): Promise<void> => {
           return;
         }
       }
+      console.log("Character data saved successfully");
     }
   } catch (error) {
     console.error("Error in upsertCharacter:", error);

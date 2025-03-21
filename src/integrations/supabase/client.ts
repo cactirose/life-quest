@@ -6,7 +6,7 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://ilfxfggmyrmblmrqjrvl.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZnhmZ2dteXJtYmxtcnFqcnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI0NzgzODIsImV4cCI6MjA1ODA1NDM4Mn0.LzUQ6MhDh3tG-L9X1J5oHNvXxcNAC1Fg-jNenCaDAhQ";
 
-// Ensure we only create one instance of the supabase client
+// Create a singleton instance for the supabase client to ensure persistence
 let supabaseInstance: ReturnType<typeof createClient<Database>> | null = null;
 
 const getSupabaseClient = () => {
@@ -19,6 +19,8 @@ const getSupabaseClient = () => {
         storageKey: 'life-quest-supabase-auth',
       },
     });
+  } else {
+    console.log("Using existing Supabase client instance");
   }
   return supabaseInstance;
 };
