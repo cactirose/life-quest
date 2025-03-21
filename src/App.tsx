@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ReactNode, useEffect } from "react";
 import { DataProvider } from "./contexts/DataContext";
+import { AuthProvider } from "./features/auth/context/AuthContext";
 import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -26,7 +26,6 @@ import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { isAuthenticated, logout } from "./utils/auth";
 import { useSupabaseSync } from "./hooks/useSupabaseSync";
 
 const queryClient = new QueryClient();
@@ -75,77 +74,79 @@ const PublicLayout = ({ children }: { children: ReactNode }) => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <DataProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/update-password" element={<UpdatePassword />} />
-            
-            {/* Protected Routes */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Layout><Dashboard /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/quests" element={
-              <ProtectedRoute>
-                <Layout><Quests /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/character" element={
-              <ProtectedRoute>
-                <Layout><Character /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/skills" element={
-              <ProtectedRoute>
-                <Layout><SkillTree /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/shop" element={
-              <ProtectedRoute>
-                <Layout><Shop /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/inventory" element={
-              <ProtectedRoute>
-                <Layout><Inventory /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/challenges" element={
-              <ProtectedRoute>
-                <Layout><Challenges /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/habits" element={
-              <ProtectedRoute>
-                <Layout><Habits /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/mood" element={
-              <ProtectedRoute>
-                <Layout><Mood /></Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/achievements" element={
-              <ProtectedRoute>
-                <Layout><Achievements /></Layout>
-              </ProtectedRoute>
-            } />
-            
-            {/* Not Found Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </DataProvider>
+    <AuthProvider>
+      <DataProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/update-password" element={<UpdatePassword />} />
+              
+              {/* Protected Routes */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Layout><Dashboard /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/quests" element={
+                <ProtectedRoute>
+                  <Layout><Quests /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/character" element={
+                <ProtectedRoute>
+                  <Layout><Character /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/skills" element={
+                <ProtectedRoute>
+                  <Layout><SkillTree /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/shop" element={
+                <ProtectedRoute>
+                  <Layout><Shop /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/inventory" element={
+                <ProtectedRoute>
+                  <Layout><Inventory /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/challenges" element={
+                <ProtectedRoute>
+                  <Layout><Challenges /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/habits" element={
+                <ProtectedRoute>
+                  <Layout><Habits /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/mood" element={
+                <ProtectedRoute>
+                  <Layout><Mood /></Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/achievements" element={
+                <ProtectedRoute>
+                  <Layout><Achievements /></Layout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Not Found Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </DataProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
