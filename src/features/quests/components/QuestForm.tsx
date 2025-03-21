@@ -10,7 +10,8 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Quest, QuestStep, QuestType, StatName } from "@/types/quests";
+import { Quest, QuestStep, QuestType } from "@/types/quests";
+import { StatName } from "@/types/character";
 import { DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Circle, Plus, X } from "lucide-react";
