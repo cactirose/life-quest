@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -33,7 +32,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Item card component for inventory
 const InventoryItemCard = ({ 
   item, 
   onEquip, 
@@ -45,14 +43,12 @@ const InventoryItemCard = ({
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   
-  // Determine border class based on rarity
   const rarityBorderClass = 
     item.rarity === "common" ? "rarity-common" :
     item.rarity === "rare" ? "rarity-rare" :
     item.rarity === "epic" ? "rarity-epic" :
     "rarity-legendary";
     
-  // Item icon based on type
   const itemIcon = 
     item.type === "weapon" ? <Sword className="text-rpg-brown" size={16} /> :
     item.type === "armor" ? <Shield className="text-rpg-brown" size={16} /> :
@@ -116,7 +112,6 @@ const InventoryItemCard = ({
         </Button>
       </div>
       
-      {/* Item Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="parchment border-none">
           <DialogHeader>
@@ -169,7 +164,6 @@ const InventoryItemCard = ({
   );
 };
 
-// Equipment slots component
 const EquipmentSlots = ({ 
   equippedItems, 
   onUnequip 
@@ -256,7 +250,6 @@ const Inventory = () => {
   const [filterType, setFilterType] = useState<GearType | "all">("all");
   const [currentTab, setCurrentTab] = useState<string>("all");
   
-  // Group equipped items by type
   const equippedItemsByType = inventory
     .filter(item => item.equipped)
     .reduce((acc, item) => {
@@ -264,25 +257,19 @@ const Inventory = () => {
       return acc;
     }, {} as Partial<Record<GearType, GearItem | null>>);
     
-  // Initialize empty slots
   const equipmentSlots: Partial<Record<GearType, GearItem | null>> = {
     weapon: equippedItemsByType.weapon || null,
     armor: equippedItemsByType.armor || null,
     accessory: equippedItemsByType.accessory || null,
-    // "real-life" items aren't equippable, so we don't include them in slots
   };
   
-  // Filter items based on search and filters
   const filteredItems = inventory.filter(item => {
-    // First, check against search text
     const matchesSearch = 
       item.name.toLowerCase().includes(searchText.toLowerCase()) ||
       item.description.toLowerCase().includes(searchText.toLowerCase());
     
-    // Then, check against type filter
     const matchesType = filterType === "all" || item.type === filterType;
     
-    // Finally, check against tab filter
     const matchesTab = 
       (currentTab === "all") || 
       (currentTab === "equipped" && item.equipped) ||
@@ -294,13 +281,11 @@ const Inventory = () => {
     return matchesSearch && matchesType && matchesTab;
   });
   
-  // Handle equipping an item
   const handleEquip = (itemId: string) => {
     equipItem(itemId);
     toast.success("Item equipped!");
   };
   
-  // Handle unequipping an item
   const handleUnequip = (itemId: string) => {
     unequipItem(itemId);
     toast.success("Item unequipped");
@@ -363,37 +348,37 @@ const Inventory = () => {
         <TabsList className="w-full mb-6 font-pixel bg-rpg-tan text-rpg-brown border-2 border-rpg-brown h-auto">
           <TabsTrigger 
             value="all" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             All Items
           </TabsTrigger>
           <TabsTrigger 
             value="equipped" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Equipped
           </TabsTrigger>
           <TabsTrigger 
             value="weapons" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Weapons
           </TabsTrigger>
           <TabsTrigger 
             value="armor" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Armor
           </TabsTrigger>
           <TabsTrigger 
             value="accessories" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Accessories
           </TabsTrigger>
           <TabsTrigger 
             value="real-life" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Real Life
           </TabsTrigger>

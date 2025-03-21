@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   useGameData, 
@@ -180,7 +179,6 @@ const AchievementForm = ({
   const [isTrackable, setIsTrackable] = useState(!!initialData?.requiredCount);
   const [requiredCount, setRequiredCount] = useState(initialData?.requiredCount || 5);
   
-  // List of emoji icons to choose from for achievements
   const emojiOptions = ["🏆", "🏅", "🎖️", "⭐", "🌟", "✨", "🎯", "🚀", "🎮", "🔮", "💎", "🌈", "🔥", "👑", "⚔️", "🛡️", "📚", "🧠", "💪", "🎓"];
   
   const handleSubmit = () => {
@@ -380,7 +378,6 @@ const Achievements = () => {
   const lockedAchievements = achievements.filter(a => !a.unlocked);
   const unlockedAchievements = achievements.filter(a => a.unlocked);
   
-  // Compute category counts
   const categories = {
     all: achievements.length,
     quests: achievements.filter(a => a.category === "quests").length,
@@ -390,7 +387,6 @@ const Achievements = () => {
     general: achievements.filter(a => a.category === "general").length
   };
   
-  // Get completion percentage
   const completionPercentage = achievements.length > 0
     ? Math.round((unlockedAchievements.length / achievements.length) * 100)
     : 0;
@@ -504,41 +500,41 @@ const Achievements = () => {
         </div>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full mb-6 font-pixel bg-rpg-tan text-rpg-brown border-2 border-rpg-brown">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="tabs-container">
+        <TabsList className="w-full mb-6 font-pixel bg-rpg-tan text-rpg-brown border-2 border-rpg-brown h-auto">
           <TabsTrigger 
             value="all" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             All ({categories.all})
           </TabsTrigger>
           <TabsTrigger 
             value="quests" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Quests ({categories.quests})
           </TabsTrigger>
           <TabsTrigger 
             value="habits" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Habits ({categories.habits})
           </TabsTrigger>
           <TabsTrigger 
             value="skills" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Skills ({categories.skills})
           </TabsTrigger>
           <TabsTrigger 
             value="character" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Character ({categories.character})
           </TabsTrigger>
           <TabsTrigger 
             value="general" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             General ({categories.general})
           </TabsTrigger>

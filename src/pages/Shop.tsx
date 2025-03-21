@@ -410,37 +410,37 @@ const Shop = () => {
         <TabsList className="w-full mb-6 font-pixel bg-rpg-tan text-rpg-brown border-2 border-rpg-brown h-auto">
           <TabsTrigger 
             value="all" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             All Items
           </TabsTrigger>
           <TabsTrigger 
             value="available" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Available Now
           </TabsTrigger>
           <TabsTrigger 
             value="weapons" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Weapons
           </TabsTrigger>
           <TabsTrigger 
             value="armor" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Armor
           </TabsTrigger>
           <TabsTrigger 
             value="accessories" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Accessories
           </TabsTrigger>
           <TabsTrigger 
             value="real-life" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan py-2"
+            className="data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
             Real Life
           </TabsTrigger>
