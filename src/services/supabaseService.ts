@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { GameData } from "@/types/gameData";
@@ -21,21 +22,31 @@ const toQuestSteps = (steps: Json | null): QuestStep[] => {
   if (!steps) return [];
   
   const stepsArray = Array.isArray(steps) ? steps : [];
-  return stepsArray.map(step => ({
-    id: typeof step?.id === 'string' ? step.id : '',
-    description: typeof step?.description === 'string' ? step.description : '',
-    completed: typeof step?.completed === 'boolean' ? step.completed : false
-  }));
+  return stepsArray.map(step => {
+    if (typeof step !== 'object' || step === null) {
+      return { id: '', description: '', completed: false };
+    }
+    return {
+      id: typeof step.id === 'string' ? step.id : '',
+      description: typeof step.description === 'string' ? step.description : '',
+      completed: typeof step.completed === 'boolean' ? step.completed : false
+    };
+  });
 };
 
 const toHabitCompletions = (completions: Json | null): HabitCompletion[] => {
   if (!completions) return [];
   
   const completionsArray = Array.isArray(completions) ? completions : [];
-  return completionsArray.map(completion => ({
-    date: typeof completion?.date === 'string' ? completion.date : '',
-    completed: typeof completion?.completed === 'boolean' ? completion.completed : false
-  }));
+  return completionsArray.map(completion => {
+    if (typeof completion !== 'object' || completion === null) {
+      return { date: '', completed: false };
+    }
+    return {
+      date: typeof completion.date === 'string' ? completion.date : '',
+      completed: typeof completion.completed === 'boolean' ? completion.completed : false
+    };
+  });
 };
 
 // Character methods
@@ -506,7 +517,7 @@ export const fetchHabits = async (): Promise<Habit[]> => {
       reminder: habit.reminder,
       completionHistory: toHabitCompletions(habit.completion_history),
       color: habit.color
-    }) as Habit);
+    } as Habit));
   } catch (error) {
     console.error("Error in fetchHabits:", error);
     return [];
