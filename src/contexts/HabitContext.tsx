@@ -1,14 +1,13 @@
-
 import { createContext, useContext } from "react";
 import { Habit } from "../types/habits";
 import { generateId } from "../utils/idGenerator";
 import { 
   upsertHabit, 
-  deleteHabit, 
-  upsertCharacter, 
-  upsertAchievement,
-  upsertChallenge 
-} from "@/services/supabaseService";
+  deleteHabit 
+} from "@/services/habitService";
+import { upsertCharacter } from "@/services/characterService";
+import { upsertAchievement } from "@/services/achievementService";
+import { upsertChallenge } from "@/services/challengeService";
 
 interface HabitContextType {
   habits: Habit[];

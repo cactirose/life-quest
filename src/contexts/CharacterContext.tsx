@@ -1,7 +1,9 @@
-
 import { createContext, useContext, ReactNode } from "react";
 import { Character, StatName, DEFAULT_CHARACTER } from "../types/character";
-import { upsertCharacter } from "@/services/supabaseService";
+import { upsertCharacter } from "@/services/characterService";
+import { upsertQuest } from "@/services/questService";
+import { deleteInventoryItem } from "@/services/inventoryService";
+import { upsertSkillNode } from "@/services/skillTreeService";
 
 interface CharacterContextType {
   character: Character;

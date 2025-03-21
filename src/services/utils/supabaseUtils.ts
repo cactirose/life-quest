@@ -1,6 +1,7 @@
 
 import { Json } from "@/integrations/supabase/types";
-import { QuestStep, HabitCompletion } from "@/types";
+import { QuestStep, HabitCompletion } from "@/types/quests";
+import { HabitCompletion as HabitCompletionType } from "@/types/habits";
 
 // Helper functions to convert between Supabase and app types
 export const jsonToString = (value: any): string => {
@@ -27,7 +28,7 @@ export const toQuestSteps = (steps: Json | null): QuestStep[] => {
   });
 };
 
-export const toHabitCompletions = (completions: Json | null): HabitCompletion[] => {
+export const toHabitCompletions = (completions: Json | null): HabitCompletionType[] => {
   if (!completions) return [];
   
   const completionsArray = Array.isArray(completions) ? completions : [];

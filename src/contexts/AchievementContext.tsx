@@ -1,11 +1,12 @@
-
 import { createContext, useContext } from "react";
 import { Achievement } from "../types/achievements";
 import { generateId } from "../utils/idGenerator";
 import { 
   upsertAchievement, 
   deleteAchievement 
-} from "@/services/supabaseService";
+} from "@/services/achievementService";
+import { upsertInventoryItem } from "@/services/inventoryService";
+import { upsertCharacter } from "@/services/characterService";
 
 interface AchievementContextType {
   achievements: Achievement[];
@@ -23,7 +24,6 @@ export const createAchievementContextValue = (
   achievements: Achievement[],
   setGameData: React.Dispatch<React.SetStateAction<any>>
 ): AchievementContextType => {
-  // ACHIEVEMENT METHODS
   const addAchievement = (achievement: Omit<Achievement, "id" | "unlocked" | "dateUnlocked">) => {
     const newAchievement = {
       ...achievement,
@@ -36,7 +36,6 @@ export const createAchievementContextValue = (
       achievements: [...prevData.achievements, newAchievement]
     }));
 
-    // Sync with Supabase
     upsertAchievement(newAchievement as Achievement);
   };
 
@@ -48,7 +47,6 @@ export const createAchievementContextValue = (
       )
     }));
 
-    // Sync with Supabase
     upsertAchievement(achievement);
   };
 
@@ -58,7 +56,6 @@ export const createAchievementContextValue = (
       achievements: prevData.achievements.filter(a => a.id !== achievementId)
     }));
 
-    // Sync with Supabase
     deleteAchievement(achievementId);
   };
 
@@ -71,14 +68,12 @@ export const createAchievementContextValue = (
       
       unlocked = true;
       
-      // Apply rewards
       const updatedCharacter = {
         ...prevData.character,
         xp: prevData.character.xp + achievement.xpReward,
         coins: prevData.character.coins + achievement.coinReward
       };
       
-      // Add special reward to inventory if provided
       let updatedInventory = [...prevData.inventory];
       if (achievement.specialReward) {
         const newItem = {
@@ -87,26 +82,18 @@ export const createAchievementContextValue = (
         };
         updatedInventory = [...updatedInventory, newItem];
         
-        // Sync new inventory item with Supabase
-        import("@/services/supabaseService").then(({ upsertInventoryItem }) => {
-          upsertInventoryItem(newItem);
-        });
+        upsertInventoryItem(newItem);
       }
       
-      // Update achievement status
       const updatedAchievement = {
         ...achievement, 
         unlocked: true, 
         dateUnlocked: new Date().toISOString()
       };
       
-      // Sync with Supabase
       upsertAchievement(updatedAchievement);
       
-      // Update character in Supabase
-      import("@/services/supabaseService").then(({ upsertCharacter }) => {
-        upsertCharacter(updatedCharacter);
-      });
+      upsertCharacter(updatedCharacter);
       
       const updatedAchievements = prevData.achievements.map(a => 
         a.id === achievementId ? updatedAchievement : a
