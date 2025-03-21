@@ -1,139 +1,22 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { User, KeyRound, Mail, LogIn } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGameData } from "@/contexts/DataContext";
-import { supabase } from "@/integrations/supabase/client";
-import { storeSession, refreshSession } from "@/utils/auth";
+import LoginForm from "@/features/auth/components/LoginForm";
+import LoginFooter from "@/features/auth/components/LoginFooter";
+import AuthLoader from "@/features/auth/components/AuthLoader";
+import { useAuthCheck } from "@/features/auth/hooks/useAuthCheck";
 
 const Login = () => {
   const navigate = useNavigate();
   const { setGameData } = useGameData();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [authCheckDone, setAuthCheckDone] = useState(false);
-  const [authCheckFailed, setAuthCheckFailed] = useState(false);
-
-  // Check if user is already logged in with a timeout
-  useEffect(() => {
-    let isMounted = true;
-    let timeoutId: number;
-    
-    const checkSession = async () => {
-      try {
-        // Try to refresh the session first if it exists
-        const wasRefreshed = await refreshSession();
-        
-        // Get the current session
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) throw error;
-        
-        if (isMounted) {
-          if (data.session) {
-            storeSession(data.session);
-            navigate("/dashboard");
-          }
-          setAuthCheckDone(true);
-        }
-      } catch (error) {
-        console.error("Session check error:", error);
-        if (isMounted) {
-          setAuthCheckDone(true);
-          setAuthCheckFailed(false); // Don't show error on login page
-        }
-      }
-    };
-    
-    // Set a timeout to prevent infinite loading
-    timeoutId = setTimeout(() => {
-      if (isMounted && !authCheckDone) {
-        console.log("Auth check timed out after 5 seconds");
-        setAuthCheckDone(true);
-      }
-    }, 5000) as unknown as number;
-    
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log("Auth state changed on login page:", event);
-        if (isMounted) {
-          if (event === 'SIGNED_IN' && session) {
-            storeSession(session);
-            navigate("/dashboard");
-          }
-        }
-      }
-    );
-    
-    checkSession();
-    
-    return () => {
-      isMounted = false;
-      clearTimeout(timeoutId);
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      // Simple validation
-      if (!email || !password) {
-        throw new Error("Please fill in all fields");
-      }
-      
-      // Sign in with Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      
-      if (error) throw error;
-      
-      // Store session for sync auth checks
-      if (data.session) {
-        storeSession(data.session);
-        toast.success("Login successful! Welcome back to Life Quest!");
-        
-        // Navigate to dashboard immediately - data loading will happen in background
-        navigate("/dashboard");
-      } else {
-        throw new Error("No session returned from login");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast.error(error instanceof Error ? error.message : "Please check your credentials and try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { authCheckDone } = useAuthCheck(navigate);
 
   // Show loading state while checking auth
   if (!authCheckDone) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-3xl font-pixel text-primary">Login</CardTitle>
-            <CardDescription>
-              Checking authentication status...
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-center">
-              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          </CardContent>
-        </Card>
+        <AuthLoader message="Checking authentication status..." />
       </div>
     );
   }
@@ -148,68 +31,9 @@ const Login = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="hero@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link 
-                  to="/reset-password" 
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
-                <KeyRound className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <span className="animate-spin">⌛</span> Logging in...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <LogIn className="h-4 w-4" /> Login
-                </span>
-              )}
-            </Button>
-          </form>
+          <LoginForm />
         </CardContent>
-        <CardFooter className="flex flex-col space-y-2">
-          <div className="text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-primary underline-offset-4 hover:underline">
-              Sign up
-            </Link>
-          </div>
-          <Button variant="ghost" className="w-full" onClick={() => navigate("/")}>
-            Continue as Guest
-          </Button>
-        </CardFooter>
+        <LoginFooter />
       </Card>
     </div>
   );
