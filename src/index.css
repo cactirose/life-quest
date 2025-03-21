@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
 
 @tailwind base;
@@ -243,11 +244,26 @@
     @apply border-yellow-500;
   }
 
-  /* Tabs styling to fix text cutoff */
+  /* Improved tabs styling for better responsiveness */
+  .tabs-container .TabsList {
+    @apply flex flex-wrap md:flex-nowrap overflow-visible;
+  }
+  
   .tabs-container .TabsTrigger {
-    @apply h-auto min-h-[40px] py-2 flex items-center justify-center;
+    @apply h-auto min-h-[40px] py-2 px-2 md:px-3 flex items-center justify-center;
     white-space: normal;
     line-height: 1.2;
+    text-align: center;
+    word-wrap: break-word;
+    hyphens: auto;
+  }
+  
+  /* Ensure text is visible on smaller screens */
+  @media (max-width: 640px) {
+    .tabs-container .TabsTrigger {
+      @apply text-xs py-3 min-h-[50px];
+      font-size: clamp(0.65rem, 2vw, 0.875rem);
+    }
   }
 
   /* Horizontal scrollable container for categories */
