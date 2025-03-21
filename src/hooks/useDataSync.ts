@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { loadInitialData } from "@/utils/loadInitialData";
 import { storeSession } from "@/utils/auth";
@@ -16,25 +16,36 @@ export const useDataSync = () => {
   const { setGameData } = gameContext;
   const { dataStatus, updateStatus } = useDataStatus();
   const isMobile = useIsMobile();
+  const abortControllerRef = useRef<AbortController | null>(null);
   
   const dataFetchers = useDataFetchers(setGameData, updateStatus);
 
   // Function to sync data from Supabase with improved performance
   const syncFromSupabase = useCallback(async () => {
     console.log("Starting data sync from Supabase");
+    
+    // Cancel any ongoing fetch operations
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create a new abort controller for this sync operation
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    
     setIsSyncing(true);
     
     try {
       // Prepare all data fetch promises
       const fetchPromises = [
-        dataFetchers.fetchCharacter(),
-        dataFetchers.fetchQuests(),
-        dataFetchers.fetchInventory(),
-        dataFetchers.fetchSkillTree(),
-        dataFetchers.fetchChallenges(),
-        dataFetchers.fetchHabits(),
-        dataFetchers.fetchMoods(),
-        dataFetchers.fetchAchievements(),
+        dataFetchers.fetchCharacter(signal),
+        dataFetchers.fetchQuests(signal),
+        dataFetchers.fetchInventory(signal),
+        dataFetchers.fetchSkillTree(signal),
+        dataFetchers.fetchChallenges(signal),
+        dataFetchers.fetchHabits(signal),
+        dataFetchers.fetchMoods(signal),
+        dataFetchers.fetchAchievements(signal),
       ];
       
       // Check if we're on mobile for optimized loading
@@ -53,28 +64,37 @@ export const useDataSync = () => {
           toast.success(`Synced ${successCount} of ${fetchPromises.length} data types`);
         } else {
           toast.error("Could not sync your data. Using cached data instead.");
+          loadLocalData();
         }
       } else {
-        // For desktop, we still use Promise.all but with a timeout
+        // For desktop, use Promise.all with a timeout
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Data sync timeout")), 10000)
+          setTimeout(() => reject(new Error("Data sync timeout")), 15000) // Increased timeout
         );
         
         try {
           await Promise.race([Promise.all(fetchPromises), timeoutPromise]);
           toast.success("Your data has been synced from the cloud");
         } catch (error) {
+          if (signal.aborted) {
+            console.log("Data sync was cancelled");
+            return;
+          }
+          
           if ((error as Error).message === "Data sync timeout") {
             console.warn("Data sync timed out, continuing with partial data");
             toast.info("Sync taking longer than expected. Some data may still be loading.");
           } else {
-            throw error;
+            console.error("Error during data sync:", error);
+            toast.error("Error syncing data. Using cached data instead.");
+            loadLocalData();
           }
         }
       }
     } catch (error) {
       console.error("Error syncing data:", error);
       toast.error("There was an issue syncing your data");
+      loadLocalData();
     } finally {
       setIsSyncing(false);
       setIsLoading(false);
@@ -84,16 +104,27 @@ export const useDataSync = () => {
   // Load local data as fallback or initial state with improved reliability
   const loadLocalData = useCallback(() => {
     console.log("Loading local data");
-    const localData = localStorage.getItem("rpgProductivityData");
-    const initialData = localData ? JSON.parse(localData) : loadInitialData();
-    
-    setGameData(prevData => ({
-      ...prevData,
-      ...initialData,
-    }));
-    
-    console.log("Using local data (user not logged in or data sync failed)");
-    setIsLoading(false);
+    try {
+      const localData = localStorage.getItem("rpgProductivityData");
+      const initialData = localData ? JSON.parse(localData) : loadInitialData();
+      
+      setGameData(prevData => ({
+        ...prevData,
+        ...initialData,
+      }));
+      
+      console.log("Using local data (user not logged in or data sync failed)");
+    } catch (error) {
+      console.error("Error loading local data:", error);
+      const initialData = loadInitialData();
+      setGameData(prevData => ({
+        ...prevData,
+        ...initialData,
+      }));
+      toast.error("Error loading saved data. Starting with defaults.");
+    } finally {
+      setIsLoading(false);
+    }
   }, [setGameData]);
 
   return {
@@ -103,6 +134,7 @@ export const useDataSync = () => {
     setIsSyncing,
     dataStatus,
     syncFromSupabase,
-    loadLocalData
+    loadLocalData,
+    abortControllerRef
   };
 };

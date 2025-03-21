@@ -1,11 +1,9 @@
 
 import { useEffect } from "react";
-import { CharacterContext } from "../contexts/CharacterContext";
-import { ChallengeContext } from "../contexts/ChallengeContext";
-import { useDailyLogin } from "../features/character/hooks/useDailyLogin";
 import { useAchievements } from "../contexts/AchievementContext";
 import { useGameData } from "../contexts/DataContext";
 import { CharacterContextType, ChallengeContextType } from "../utils/contextTypes";
+import { toast } from "sonner";
 
 export const useDataEffects = (
   characterContext: CharacterContextType,
@@ -46,7 +44,12 @@ export const useDataEffects = (
         }
       };
       
-      checkDailyLoginStatus();
+      try {
+        checkDailyLoginStatus();
+      } catch (error) {
+        console.error("Error during daily login check:", error);
+        // Don't block the app if this fails
+      }
     }
   // Use lastLoginDate instead of id since Character doesn't have an id property
   }, [characterContext.character?.lastLoginDate, characterContext.character, setGameData]); 
@@ -55,31 +58,36 @@ export const useDataEffects = (
   useEffect(() => {
     if (characterContext.character && challengeContext.challenges.length > 0) {
       // Check for completed achievements based on character progress
-      achievements.forEach(achievement => {
-        // Basic checks for common achievement types
-        if (!achievement.unlocked) {
-          // Check level-based achievements
-          if ('requiredLevel' in achievement && characterContext.character.level >= achievement.requiredLevel) {
-            checkAndUnlockAchievement(achievement.id);
+      try {
+        achievements.forEach(achievement => {
+          // Basic checks for common achievement types
+          if (!achievement.unlocked) {
+            // Check level-based achievements
+            if ('requiredLevel' in achievement && characterContext.character.level >= achievement.requiredLevel) {
+              checkAndUnlockAchievement(achievement.id);
+            }
+            
+            // Check coin-based achievements
+            if ('requiredCoins' in achievement && characterContext.character.coins >= achievement.requiredCoins) {
+              checkAndUnlockAchievement(achievement.id);
+            }
+            
+            // Check challenge-based achievements
+            if ('requiredChallenges' in achievement && 
+                challengeContext.challenges.filter(c => c.status === "completed").length >= achievement.requiredChallenges) {
+              checkAndUnlockAchievement(achievement.id);
+            }
           }
-          
-          // Check coin-based achievements
-          if ('requiredCoins' in achievement && characterContext.character.coins >= achievement.requiredCoins) {
-            checkAndUnlockAchievement(achievement.id);
-          }
-          
-          // Check challenge-based achievements
-          if ('requiredChallenges' in achievement && 
-              challengeContext.challenges.filter(c => c.status === "completed").length >= achievement.requiredChallenges) {
-            checkAndUnlockAchievement(achievement.id);
-          }
-        }
-      });
+        });
+      } catch (error) {
+        console.error("Error checking achievements:", error);
+        // Don't block the app if this fails
+      }
     }
   }, [
     characterContext.character?.level,
     characterContext.character?.coins,
-    challengeContext.challenges.length,
+    challengeContext.challenges,
     achievements,
     checkAndUnlockAchievement
   ]);

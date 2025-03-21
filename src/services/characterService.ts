@@ -4,39 +4,66 @@ import { toast } from "sonner";
 import { Character, StatName } from "@/types/character";
 
 // Character methods
-export const fetchCharacter = async (): Promise<Character | null> => {
+export const fetchCharacter = async (signal?: AbortSignal): Promise<Character | null> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    // Create a timeout promise that will reject after 10 seconds
+    const timeoutPromise = new Promise<null>((_, reject) => {
+      const id = setTimeout(() => {
+        reject(new Error("Character fetch timeout"));
+      }, 10000);
+      
+      // If the signal is aborted, clear the timeout
+      if (signal) {
+        signal.addEventListener('abort', () => {
+          clearTimeout(id);
+          reject(new Error("Character fetch aborted"));
+        });
+      }
+    });
     
-    const { data, error } = await supabase
-      .from("characters")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    // Create the actual fetch promise
+    const fetchPromise = (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from("characters")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-    if (error) {
-      console.error("Error fetching character:", error);
+      if (error) {
+        console.error("Error fetching character:", error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      // Map database fields to Character type
+      return {
+        name: data.name,
+        level: data.level,
+        xp: data.xp,
+        nextLevelXp: data.next_level_xp,
+        coins: data.coins,
+        portrait: data.portrait || "/placeholder.svg",
+        bio: data.bio || "A brave adventurer ready to conquer life's challenges.",
+        stats: data.stats as any,
+        lastLoginDate: data.last_login_date,
+        loginStreak: data.login_streak,
+        dailyBonusClaimed: data.daily_bonus_claimed
+      } as Character;
+    })();
+    
+    // Race between the timeout and the fetch
+    return await Promise.race([fetchPromise, timeoutPromise]);
+  } catch (error) {
+    // If the error is due to an aborted request, don't log it as an error
+    if (signal?.aborted || (error as Error).message === "Character fetch aborted") {
+      console.log("Character fetch was aborted");
       return null;
     }
-
-    if (!data) return null;
-
-    // Map database fields to Character type
-    return {
-      name: data.name,
-      level: data.level,
-      xp: data.xp,
-      nextLevelXp: data.next_level_xp,
-      coins: data.coins,
-      portrait: data.portrait || "/placeholder.svg",
-      bio: data.bio || "A brave adventurer ready to conquer life's challenges.",
-      stats: data.stats as any,
-      lastLoginDate: data.last_login_date,
-      loginStreak: data.login_streak,
-      dailyBonusClaimed: data.daily_bonus_claimed
-    } as Character;
-  } catch (error) {
+    
     console.error("Error in fetchCharacter:", error);
     return null;
   }

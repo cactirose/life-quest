@@ -1,6 +1,6 @@
 
 import { Navigate } from "react-router-dom";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useAuthenticatedRoute } from "@/hooks/useAuthenticatedRoute";
 import { useSupabaseSync } from "@/hooks/useSupabaseSync";
 import { AuthChecking } from "./auth/AuthChecking";
@@ -8,6 +8,8 @@ import { AuthCheckFailed } from "./auth/AuthCheckFailed";
 import { DataSyncingIndicator } from "./auth/DataSyncingIndicator";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "./ui/button";
+import { RefreshCcw } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -15,8 +17,9 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isChecking, isAuthed, checkFailed } = useAuthenticatedRoute();
-  const { isLoading, isSyncing } = useSupabaseSync();
+  const { isLoading, isSyncing, isOnline, supabaseConnected, retryDataLoad } = useSupabaseSync();
   const isMobile = useIsMobile();
+  const [showRetry, setShowRetry] = useState(false);
   
   // Show timeout toast if loading takes too long
   useEffect(() => {
@@ -30,7 +33,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           id: "loading-timeout",
           duration: 5000,
         });
-      }, timeoutDuration);
+        setShowRetry(true);
+      }, timeoutDuration) as unknown as number;
     }
     
     return () => {
@@ -57,7 +61,42 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   // while data loads in the background
   return (
     <>
-      {(isLoading || isSyncing) && <DataSyncingIndicator isLoading={isLoading} isSyncing={isSyncing} />}
+      {(isLoading || isSyncing) && (
+        <DataSyncingIndicator 
+          isLoading={isLoading} 
+          isSyncing={isSyncing} 
+          isOnline={isOnline}
+          supabaseConnected={supabaseConnected}
+        />
+      )}
+      
+      {showRetry && !isSyncing && !isLoading && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <Button 
+            size="sm" 
+            onClick={() => {
+              retryDataLoad();
+              setShowRetry(false);
+            }}
+            className="flex items-center gap-2"
+          >
+            <RefreshCcw className="h-4 w-4" /> Retry Data Load
+          </Button>
+        </div>
+      )}
+      
+      {!isOnline && (
+        <div className="fixed top-20 left-0 right-0 bg-yellow-500 text-black py-1 text-center text-sm z-50">
+          You're offline. Some features may be limited.
+        </div>
+      )}
+      
+      {!supabaseConnected && isOnline && (
+        <div className="fixed top-20 left-0 right-0 bg-red-500 text-white py-1 text-center text-sm z-50">
+          Connection to server lost. Using local data.
+        </div>
+      )}
+      
       {children}
     </>
   );

@@ -24,13 +24,13 @@ export const useDataFetchers = (
   const { fetchAchievements } = useAchievementsFetcher(setGameData, updateStatus);
 
   return {
-    fetchCharacter,
-    fetchQuests,
-    fetchInventory,
-    fetchSkillTree,
-    fetchChallenges,
-    fetchHabits,
-    fetchMoods,
-    fetchAchievements
+    fetchCharacter: (signal?: AbortSignal) => fetchCharacter(signal),
+    fetchQuests: (signal?: AbortSignal) => fetchQuests(signal),
+    fetchInventory: (signal?: AbortSignal) => fetchInventory(signal),
+    fetchSkillTree: (signal?: AbortSignal) => fetchSkillTree(signal),
+    fetchChallenges: (signal?: AbortSignal) => fetchChallenges(signal),
+    fetchHabits: (signal?: AbortSignal) => fetchHabits(signal),
+    fetchMoods: (signal?: AbortSignal) => fetchMoods(signal),
+    fetchAchievements: (signal?: AbortSignal) => fetchAchievements(signal)
   };
 };
