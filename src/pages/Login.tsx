@@ -51,16 +51,12 @@ const Login = () => {
       // Store session for sync auth checks
       storeSession(data.session);
       
-      // Refresh game data
-      if (setGameData) {
-        setGameData(prev => ({...prev}));
-      }
-      
       toast({
         title: "Login successful",
         description: "Welcome back to Life Quest!",
       });
       
+      // Navigate to dashboard - data loading will be handled by useSupabaseSync
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);

@@ -27,6 +27,7 @@ import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { isAuthenticated, logout } from "./utils/auth";
+import { useSupabaseSync } from "./hooks/useSupabaseSync";
 
 const queryClient = new QueryClient();
 
@@ -34,14 +35,33 @@ const queryClient = new QueryClient();
 initializeTheme();
 
 // Layout component that includes the navbar
-const Layout = ({ children }: { children: ReactNode }) => (
-  <div className="flex flex-col min-h-screen relative">
-    <Navbar />
-    <main className="flex-grow px-4 pb-16 pt-20">
-      {children}
-    </main>
-  </div>
-);
+const Layout = ({ children }: { children: ReactNode }) => {
+  // Initialize Supabase sync (will load data on auth change)
+  const { isLoading } = useSupabaseSync();
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col min-h-screen relative">
+        <Navbar />
+        <main className="flex-grow px-4 pb-16 pt-20 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin text-3xl mb-4">⌛</div>
+            <p className="text-lg font-medium">Loading your data...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen relative">
+      <Navbar />
+      <main className="flex-grow px-4 pb-16 pt-20">
+        {children}
+      </main>
+    </div>
+  );
+};
 
 // Public Layout - similar to Layout but for public pages
 const PublicLayout = ({ children }: { children: ReactNode }) => (

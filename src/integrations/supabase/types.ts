@@ -9,6 +9,300 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          category: string
+          coin_reward: number
+          created_at: string
+          current_count: number | null
+          date_unlocked: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          required_count: number | null
+          special_reward: Json | null
+          title: string
+          unlocked: boolean
+          updated_at: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          category: string
+          coin_reward?: number
+          created_at?: string
+          current_count?: number | null
+          date_unlocked?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          required_count?: number | null
+          special_reward?: Json | null
+          title: string
+          unlocked?: boolean
+          updated_at?: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          category?: string
+          coin_reward?: number
+          created_at?: string
+          current_count?: number | null
+          date_unlocked?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          required_count?: number | null
+          special_reward?: Json | null
+          title?: string
+          unlocked?: boolean
+          updated_at?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      challenges: {
+        Row: {
+          coin_reward: number
+          created_at: string
+          current_count: number
+          description: string | null
+          frequency: string
+          id: string
+          required_count: number
+          reset_date: string | null
+          special_reward: Json | null
+          stat_rewards: Json | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          coin_reward?: number
+          created_at?: string
+          current_count?: number
+          description?: string | null
+          frequency: string
+          id?: string
+          required_count?: number
+          reset_date?: string | null
+          special_reward?: Json | null
+          stat_rewards?: Json | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          coin_reward?: number
+          created_at?: string
+          current_count?: number
+          description?: string | null
+          frequency?: string
+          id?: string
+          required_count?: number
+          reset_date?: string | null
+          special_reward?: Json | null
+          stat_rewards?: Json | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      characters: {
+        Row: {
+          bio: string | null
+          coins: number
+          created_at: string
+          daily_bonus_claimed: boolean
+          id: string
+          last_login_date: string | null
+          level: number
+          login_streak: number
+          name: string
+          next_level_xp: number
+          portrait: string | null
+          stats: Json
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          bio?: string | null
+          coins?: number
+          created_at?: string
+          daily_bonus_claimed?: boolean
+          id?: string
+          last_login_date?: string | null
+          level?: number
+          login_streak?: number
+          name: string
+          next_level_xp?: number
+          portrait?: string | null
+          stats?: Json
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          bio?: string | null
+          coins?: number
+          created_at?: string
+          daily_bonus_claimed?: boolean
+          id?: string
+          last_login_date?: string | null
+          level?: number
+          login_streak?: number
+          name?: string
+          next_level_xp?: number
+          portrait?: string | null
+          stats?: Json
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
+      habits: {
+        Row: {
+          coin_reward: number
+          color: string
+          completion_history: Json | null
+          created_at: string
+          custom_days: Json | null
+          description: string | null
+          frequency: string
+          icon: string | null
+          id: string
+          name: string
+          reminder: string | null
+          streak: number
+          updated_at: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          coin_reward?: number
+          color: string
+          completion_history?: Json | null
+          created_at?: string
+          custom_days?: Json | null
+          description?: string | null
+          frequency: string
+          icon?: string | null
+          id?: string
+          name: string
+          reminder?: string | null
+          streak?: number
+          updated_at?: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          coin_reward?: number
+          color?: string
+          completion_history?: Json | null
+          created_at?: string
+          custom_days?: Json | null
+          description?: string | null
+          frequency?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          reminder?: string | null
+          streak?: number
+          updated_at?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      inventory_items: {
+        Row: {
+          cost: number
+          created_at: string
+          description: string | null
+          equipped: boolean
+          icon: string | null
+          id: string
+          level_required: number | null
+          name: string
+          rarity: string
+          stat_bonuses: Json | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          equipped?: boolean
+          icon?: string | null
+          id?: string
+          level_required?: number | null
+          name: string
+          rarity?: string
+          stat_bonuses?: Json | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          equipped?: boolean
+          icon?: string | null
+          id?: string
+          level_required?: number | null
+          name?: string
+          rarity?: string
+          stat_bonuses?: Json | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mood_entries: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          mood: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          mood: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          mood?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -27,6 +321,141 @@ export type Database = {
           id?: string
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      quests: {
+        Row: {
+          coin_reward: number
+          created_at: string
+          description: string | null
+          difficulty: string
+          due_date: string | null
+          id: string
+          quest_type: string
+          stat_rewards: Json | null
+          status: string
+          steps: Json | null
+          title: string
+          updated_at: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          coin_reward?: number
+          created_at?: string
+          description?: string | null
+          difficulty: string
+          due_date?: string | null
+          id?: string
+          quest_type: string
+          stat_rewards?: Json | null
+          status?: string
+          steps?: Json | null
+          title: string
+          updated_at?: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          coin_reward?: number
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          due_date?: string | null
+          id?: string
+          quest_type?: string
+          stat_rewards?: Json | null
+          status?: string
+          steps?: Json | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      shop_items: {
+        Row: {
+          cost: number
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          level_required: number | null
+          name: string
+          rarity: string
+          stat_bonuses: Json | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          level_required?: number | null
+          name: string
+          rarity?: string
+          stat_bonuses?: Json | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          level_required?: number | null
+          name?: string
+          rarity?: string
+          stat_bonuses?: Json | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      skill_nodes: {
+        Row: {
+          connected_to: Json | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          position: Json
+          stat_bonuses: Json | null
+          unlocked: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connected_to?: Json | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          position: Json
+          stat_bonuses?: Json | null
+          unlocked?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connected_to?: Json | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          position?: Json
+          stat_bonuses?: Json | null
+          unlocked?: boolean
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

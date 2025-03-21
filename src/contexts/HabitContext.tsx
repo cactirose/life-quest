@@ -2,6 +2,13 @@
 import { createContext, useContext } from "react";
 import { Habit } from "../types/habits";
 import { generateId } from "../utils/idGenerator";
+import { 
+  upsertHabit, 
+  deleteHabit, 
+  upsertCharacter, 
+  upsertAchievement,
+  upsertChallenge 
+} from "@/services/supabaseService";
 
 interface HabitContextType {
   habits: Habit[];
@@ -32,6 +39,9 @@ export const createHabitContextValue = (
       ...prevData,
       habits: [...prevData.habits, newHabit]
     }));
+
+    // Sync with Supabase
+    upsertHabit(newHabit);
   };
 
   const updateHabit = (habit: Habit) => {
@@ -41,13 +51,19 @@ export const createHabitContextValue = (
         h.id === habit.id ? habit : h
       )
     }));
+
+    // Sync with Supabase
+    upsertHabit(habit);
   };
 
-  const deleteHabit = (habitId: string) => {
+  const deleteHabitFromState = (habitId: string) => {
     setGameData(prevData => ({
       ...prevData,
       habits: prevData.habits.filter(h => h.id !== habitId)
     }));
+
+    // Sync with Supabase
+    deleteHabit(habitId);
   };
 
   const completeHabit = (habitId: string, date: string) => {
@@ -117,11 +133,16 @@ export const createHabitContextValue = (
         updatedChallenges = updatedChallenges.map(challenge => {
           if (habitChallenges.find(c => c.id === challenge.id)) {
             const newCount = challenge.currentCount + 1;
-            return {
+            const updatedChallenge = {
               ...challenge,
               currentCount: newCount,
               status: newCount >= challenge.requiredCount ? "completed" as const : challenge.status
             };
+            
+            // Sync challenge with Supabase
+            upsertChallenge(updatedChallenge);
+            
+            return updatedChallenge;
           }
           return challenge;
         });
@@ -136,8 +157,10 @@ export const createHabitContextValue = (
       if (habitAchievements.length > 0) {
         updatedAchievements = updatedAchievements.map(achievement => {
           if (habitAchievements.find(a => a.id === achievement.id)) {
+            let updatedAchievement = achievement;
+            
             if (achievement.title === "Habit Master" && newStreak >= (achievement.requiredCount || 0)) {
-              return {
+              updatedAchievement = {
                 ...achievement,
                 unlocked: true,
                 dateUnlocked: new Date().toISOString(),
@@ -147,17 +170,28 @@ export const createHabitContextValue = (
               const newCount = achievement.currentCount + 1;
               const newUnlocked = newCount >= (achievement.requiredCount || 0);
               
-              return {
+              updatedAchievement = {
                 ...achievement,
                 currentCount: newCount,
                 unlocked: newUnlocked,
                 dateUnlocked: newUnlocked ? new Date().toISOString() : undefined
               };
             }
+            
+            // Sync achievement with Supabase
+            if (updatedAchievement !== achievement) {
+              upsertAchievement(updatedAchievement);
+            }
+            
+            return updatedAchievement;
           }
           return achievement;
         });
       }
+      
+      // Sync with Supabase
+      upsertHabit(updatedHabit);
+      upsertCharacter(updatedCharacter);
       
       return {
         ...prevData,
@@ -225,6 +259,10 @@ export const createHabitContextValue = (
         coins: Math.max(0, prevData.character.coins - habit.coinReward)
       };
       
+      // Sync with Supabase
+      upsertHabit(updatedHabit);
+      upsertCharacter(updatedCharacter);
+      
       return {
         ...prevData,
         character: updatedCharacter,
@@ -237,7 +275,7 @@ export const createHabitContextValue = (
     habits,
     addHabit,
     updateHabit,
-    deleteHabit,
+    deleteHabit: deleteHabitFromState,
     completeHabit,
     uncompleteHabit
   };

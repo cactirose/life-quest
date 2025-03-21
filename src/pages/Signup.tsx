@@ -7,13 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { useGameData } from "@/contexts/DataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { storeSession } from "@/utils/auth";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { setGameData } = useGameData();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,22 +59,12 @@ const Signup = () => {
       // Store session for sync auth checks
       storeSession(data.session);
       
-      // Update character name with username
-      if (setGameData) {
-        setGameData(prev => ({
-          ...prev,
-          character: {
-            ...prev.character,
-            name: username
-          }
-        }));
-      }
-      
       toast({
         title: "Signup successful",
         description: "Welcome to Life Quest!",
       });
       
+      // Navigate to dashboard - initial data will be created by triggers
       navigate("/dashboard");
     } catch (error) {
       console.error("Signup error:", error);

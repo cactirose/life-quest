@@ -1,6 +1,7 @@
 
 import { createContext, useContext, ReactNode } from "react";
 import { Character, StatName, DEFAULT_CHARACTER } from "../types/character";
+import { upsertCharacter } from "@/services/supabaseService";
 
 interface CharacterContextType {
   character: Character;
@@ -24,19 +25,29 @@ export const createCharacterContextValue = (
       ...prevData,
       character
     }));
+
+    // Sync with Supabase
+    upsertCharacter(character);
   };
 
   const updateCharacterStat = (stat: StatName, value: number) => {
-    setGameData(prevData => ({
-      ...prevData,
-      character: {
+    setGameData(prevData => {
+      const updatedCharacter = {
         ...prevData.character,
         stats: {
           ...prevData.character.stats,
           [stat]: value
         }
-      }
-    }));
+      };
+
+      // Sync with Supabase
+      upsertCharacter(updatedCharacter);
+
+      return {
+        ...prevData,
+        character: updatedCharacter
+      };
+    });
   };
 
   // DAILY LOGIN METHODS
@@ -49,53 +60,55 @@ export const createCharacterContextValue = (
         ? new Date(character.lastLoginDate).toISOString().split('T')[0]
         : null;
       
+      let updatedCharacter;
+      
       // First login ever
       if (!lastLoginDate) {
-        return {
-          ...prevData,
-          character: {
-            ...character,
-            lastLoginDate: today,
-            loginStreak: 1,
-            dailyBonusClaimed: false
-          }
-        };
-      }
-      
-      // Same day login, do nothing
-      if (lastLoginDate === today) {
-        return prevData;
-      }
-      
-      // Check if this is consecutive day
-      const lastLogin = new Date(lastLoginDate);
-      const currentDate = new Date(today);
-      
-      const timeDiff = currentDate.getTime() - lastLogin.getTime();
-      const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-      
-      // Consecutive day
-      if (dayDiff === 1) {
-        return {
-          ...prevData,
-          character: {
-            ...character,
-            lastLoginDate: today,
-            loginStreak: character.loginStreak + 1,
-            dailyBonusClaimed: false
-          }
-        };
-      }
-      
-      // Not consecutive, reset streak
-      return {
-        ...prevData,
-        character: {
+        updatedCharacter = {
           ...character,
           lastLoginDate: today,
           loginStreak: 1,
           dailyBonusClaimed: false
+        };
+      }
+      // Same day login, do nothing
+      else if (lastLoginDate === today) {
+        return prevData;
+      }
+      else {
+        // Check if this is consecutive day
+        const lastLogin = new Date(lastLoginDate);
+        const currentDate = new Date(today);
+        
+        const timeDiff = currentDate.getTime() - lastLogin.getTime();
+        const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        
+        // Consecutive day
+        if (dayDiff === 1) {
+          updatedCharacter = {
+            ...character,
+            lastLoginDate: today,
+            loginStreak: character.loginStreak + 1,
+            dailyBonusClaimed: false
+          };
         }
+        // Not consecutive, reset streak
+        else {
+          updatedCharacter = {
+            ...character,
+            lastLoginDate: today,
+            loginStreak: 1,
+            dailyBonusClaimed: false
+          };
+        }
+      }
+      
+      // Sync with Supabase
+      upsertCharacter(updatedCharacter);
+      
+      return {
+        ...prevData,
+        character: updatedCharacter
       };
     });
   };
@@ -131,6 +144,13 @@ export const createCharacterContextValue = (
           equipped: false,
           levelRequired: 1
         };
+        
+        // Sync new inventory item with Supabase
+        if (specialItem) {
+          import("@/services/supabaseService").then(({ upsertInventoryItem }) => {
+            upsertInventoryItem(specialItem);
+          });
+        }
       }
       
       // Update character
@@ -140,6 +160,9 @@ export const createCharacterContextValue = (
         coins: character.coins + coinBonus,
         dailyBonusClaimed: true
       };
+      
+      // Sync with Supabase
+      upsertCharacter(updatedCharacter);
       
       // Update inventory if special item
       const updatedInventory = specialItem
@@ -156,21 +179,50 @@ export const createCharacterContextValue = (
 
   // Reset character function
   const resetCharacter = () => {
-    setGameData(prevData => ({
-      ...prevData,
-      character: { ...DEFAULT_CHARACTER, name: prevData.character.name },
-      inventory: [],
-      quests: prevData.quests.map(quest => ({
-        ...quest,
-        status: "active" as const,
-        steps: quest.steps.map(step => ({ ...step, completed: false }))
-      })),
-      skillTree: prevData.skillTree.map(node => 
-        node.name === "Adventurer Basics" 
-          ? { ...node, unlocked: true } 
-          : { ...node, unlocked: false }
-      )
-    }));
+    setGameData(prevData => {
+      const resetData = {
+        ...prevData,
+        character: { ...DEFAULT_CHARACTER, name: prevData.character.name },
+        inventory: [],
+        quests: prevData.quests.map(quest => ({
+          ...quest,
+          status: "active" as const,
+          steps: quest.steps.map(step => ({ ...step, completed: false }))
+        })),
+        skillTree: prevData.skillTree.map(node => 
+          node.name === "Adventurer Basics" 
+            ? { ...node, unlocked: true } 
+            : { ...node, unlocked: false }
+        )
+      };
+      
+      // Sync with Supabase
+      upsertCharacter(resetData.character);
+      
+      // Reset other data in Supabase
+      import("@/services/supabaseService").then(({ 
+        upsertQuest, 
+        deleteInventoryItem, 
+        upsertSkillNode 
+      }) => {
+        // Update quests
+        resetData.quests.forEach(quest => {
+          upsertQuest(quest);
+        });
+        
+        // Delete inventory
+        prevData.inventory.forEach(item => {
+          deleteInventoryItem(item.id);
+        });
+        
+        // Update skill tree
+        resetData.skillTree.forEach(node => {
+          upsertSkillNode(node);
+        });
+      });
+      
+      return resetData;
+    });
   };
 
   return {
