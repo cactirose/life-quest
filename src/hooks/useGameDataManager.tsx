@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { loadInitialData } from "../utils/loadInitialData";
 import { GameData } from "../types/gameData";
@@ -13,6 +14,7 @@ import {
   upsertMoodEntry,
   upsertAchievement
 } from "@/services";
+import { useIsMobile } from "./use-mobile";
 
 const useDebounce = (callback: Function, delay: number) => {
   const timeoutRef = useRef<number | null>(null);
@@ -29,6 +31,7 @@ const useDebounce = (callback: Function, delay: number) => {
 };
 
 export function useGameDataManager() {
+  const isMobile = useIsMobile();
   const [gameData, setGameData] = useState<GameData>(() => {
     try {
       // Try loading from localStorage as a fallback
@@ -57,7 +60,7 @@ export function useGameDataManager() {
       return initialData as GameData;
     } catch (error) {
       console.error("Error loading initial data:", error);
-      toast("There was an issue loading your saved data. Starting with defaults.");
+      toast.error("There was an issue loading your saved data. Starting with defaults.");
       
       // Return default empty game data if there's an error
       return loadInitialData() as GameData;
@@ -67,48 +70,60 @@ export function useGameDataManager() {
   const changedFields = useRef<Set<string>>(new Set());
   const previousData = useRef<GameData | null>(null);
 
+  // Different sync delays for mobile vs desktop
+  const syncDelay = isMobile ? 1000 : 2000;
+
   const syncWithSupabase = useDebounce(async () => {
     if (!isAuthenticatedSync()) return;
     
     try {
+      console.log("Syncing data to Supabase:", Array.from(changedFields.current));
+      
+      // Create a promise array for all sync operations
+      const promises: Promise<void>[] = [];
+      
       // Only sync fields that have changed
       if (changedFields.current.has('character') && gameData.character) {
-        await upsertCharacter(gameData.character);
+        promises.push(upsertCharacter(gameData.character));
       }
       
       if (changedFields.current.has('quests')) {
-        const promises = gameData.quests.map(quest => upsertQuest(quest));
-        await Promise.all(promises);
+        promises.push(...gameData.quests.map(quest => upsertQuest(quest)));
       }
       
       if (changedFields.current.has('inventory')) {
-        const promises = gameData.inventory.map(item => upsertInventoryItem(item));
-        await Promise.all(promises);
+        promises.push(...gameData.inventory.map(item => upsertInventoryItem(item)));
       }
       
       if (changedFields.current.has('skillTree')) {
-        const promises = gameData.skillTree.map(node => upsertSkillNode(node));
-        await Promise.all(promises);
+        promises.push(...gameData.skillTree.map(node => upsertSkillNode(node)));
       }
       
       if (changedFields.current.has('challenges')) {
-        const promises = gameData.challenges.map(challenge => upsertChallenge(challenge));
-        await Promise.all(promises);
+        promises.push(...gameData.challenges.map(challenge => upsertChallenge(challenge)));
       }
       
       if (changedFields.current.has('habits')) {
-        const promises = gameData.habits.map(habit => upsertHabit(habit));
-        await Promise.all(promises);
+        promises.push(...gameData.habits.map(habit => upsertHabit(habit)));
       }
       
       if (changedFields.current.has('moods')) {
-        const promises = gameData.moods.map(mood => upsertMoodEntry(mood));
-        await Promise.all(promises);
+        promises.push(...gameData.moods.map(mood => upsertMoodEntry(mood)));
       }
       
       if (changedFields.current.has('achievements')) {
-        const promises = gameData.achievements.map(achievement => upsertAchievement(achievement));
-        await Promise.all(promises);
+        promises.push(...gameData.achievements.map(achievement => upsertAchievement(achievement)));
+      }
+      
+      // Execute all promises in parallel with error handling
+      if (promises.length > 0) {
+        await Promise.allSettled(promises).then(results => {
+          const rejected = results.filter(r => r.status === 'rejected');
+          if (rejected.length > 0) {
+            console.error(`${rejected.length} sync operations failed:`, 
+              rejected.map(r => (r as PromiseRejectedResult).reason));
+          }
+        });
       }
       
       // Clear changed fields after sync
@@ -116,53 +131,58 @@ export function useGameDataManager() {
     } catch (error) {
       console.error("Error syncing with Supabase:", error);
     }
-  }, 2000);
+  }, syncDelay);
 
   useEffect(() => {
     try {
-      // First, determine what's changed
-      if (previousData.current) {
-        if (previousData.current.character !== gameData.character) {
-          changedFields.current.add('character');
-        }
-        
-        if (previousData.current.quests !== gameData.quests) {
-          changedFields.current.add('quests');
-        }
-        
-        if (previousData.current.inventory !== gameData.inventory) {
-          changedFields.current.add('inventory');
-        }
-        
-        if (previousData.current.skillTree !== gameData.skillTree) {
-          changedFields.current.add('skillTree');
-        }
-        
-        if (previousData.current.challenges !== gameData.challenges) {
-          changedFields.current.add('challenges');
-        }
-        
-        if (previousData.current.habits !== gameData.habits) {
-          changedFields.current.add('habits');
-        }
-        
-        if (previousData.current.moods !== gameData.moods) {
-          changedFields.current.add('moods');
-        }
-        
-        if (previousData.current.achievements !== gameData.achievements) {
-          changedFields.current.add('achievements');
-        }
+      // Skip initial render comparison
+      if (!previousData.current) {
+        previousData.current = JSON.parse(JSON.stringify(gameData));
+        return;
+      }
+      
+      // Check what's changed by comparing specific arrays and objects
+      if (JSON.stringify(previousData.current.character) !== JSON.stringify(gameData.character)) {
+        changedFields.current.add('character');
+      }
+      
+      if (JSON.stringify(previousData.current.quests) !== JSON.stringify(gameData.quests)) {
+        changedFields.current.add('quests');
+      }
+      
+      if (JSON.stringify(previousData.current.inventory) !== JSON.stringify(gameData.inventory)) {
+        changedFields.current.add('inventory');
+      }
+      
+      if (JSON.stringify(previousData.current.skillTree) !== JSON.stringify(gameData.skillTree)) {
+        changedFields.current.add('skillTree');
+      }
+      
+      if (JSON.stringify(previousData.current.challenges) !== JSON.stringify(gameData.challenges)) {
+        changedFields.current.add('challenges');
+      }
+      
+      if (JSON.stringify(previousData.current.habits) !== JSON.stringify(gameData.habits)) {
+        changedFields.current.add('habits');
+      }
+      
+      if (JSON.stringify(previousData.current.moods) !== JSON.stringify(gameData.moods)) {
+        changedFields.current.add('moods');
+      }
+      
+      if (JSON.stringify(previousData.current.achievements) !== JSON.stringify(gameData.achievements)) {
+        changedFields.current.add('achievements');
       }
       
       // Save to localStorage immediately
       localStorage.setItem("rpgProductivityData", JSON.stringify(gameData));
       
-      // Update previous data
-      previousData.current = gameData;
+      // Update previous data by deep cloning
+      previousData.current = JSON.parse(JSON.stringify(gameData));
       
       // Sync with Supabase if authenticated (debounced)
       if (isAuthenticatedSync() && changedFields.current.size > 0) {
+        console.log("Changed fields, triggering sync:", Array.from(changedFields.current));
         syncWithSupabase();
       }
     } catch (error) {

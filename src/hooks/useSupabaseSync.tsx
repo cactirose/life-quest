@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { loadInitialData } from "@/utils/loadInitialData";
@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { storeSession } from "@/utils/auth";
 import { useDataSync } from "./useDataSync";
 import { useIsMobile } from "./use-mobile";
+import { loadAllGameData } from "@/services";
 
 export function useSupabaseSync() {
   const gameContext = useGameData();
@@ -22,45 +23,68 @@ export function useSupabaseSync() {
     loadLocalData 
   } = useDataSync();
   
+  // To track if initial data has been loaded
+  const hasLoadedData = useRef(false);
+  
   // Retry mechanism for mobile
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
 
-  // Load user data from Supabase when authenticated
+  // Optimized function to load user data with proper fallbacks
   const loadUserData = useCallback(async () => {
+    if (hasLoadedData.current) return; // Prevent multiple initial loads
+    
     setIsLoading(true);
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
+      // First get local data for immediate display regardless of auth status
+      const localData = localStorage.getItem("rpgProductivityData");
+      const initialData = localData ? JSON.parse(localData) : loadInitialData();
+      
+      // First set initial data to show something immediately
+      if (initialData) {
+        // Set initial data immediately to prevent blank screens
+        setGameData(prevData => ({
+          ...prevData,
+          ...initialData,
+        }));
+      }
+      
       if (session) {
-        // User is logged in, load their data from Supabase
+        // User is logged in, store session
         storeSession(session);
-        
-        // Get local data first for immediate display
-        const localData = localStorage.getItem("rpgProductivityData");
-        const initialData = localData ? JSON.parse(localData) : loadInitialData();
-        
-        // First set initial data to show something immediately
-        if (initialData) {
-          // If we have a character name from the user's profile, use it
-          if (session?.user?.user_metadata?.username) {
-            initialData.character.name = session.user.user_metadata.username;
-          }
+
+        // Use a more optimized data loading approach
+        try {
+          // Quick load approach - get all data in one request
+          console.log("Attempting quick load of all game data");
+          const allData = await loadAllGameData();
           
-          setGameData(prevData => ({
-            ...prevData,
-            ...initialData,
-          }));
+          if (Object.keys(allData).length > 0) {
+            // Got data, update with it but don't overwrite fields that weren't returned
+            setGameData(prevData => ({
+              ...prevData,
+              ...allData,
+            }));
+            
+            toast.success("Successfully loaded your game data", {
+              id: "data-loaded",
+            });
+            hasLoadedData.current = true;
+          } else {
+            // If quick load returns empty, fall back to progressive loading
+            await syncFromSupabase();
+          }
+        } catch (error) {
+          console.error("Error with quick load, falling back to progressive loading:", error);
+          await syncFromSupabase();
         }
-        
-        // Then progressively update with remote data
-        await syncFromSupabase();
-        toast.success("Successfully loaded your game data", {
-          id: "data-loaded",
-        });
       } else {
         // No session, use local data
         loadLocalData();
+        hasLoadedData.current = true;
       }
     } catch (error) {
       console.error("Error loading user data:", error);
@@ -78,6 +102,7 @@ export function useSupabaseSync() {
         // Max retries reached, fallback to local data
         toast.error("Failed to load your data. Using local data instead.");
         loadLocalData();
+        hasLoadedData.current = true;
       }
     } finally {
       // Ensure loading state is turned off regardless of outcome
@@ -85,7 +110,7 @@ export function useSupabaseSync() {
     }
   }, [setGameData, setIsLoading, syncFromSupabase, loadLocalData, retryCount]);
 
-  // Subscribe to auth changes
+  // Subscribe to auth changes with improved reliability
   useEffect(() => {
     let isMounted = true;
     
@@ -97,14 +122,17 @@ export function useSupabaseSync() {
         if (!isMounted) return;
         
         if (event === 'SIGNED_IN') {
+          // Reset retry count and loaded flag on new sign in
+          setRetryCount(0);
+          hasLoadedData.current = false;
+          
           // When signed in, load user data with a slight delay to ensure
           // the session is properly established
           setTimeout(() => {
             if (isMounted) {
-              setRetryCount(0); // Reset retry count on new sign in
               loadUserData();
             }
-          }, 500);
+          }, 300);
         } else if (event === 'SIGNED_OUT') {
           // Reset to local data when signing out
           const initialData = loadInitialData();
@@ -112,15 +140,18 @@ export function useSupabaseSync() {
             ...prevData,
             ...initialData,
           }));
+          hasLoadedData.current = true;
           toast.info("Signed out - using local data");
         }
       }
     );
 
     // Initial load with a slight delay to avoid race conditions
-    setTimeout(() => {
-      if (isMounted) loadUserData();
-    }, 300);
+    if (!hasLoadedData.current) {
+      setTimeout(() => {
+        if (isMounted) loadUserData();
+      }, 300);
+    }
 
     // Cleanup subscription
     return () => {

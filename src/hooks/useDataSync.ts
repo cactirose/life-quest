@@ -19,12 +19,13 @@ export const useDataSync = () => {
   
   const dataFetchers = useDataFetchers(setGameData, updateStatus);
 
-  // Function to sync data from Supabase
+  // Function to sync data from Supabase with improved performance
   const syncFromSupabase = useCallback(async () => {
+    console.log("Starting data sync from Supabase");
     setIsSyncing(true);
     
     try {
-      // Start loading data in parallel
+      // Prepare all data fetch promises
       const fetchPromises = [
         dataFetchers.fetchCharacter(),
         dataFetchers.fetchQuests(),
@@ -36,11 +37,27 @@ export const useDataSync = () => {
         dataFetchers.fetchAchievements(),
       ];
       
-      // For mobile, we use a timeout to ensure we don't wait forever
+      // Check if we're on mobile for optimized loading
       if (isMobile) {
-        // Race the fetch promises against a timeout
+        // For mobile, use Promise.allSettled to continue even if some requests fail
+        const results = await Promise.allSettled(fetchPromises);
+        
+        // Log results for debugging
+        console.log("Mobile data sync results:", 
+          results.map((r, i) => `${i}: ${r.status}`).join(', '));
+        
+        // Count successful fetches
+        const successCount = results.filter(r => r.status === 'fulfilled').length;
+        
+        if (successCount > 0) {
+          toast.success(`Synced ${successCount} of ${fetchPromises.length} data types`);
+        } else {
+          toast.error("Could not sync your data. Using cached data instead.");
+        }
+      } else {
+        // For desktop, we still use Promise.all but with a timeout
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Data sync timeout")), 15000)
+          setTimeout(() => reject(new Error("Data sync timeout")), 10000)
         );
         
         try {
@@ -54,10 +71,6 @@ export const useDataSync = () => {
             throw error;
           }
         }
-      } else {
-        // For desktop, we wait for all fetches to complete
-        await Promise.all(fetchPromises);
-        toast.success("Your data has been synced from the cloud");
       }
     } catch (error) {
       console.error("Error syncing data:", error);
@@ -66,10 +79,11 @@ export const useDataSync = () => {
       setIsSyncing(false);
       setIsLoading(false);
     }
-  }, [dataFetchers, isMobile]);
+  }, [dataFetchers, isMobile, updateStatus]);
 
-  // Load local data as fallback or initial state
+  // Load local data as fallback or initial state with improved reliability
   const loadLocalData = useCallback(() => {
+    console.log("Loading local data");
     const localData = localStorage.getItem("rpgProductivityData");
     const initialData = localData ? JSON.parse(localData) : loadInitialData();
     
@@ -78,7 +92,7 @@ export const useDataSync = () => {
       ...initialData,
     }));
     
-    console.log("Using local data (user not logged in)");
+    console.log("Using local data (user not logged in or data sync failed)");
     setIsLoading(false);
   }, [setGameData]);
 

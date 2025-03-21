@@ -23,10 +23,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     let timeoutId: number | null = null;
     
     if (isLoading && !isChecking) {
-      const timeoutDuration = isMobile ? 12000 : 8000; // Longer timeout for mobile
+      const timeoutDuration = isMobile ? 8000 : 5000; // Shorter timeouts for faster feedback
       
       timeoutId = window.setTimeout(() => {
-        toast.info("Still loading your data... This is taking longer than expected.", {
+        toast.info("Still loading your data... You can start using the app while data continues to load.", {
           id: "loading-timeout",
           duration: 5000,
         });
@@ -53,8 +53,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  // If authenticated but still loading data, render the children anyway
-  // with a small loading indicator at the bottom right
+  // Always render children to ensure users have immediate access to their app
+  // while data loads in the background
   return (
     <>
       {(isLoading || isSyncing) && <DataSyncingIndicator isLoading={isLoading} isSyncing={isSyncing} />}

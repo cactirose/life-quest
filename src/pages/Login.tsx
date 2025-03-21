@@ -6,17 +6,19 @@ import LoginForm from "@/features/auth/components/LoginForm";
 import LoginFooter from "@/features/auth/components/LoginFooter";
 import AuthLoader from "@/features/auth/components/AuthLoader";
 import { useAuthCheck } from "@/features/auth/hooks/useAuthCheck";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Login = () => {
   const navigate = useNavigate();
   const { setGameData } = useGameData();
   const { authCheckDone } = useAuthCheck(navigate);
+  const isMobile = useIsMobile();
 
   // Show loading state while checking auth
   if (!authCheckDone) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
-        <AuthLoader message="Checking authentication status..." />
+        <AuthLoader message={isMobile ? "Getting your adventure ready..." : "Checking authentication status..."} />
       </div>
     );
   }
