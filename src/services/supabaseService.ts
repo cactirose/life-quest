@@ -17,16 +17,38 @@ const jsonToString = (value: any): string => {
   return typeof value === 'string' ? value : JSON.stringify(value);
 };
 
+// Type conversion helpers
+const toQuestSteps = (steps: Json | null): QuestStep[] => {
+  if (!steps) return [];
+  
+  const stepsArray = Array.isArray(steps) ? steps : [];
+  return stepsArray.map(step => ({
+    id: typeof step.id === 'string' ? step.id : '',
+    description: typeof step.description === 'string' ? step.description : '',
+    completed: typeof step.completed === 'boolean' ? step.completed : false
+  }));
+};
+
+const toHabitCompletions = (completions: Json | null): HabitCompletion[] => {
+  if (!completions) return [];
+  
+  const completionsArray = Array.isArray(completions) ? completions : [];
+  return completionsArray.map(completion => ({
+    date: typeof completion.date === 'string' ? completion.date : '',
+    completed: typeof completion.completed === 'boolean' ? completion.completed : false
+  }));
+};
+
 // Character methods
 export const fetchCharacter = async (): Promise<Character | null> => {
   try {
-    const user = await supabase.auth.getUser();
-    if (!user.data.user) return null;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
     
     const { data, error } = await supabase
       .from("characters")
       .select("*")
-      .eq("user_id", user.data.user.id)
+      .eq("user_id", user.id)
       .maybeSingle();
 
     if (error) {
@@ -58,13 +80,13 @@ export const fetchCharacter = async (): Promise<Character | null> => {
 
 export const upsertCharacter = async (character: Character): Promise<void> => {
   try {
-    const user = await supabase.auth.getUser();
-    if (!user.data.user) throw new Error("No authenticated user");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No authenticated user");
 
     const { error } = await supabase
       .from("characters")
       .upsert({
-        user_id: user.data.user.id,
+        user_id: user.id,
         name: character.name,
         level: character.level,
         xp: character.xp,
@@ -91,13 +113,13 @@ export const upsertCharacter = async (character: Character): Promise<void> => {
 // Quests methods
 export const fetchQuests = async (): Promise<Quest[]> => {
   try {
-    const user = await supabase.auth.getUser();
-    if (!user.data.user) return [];
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
     
     const { data, error } = await supabase
       .from("quests")
       .select("*")
-      .eq("user_id", user.data.user.id);
+      .eq("user_id", user.id);
 
     if (error) {
       console.error("Error fetching quests:", error);
@@ -110,12 +132,12 @@ export const fetchQuests = async (): Promise<Quest[]> => {
       title: quest.title,
       description: quest.description || "",
       type: quest.quest_type,
-      difficulty: quest.difficulty,
-      steps: Array.isArray(quest.steps) ? quest.steps as QuestStep[] : [],
+      difficulty: quest.difficulty || "medium",
+      steps: toQuestSteps(quest.steps),
       status: quest.status,
       xpReward: quest.xp_reward,
       coinReward: quest.coin_reward,
-      statRewards: quest.stat_rewards,
+      statRewards: quest.stat_rewards as any,
       dueDate: quest.due_date
     } as Quest));
   } catch (error) {
@@ -126,14 +148,14 @@ export const fetchQuests = async (): Promise<Quest[]> => {
 
 export const upsertQuest = async (quest: Quest): Promise<void> => {
   try {
-    const user = await supabase.auth.getUser();
-    if (!user.data.user) throw new Error("No authenticated user");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No authenticated user");
 
     const { error } = await supabase
       .from("quests")
       .upsert({
         id: quest.id,
-        user_id: user.data.user.id,
+        user_id: user.id,
         title: quest.title,
         description: quest.description,
         quest_type: quest.type,
@@ -452,13 +474,13 @@ export const deleteChallenge = async (challengeId: string): Promise<void> => {
 // Habits methods
 export const fetchHabits = async (): Promise<Habit[]> => {
   try {
-    const user = await supabase.auth.getUser();
-    if (!user.data.user) return [];
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
     
     const { data, error } = await supabase
       .from("habits")
       .select("*")
-      .eq("user_id", user.data.user.id);
+      .eq("user_id", user.id);
 
     if (error) {
       console.error("Error fetching habits:", error);
@@ -476,11 +498,9 @@ export const fetchHabits = async (): Promise<Habit[]> => {
       xpReward: habit.xp_reward,
       coinReward: habit.coin_reward,
       reminder: habit.reminder,
-      completionHistory: Array.isArray(habit.completion_history) 
-        ? habit.completion_history as HabitCompletion[]
-        : [],
+      completionHistory: toHabitCompletions(habit.completion_history),
       color: habit.color
-    }) as Habit);
+    }) as Habit));
   } catch (error) {
     console.error("Error in fetchHabits:", error);
     return [];
@@ -489,14 +509,14 @@ export const fetchHabits = async (): Promise<Habit[]> => {
 
 export const upsertHabit = async (habit: Habit): Promise<void> => {
   try {
-    const user = await supabase.auth.getUser();
-    if (!user.data.user) throw new Error("No authenticated user");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No authenticated user");
 
     const { error } = await supabase
       .from("habits")
       .upsert({
         id: habit.id,
-        user_id: user.data.user.id,
+        user_id: user.id,
         name: habit.name,
         description: habit.description,
         icon: habit.icon,
