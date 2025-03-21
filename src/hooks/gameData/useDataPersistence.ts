@@ -1,8 +1,9 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { GameData } from "@/types/gameData";
-import { isAuthenticatedSync } from "@/utils/auth";
+import { isAuthenticatedSync, ensureValidSession } from "@/utils/auth";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
 import { 
   upsertCharacter,
   upsertQuest,
@@ -13,8 +14,6 @@ import {
   upsertMoodEntry,
   upsertAchievement
 } from "@/services";
-
-// Utility for change detection
 import { detectChangedFields } from "./changeDetectionUtils";
 
 const useDebounce = (callback: Function, delay: number) => {
@@ -35,67 +34,245 @@ export function useDataPersistence(gameData: GameData) {
   const isMobile = useIsMobile();
   const changedFields = useRef<Set<string>>(new Set());
   const previousData = useRef<GameData | null>(null);
+  const syncErrorCount = useRef<number>(0);
+  const MAX_RETRY_ATTEMPTS = 3;
 
   // Different sync delays for mobile vs desktop
-  const syncDelay = isMobile ? 1000 : 2000;
+  const syncDelay = isMobile ? 1500 : 1000;
+  
+  // Function to retry a failed sync operation
+  const retrySyncOperation = async (operation: () => Promise<void>, fieldName: string): Promise<boolean> => {
+    let attempts = 0;
+    let success = false;
+    
+    while (attempts < MAX_RETRY_ATTEMPTS && !success) {
+      attempts++;
+      try {
+        await operation();
+        success = true;
+      } catch (error) {
+        console.error(`Attempt ${attempts} failed for ${fieldName}:`, error);
+        // Exponential backoff
+        await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, attempts)));
+      }
+    }
+    
+    return success;
+  };
 
   const syncWithSupabase = useDebounce(async () => {
-    if (!isAuthenticatedSync()) return;
+    // Make sure we have a valid session before attempting to sync
+    const hasValidSession = await ensureValidSession();
+    if (!hasValidSession) {
+      console.log("No valid session, skipping sync");
+      return;
+    }
     
     try {
-      console.log("Syncing data to Supabase:", Array.from(changedFields.current));
+      const fieldsToSync = Array.from(changedFields.current);
+      console.log("Syncing data to Supabase:", fieldsToSync);
       
-      // Create a promise array for all sync operations
-      const promises: Promise<void>[] = [];
+      // Track successful and failed operations
+      const syncResults: Record<string, boolean> = {};
       
-      // Only sync fields that have changed
+      // Sync character data
       if (changedFields.current.has('character') && gameData.character) {
-        promises.push(upsertCharacter(gameData.character));
+        const success = await retrySyncOperation(
+          async () => await upsertCharacter(gameData.character), 
+          'character'
+        );
+        syncResults['character'] = success;
+        
+        if (success) {
+          changedFields.current.delete('character');
+        }
       }
       
+      // Sync quests data
       if (changedFields.current.has('quests')) {
-        promises.push(...gameData.quests.map(quest => upsertQuest(quest)));
-      }
-      
-      if (changedFields.current.has('inventory')) {
-        promises.push(...gameData.inventory.map(item => upsertInventoryItem(item)));
-      }
-      
-      if (changedFields.current.has('skillTree')) {
-        promises.push(...gameData.skillTree.map(node => upsertSkillNode(node)));
-      }
-      
-      if (changedFields.current.has('challenges')) {
-        promises.push(...gameData.challenges.map(challenge => upsertChallenge(challenge)));
-      }
-      
-      if (changedFields.current.has('habits')) {
-        promises.push(...gameData.habits.map(habit => upsertHabit(habit)));
-      }
-      
-      if (changedFields.current.has('moods')) {
-        promises.push(...gameData.moods.map(mood => upsertMoodEntry(mood)));
-      }
-      
-      if (changedFields.current.has('achievements')) {
-        promises.push(...gameData.achievements.map(achievement => upsertAchievement(achievement)));
-      }
-      
-      // Execute all promises in parallel with error handling
-      if (promises.length > 0) {
-        await Promise.allSettled(promises).then(results => {
-          const rejected = results.filter(r => r.status === 'rejected');
-          if (rejected.length > 0) {
-            console.error(`${rejected.length} sync operations failed:`, 
-              rejected.map(r => (r as PromiseRejectedResult).reason));
+        let allQuestsSuccess = true;
+        
+        for (const quest of gameData.quests) {
+          const success = await retrySyncOperation(
+            async () => await upsertQuest(quest),
+            `quest-${quest.id}`
+          );
+          
+          if (!success) {
+            allQuestsSuccess = false;
           }
-        });
+        }
+        
+        syncResults['quests'] = allQuestsSuccess;
+        
+        if (allQuestsSuccess) {
+          changedFields.current.delete('quests');
+        }
       }
       
-      // Clear changed fields after sync
-      changedFields.current.clear();
+      // Sync inventory data
+      if (changedFields.current.has('inventory')) {
+        let allInventorySuccess = true;
+        
+        for (const item of gameData.inventory) {
+          const success = await retrySyncOperation(
+            async () => await upsertInventoryItem(item),
+            `inventory-${item.id}`
+          );
+          
+          if (!success) {
+            allInventorySuccess = false;
+          }
+        }
+        
+        syncResults['inventory'] = allInventorySuccess;
+        
+        if (allInventorySuccess) {
+          changedFields.current.delete('inventory');
+        }
+      }
+      
+      // Sync skill tree data
+      if (changedFields.current.has('skillTree')) {
+        let allSkillsSuccess = true;
+        
+        for (const node of gameData.skillTree) {
+          const success = await retrySyncOperation(
+            async () => await upsertSkillNode(node),
+            `skill-${node.id}`
+          );
+          
+          if (!success) {
+            allSkillsSuccess = false;
+          }
+        }
+        
+        syncResults['skillTree'] = allSkillsSuccess;
+        
+        if (allSkillsSuccess) {
+          changedFields.current.delete('skillTree');
+        }
+      }
+      
+      // Sync challenges data
+      if (changedFields.current.has('challenges')) {
+        let allChallengesSuccess = true;
+        
+        for (const challenge of gameData.challenges) {
+          const success = await retrySyncOperation(
+            async () => await upsertChallenge(challenge),
+            `challenge-${challenge.id}`
+          );
+          
+          if (!success) {
+            allChallengesSuccess = false;
+          }
+        }
+        
+        syncResults['challenges'] = allChallengesSuccess;
+        
+        if (allChallengesSuccess) {
+          changedFields.current.delete('challenges');
+        }
+      }
+      
+      // Sync habits data
+      if (changedFields.current.has('habits')) {
+        let allHabitsSuccess = true;
+        
+        for (const habit of gameData.habits) {
+          const success = await retrySyncOperation(
+            async () => await upsertHabit(habit),
+            `habit-${habit.id}`
+          );
+          
+          if (!success) {
+            allHabitsSuccess = false;
+          }
+        }
+        
+        syncResults['habits'] = allHabitsSuccess;
+        
+        if (allHabitsSuccess) {
+          changedFields.current.delete('habits');
+        }
+      }
+      
+      // Sync moods data
+      if (changedFields.current.has('moods')) {
+        let allMoodsSuccess = true;
+        
+        for (const mood of gameData.moods) {
+          const success = await retrySyncOperation(
+            async () => await upsertMoodEntry(mood),
+            `mood-${mood.id}`
+          );
+          
+          if (!success) {
+            allMoodsSuccess = false;
+          }
+        }
+        
+        syncResults['moods'] = allMoodsSuccess;
+        
+        if (allMoodsSuccess) {
+          changedFields.current.delete('moods');
+        }
+      }
+      
+      // Sync achievements data
+      if (changedFields.current.has('achievements')) {
+        let allAchievementsSuccess = true;
+        
+        for (const achievement of gameData.achievements) {
+          const success = await retrySyncOperation(
+            async () => await upsertAchievement(achievement),
+            `achievement-${achievement.id}`
+          );
+          
+          if (!success) {
+            allAchievementsSuccess = false;
+          }
+        }
+        
+        syncResults['achievements'] = allAchievementsSuccess;
+        
+        if (allAchievementsSuccess) {
+          changedFields.current.delete('achievements');
+        }
+      }
+      
+      // Check results and reset sync error count if all successful
+      const hadFailures = Object.values(syncResults).some(result => !result);
+      
+      if (hadFailures) {
+        syncErrorCount.current += 1;
+        if (syncErrorCount.current >= 3) {
+          toast.error("Having trouble saving your data. Please check your connection.", {
+            id: "sync-error-persistent"
+          });
+        }
+      } else {
+        // Reset error count on success
+        syncErrorCount.current = 0;
+      }
+      
+      // If we have no more fields to sync, we're done
+      if (changedFields.current.size === 0) {
+        console.log("All data synced successfully");
+      } else {
+        console.log("Some fields failed to sync:", Array.from(changedFields.current));
+      }
+      
     } catch (error) {
       console.error("Error syncing with Supabase:", error);
+      syncErrorCount.current += 1;
+      
+      if (syncErrorCount.current >= 3) {
+        toast.error("Having trouble saving your data. Please check your connection.", {
+          id: "sync-error-persistent"
+        });
+      }
     }
   }, syncDelay);
 

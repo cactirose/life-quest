@@ -33,9 +33,13 @@ const LoginForm = () => {
       
       if (error) throw error;
       
-      // Store session for sync auth checks
+      // Store session for sync auth checks and token persistence
       if (data.session) {
         storeSession(data.session);
+        
+        // Wait a moment to make sure session is stored
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
         toast.success("Login successful! Welcome back to Life Quest!");
         
         // Navigate to dashboard immediately - data loading will happen in background
@@ -45,7 +49,21 @@ const LoginForm = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error(error instanceof Error ? error.message : "Please check your credentials and try again.");
+      
+      // Provide user-friendly error messages
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Please check your credentials and try again.";
+        
+      // Handle known error messages more gracefully
+      let userMessage = errorMessage;
+      if (errorMessage.includes("Invalid login")) {
+        userMessage = "Invalid email or password. Please try again.";
+      } else if (errorMessage.includes("network")) {
+        userMessage = "Network error. Please check your internet connection.";
+      }
+      
+      toast.error(userMessage);
     } finally {
       setIsLoading(false);
     }
@@ -65,6 +83,7 @@ const LoginForm = () => {
             onChange={(e) => setEmail(e.target.value)}
             className="pl-10"
             required
+            autoComplete="email"
           />
         </div>
       </div>
@@ -87,6 +106,7 @@ const LoginForm = () => {
             onChange={(e) => setPassword(e.target.value)}
             className="pl-10"
             required
+            autoComplete="current-password"
           />
         </div>
       </div>

@@ -1,11 +1,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
+import { toast } from "sonner";
 
 // Check if user is authenticated by retrieving session from Supabase
 export const isAuthenticated = async (): Promise<boolean> => {
   try {
+    // Get the session from Supabase
     const { data, error } = await supabase.auth.getSession();
+    
     if (error) {
       console.error("Error checking authentication:", error);
       return false;
@@ -41,7 +44,7 @@ export const isAuthenticatedSync = (): boolean => {
     // This is a quick check for the router to use
     // The actual session validation happens in useEffect with isAuthenticated()
     
-    // Get Supabase URL from the stored config, not directly from the client
+    // Get Supabase URL from environment, not directly from the client
     const localStorageKey = 'sb-ilfxfggmyrmblmrqjrvl-auth-token';
     const authData = localStorage.getItem(localStorageKey);
     
@@ -60,7 +63,7 @@ export const isAuthenticatedSync = (): boolean => {
           }
         }
       } catch (e) {
-        console.log("Error parsing auth data:", e);
+        console.error("Error parsing auth data:", e);
       }
     }
     

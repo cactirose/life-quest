@@ -1,46 +1,23 @@
-
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { loadInitialData } from "@/utils/loadInitialData";
 import { GameData } from "@/types/gameData";
 import { toast } from "sonner";
 import { useDataPersistence } from "./useDataPersistence";
 import { useCharacterProgression } from "./useCharacterProgression";
+import { supabase } from "@/integrations/supabase/client";
+import { isAuthenticated } from "@/utils/auth";
+import { loadAllGameData } from "@/services";
 
 export function useGameDataManager() {
   const [gameData, setGameData] = useState<GameData>(() => {
-    try {
-      // Try loading from localStorage as a fallback
-      const localData = localStorage.getItem("rpgProductivityData");
-      if (localData) {
-        const parsedData = JSON.parse(localData);
-        console.log("Loaded data from localStorage:", parsedData);
-        
-        // Validate data has required collections
-        if (!parsedData.challenges) parsedData.challenges = [];
-        if (!parsedData.inventory) parsedData.inventory = [];
-        if (!parsedData.habits) parsedData.habits = [];
-        if (!parsedData.quests) parsedData.quests = [];
-        if (!parsedData.skillTree) parsedData.skillTree = [];
-        if (!parsedData.shopItems) parsedData.shopItems = [];
-        if (!parsedData.moods) parsedData.moods = [];
-        if (!parsedData.achievements) parsedData.achievements = [];
-        
-        return parsedData as GameData;
-      }
-      
-      // Call loadInitialData if no localStorage data exists
-      const initialData = loadInitialData();
-      console.log("Loaded initial data:", initialData);
-      
-      return initialData as GameData;
-    } catch (error) {
-      console.error("Error loading initial data:", error);
-      toast.error("There was an issue loading your saved data. Starting with defaults.");
-      
-      // Return default empty game data if there's an error
-      return loadInitialData() as GameData;
-    }
+    // Always start with empty state, will be populated properly in useEffect
+    const initialData = loadInitialData();
+    console.log("Initial game data loaded:", initialData);
+    return initialData as GameData;
   });
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
   // Set up data persistence (local storage and Supabase)
   useDataPersistence(gameData);
@@ -48,5 +25,131 @@ export function useGameDataManager() {
   // Set up character progression (level up logic)
   useCharacterProgression(gameData, setGameData);
 
-  return { gameData, setGameData };
+  // Load data when authenticated and handle auth state changes
+  useEffect(() => {
+    let isMounted = true;
+    let authSubscription: { unsubscribe: () => void } | null = null;
+    
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const authenticated = await isAuthenticated();
+        
+        if (authenticated) {
+          console.log("User is authenticated, fetching data from Supabase");
+          const serverData = await loadAllGameData();
+          
+          if (isMounted && Object.keys(serverData).length > 0) {
+            console.log("Supabase data loaded:", serverData);
+            setGameData(prevData => ({
+              ...prevData,
+              ...serverData
+            }));
+            setLastSyncTime(new Date());
+            toast.success("Your game data has been synced", {
+              id: "data-sync-success",
+            });
+          } else {
+            console.log("No Supabase data found or request failed");
+            // Keep using the initial data if no server data
+            toast.info("Using locally saved data", {
+              id: "using-local-data",
+            });
+          }
+        } else {
+          console.log("User is not authenticated, using local data");
+          // If we reached here, user is not authenticated, use local data
+          const localData = localStorage.getItem("rpgProductivityData");
+          if (localData) {
+            try {
+              const parsedData = JSON.parse(localData);
+              if (isMounted) {
+                setGameData(prevData => ({
+                  ...prevData,
+                  ...parsedData
+                }));
+              }
+            } catch (error) {
+              console.error("Error parsing local data:", error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading game data:", error);
+        toast.error("Error loading data. Using cached data instead.", {
+          id: "data-load-error",
+        });
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    // Set up auth state listener
+    authSubscription = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event);
+      
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        loadData();
+      } else if (event === 'SIGNED_OUT') {
+        // Reset to initial data when user signs out
+        const initialData = loadInitialData();
+        if (isMounted) {
+          setGameData(initialData as GameData);
+          toast.info("Signed out - local data will be used", {
+            id: "signed-out",
+          });
+        }
+      }
+    });
+
+    // Initial data load
+    loadData();
+
+    return () => {
+      isMounted = false;
+      if (authSubscription) {
+        authSubscription.unsubscribe();
+      }
+    };
+  }, []);
+
+  // Force refresh data from server
+  const refreshData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const authenticated = await isAuthenticated();
+      if (!authenticated) {
+        toast.error("You must be logged in to refresh data");
+        setIsLoading(false);
+        return;
+      }
+      
+      const serverData = await loadAllGameData();
+      if (Object.keys(serverData).length > 0) {
+        setGameData(prevData => ({
+          ...prevData,
+          ...serverData
+        }));
+        setLastSyncTime(new Date());
+        toast.success("Your game data has been refreshed");
+      } else {
+        toast.error("Failed to refresh data from server");
+      }
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      toast.error("Error refreshing data from server");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return { 
+    gameData, 
+    setGameData, 
+    isLoading, 
+    lastSyncTime,
+    refreshData
+  };
 }
