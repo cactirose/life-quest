@@ -23,8 +23,8 @@ export const isAuthenticatedSync = (): boolean => {
     // This is a quick check for the router to use
     // The actual session validation happens in useEffect with isAuthenticated()
     
-    // First try to check directly if we have an access token in local storage
-    const localStorageKey = `sb-${supabase.supabaseUrl.split('//')[1].split('.')[0]}-auth-token`;
+    // Get Supabase URL from the stored config, not directly from the client
+    const localStorageKey = 'sb-ilfxfggmyrmblmrqjrvl-auth-token';
     const authData = localStorage.getItem(localStorageKey);
     
     if (authData) {
