@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { GameData } from "@/types/gameData";
@@ -23,9 +22,9 @@ const toQuestSteps = (steps: Json | null): QuestStep[] => {
   
   const stepsArray = Array.isArray(steps) ? steps : [];
   return stepsArray.map(step => ({
-    id: typeof step.id === 'string' ? step.id : '',
-    description: typeof step.description === 'string' ? step.description : '',
-    completed: typeof step.completed === 'boolean' ? step.completed : false
+    id: typeof step?.id === 'string' ? step.id : '',
+    description: typeof step?.description === 'string' ? step.description : '',
+    completed: typeof step?.completed === 'boolean' ? step.completed : false
   }));
 };
 
@@ -34,8 +33,8 @@ const toHabitCompletions = (completions: Json | null): HabitCompletion[] => {
   
   const completionsArray = Array.isArray(completions) ? completions : [];
   return completionsArray.map(completion => ({
-    date: typeof completion.date === 'string' ? completion.date : '',
-    completed: typeof completion.completed === 'boolean' ? completion.completed : false
+    date: typeof completion?.date === 'string' ? completion.date : '',
+    completed: typeof completion?.completed === 'boolean' ? completion.completed : false
   }));
 };
 
@@ -151,6 +150,13 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No authenticated user");
 
+    // Convert QuestStep[] to Json for storage
+    const stepsAsJson = quest.steps.map(step => ({
+      id: step.id,
+      description: step.description,
+      completed: step.completed
+    }));
+
     const { error } = await supabase
       .from("quests")
       .upsert({
@@ -159,13 +165,13 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
         title: quest.title,
         description: quest.description,
         quest_type: quest.type,
-        difficulty: quest.difficulty,
+        difficulty: quest.difficulty || "medium",
         due_date: quest.dueDate,
         status: quest.status,
         xp_reward: quest.xpReward,
         coin_reward: quest.coinReward,
         stat_rewards: quest.statRewards,
-        steps: quest.steps
+        steps: stepsAsJson
       });
 
     if (error) {
@@ -512,6 +518,12 @@ export const upsertHabit = async (habit: Habit): Promise<void> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No authenticated user");
 
+    // Convert HabitCompletion[] to Json for storage
+    const completionsAsJson = habit.completionHistory.map(completion => ({
+      date: completion.date,
+      completed: completion.completed
+    }));
+
     const { error } = await supabase
       .from("habits")
       .upsert({
@@ -526,7 +538,7 @@ export const upsertHabit = async (habit: Habit): Promise<void> => {
         xp_reward: habit.xpReward,
         coin_reward: habit.coinReward,
         reminder: habit.reminder,
-        completion_history: habit.completionHistory as any,
+        completion_history: completionsAsJson,
         color: habit.color
       });
 

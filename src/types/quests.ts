@@ -14,10 +14,12 @@ export interface Quest {
   title: string;
   description: string;
   type: QuestType;
+  difficulty?: string;
   steps: QuestStep[];
   status: QuestStatus;
   xpReward: number;
   coinReward: number;
+  dueDate?: string;
   statRewards?: {
     strength?: number;
     dexterity?: number;
