@@ -10,7 +10,7 @@ import { storeSession } from "@/utils/auth";
 export function useSupabaseSync() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const { setGameData } = useGameData();
+  const { gameData, setGameData } = useGameData();
 
   // Load user data from Supabase when authenticated
   const loadUserData = async () => {
@@ -20,7 +20,9 @@ export function useSupabaseSync() {
       
       if (session) {
         // User is logged in, load their data from Supabase
+        setIsSyncing(true);
         const supabaseData = await loadAllGameData();
+        setIsSyncing(false);
         
         // Store session for sync auth checks
         storeSession(session);
@@ -32,9 +34,11 @@ export function useSupabaseSync() {
             ...supabaseData,
           }));
           console.log("Loaded user data from Supabase");
+          toast.success("Your data has been synced from the cloud");
         } else {
-          // If first login or missing data, use default data but preserve the username
-          const initialData = loadInitialData();
+          // If first login or missing data, use local data but preserve the username
+          const localData = localStorage.getItem("rpgProductivityData");
+          const initialData = localData ? JSON.parse(localData) : loadInitialData();
           
           // If we have a character name from the user's profile, use it
           if (session?.user?.user_metadata?.username) {
@@ -49,7 +53,9 @@ export function useSupabaseSync() {
         }
       } else {
         // No session, use local data
-        const initialData = loadInitialData();
+        const localData = localStorage.getItem("rpgProductivityData");
+        const initialData = localData ? JSON.parse(localData) : loadInitialData();
+        
         setGameData(prevData => ({
           ...prevData,
           ...initialData,
@@ -61,7 +67,9 @@ export function useSupabaseSync() {
       toast.error("Failed to load your data");
       
       // Fallback to local data
-      const initialData = loadInitialData();
+      const localData = localStorage.getItem("rpgProductivityData");
+      const initialData = localData ? JSON.parse(localData) : loadInitialData();
+      
       setGameData(prevData => ({
         ...prevData,
         ...initialData,
@@ -87,6 +95,7 @@ export function useSupabaseSync() {
             ...prevData,
             ...initialData,
           }));
+          toast.info("Signed out - using local data");
         }
       }
     );

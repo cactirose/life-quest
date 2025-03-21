@@ -3,7 +3,8 @@ import { Navigate } from "react-router-dom";
 import { isAuthenticatedSync } from "@/utils/auth";
 import { ReactNode, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
+import { useSupabaseSync } from "@/hooks/useSupabaseSync";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthed, setIsAuthed] = useState(isAuthenticatedSync());
+  const { isLoading } = useSupabaseSync();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -21,11 +23,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           setIsAuthed(true);
         } else {
           setIsAuthed(false);
-          toast({
-            title: "Authentication required",
-            description: "Please log in to access this page",
-            variant: "destructive",
-          });
+          toast("Authentication required. Please log in to access this page");
         }
       } catch (error) {
         console.error("Auth check error:", error);
@@ -47,9 +45,14 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // While checking, you could show a loading spinner
-  if (isChecking) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  // While checking auth or loading data, show a loading spinner
+  if (isChecking || isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
+        <span>Loading your data...</span>
+      </div>
+    );
   }
 
   if (!isAuthed) {

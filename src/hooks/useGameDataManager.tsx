@@ -2,64 +2,52 @@
 import { useState, useEffect } from "react";
 import { loadInitialData } from "../utils/loadInitialData";
 import { GameData } from "../types/gameData";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
+import { isAuthenticatedSync } from "@/utils/auth";
+import { 
+  upsertCharacter,
+  upsertQuest,
+  upsertInventoryItem,
+  upsertSkillNode,
+  upsertChallenge,
+  upsertHabit,
+  upsertMoodEntry,
+  upsertAchievement
+} from "@/services";
 
 export function useGameDataManager() {
   const [gameData, setGameData] = useState<GameData>(() => {
     try {
-      // Call loadInitialData and ensure all required properties are present
+      // Try loading from localStorage as a fallback
+      const localData = localStorage.getItem("rpgProductivityData");
+      if (localData) {
+        const parsedData = JSON.parse(localData);
+        console.log("Loaded data from localStorage:", parsedData);
+        
+        // Validate data has required collections
+        if (!parsedData.challenges) parsedData.challenges = [];
+        if (!parsedData.inventory) parsedData.inventory = [];
+        if (!parsedData.habits) parsedData.habits = [];
+        if (!parsedData.quests) parsedData.quests = [];
+        if (!parsedData.skillTree) parsedData.skillTree = [];
+        if (!parsedData.shopItems) parsedData.shopItems = [];
+        if (!parsedData.moods) parsedData.moods = [];
+        if (!parsedData.achievements) parsedData.achievements = [];
+        
+        return parsedData as GameData;
+      }
+      
+      // Call loadInitialData if no localStorage data exists
       const initialData = loadInitialData();
       console.log("Loaded initial data:", initialData);
-      
-      // Validate data has required collections
-      if (!initialData.challenges) initialData.challenges = [];
-      if (!initialData.inventory) initialData.inventory = [];
-      if (!initialData.habits) initialData.habits = [];
-      if (!initialData.quests) initialData.quests = [];
-      if (!initialData.skillTree) initialData.skillTree = [];
-      if (!initialData.shopItems) initialData.shopItems = [];
-      if (!initialData.moods) initialData.moods = [];
-      if (!initialData.achievements) initialData.achievements = [];
       
       return initialData as GameData;
     } catch (error) {
       console.error("Error loading initial data:", error);
-      toast({
-        title: "Error loading data",
-        description: "There was an issue loading your saved data. Starting with defaults.",
-        variant: "destructive"
-      });
+      toast("There was an issue loading your saved data. Starting with defaults.");
+      
       // Return default empty game data if there's an error
-      return {
-        character: {
-          name: "Adventurer",
-          level: 1,
-          xp: 0,
-          nextLevelXp: 100,
-          coins: 50,
-          portrait: "/placeholder.svg",
-          bio: "A brave adventurer ready to conquer life's challenges.",
-          stats: {
-            strength: 10,
-            dexterity: 10,
-            constitution: 10,
-            intelligence: 10,
-            wisdom: 10,
-            charisma: 10
-          },
-          lastLoginDate: null,
-          loginStreak: 0,
-          dailyBonusClaimed: false
-        },
-        quests: [],
-        inventory: [],
-        shopItems: [],
-        skillTree: [],
-        challenges: [],
-        habits: [],
-        moods: [],
-        achievements: []
-      } as GameData;
+      return loadInitialData() as GameData;
     }
   });
 
@@ -67,8 +55,67 @@ export function useGameDataManager() {
   useEffect(() => {
     try {
       localStorage.setItem("rpgProductivityData", JSON.stringify(gameData));
+      
+      // Sync with Supabase if user is authenticated
+      if (isAuthenticatedSync()) {
+        // Sync character data
+        if (gameData.character) {
+          upsertCharacter(gameData.character).catch(err => 
+            console.error("Error syncing character:", err)
+          );
+        }
+        
+        // Sync quests
+        gameData.quests.forEach(quest => {
+          upsertQuest(quest).catch(err => 
+            console.error("Error syncing quest:", err)
+          );
+        });
+        
+        // Sync inventory
+        gameData.inventory.forEach(item => {
+          upsertInventoryItem(item).catch(err => 
+            console.error("Error syncing inventory item:", err)
+          );
+        });
+        
+        // Sync skill tree
+        gameData.skillTree.forEach(node => {
+          upsertSkillNode(node).catch(err => 
+            console.error("Error syncing skill node:", err)
+          );
+        });
+        
+        // Sync challenges
+        gameData.challenges.forEach(challenge => {
+          upsertChallenge(challenge).catch(err => 
+            console.error("Error syncing challenge:", err)
+          );
+        });
+        
+        // Sync habits
+        gameData.habits.forEach(habit => {
+          upsertHabit(habit).catch(err => 
+            console.error("Error syncing habit:", err)
+          );
+        });
+        
+        // Sync mood entries
+        gameData.moods.forEach(mood => {
+          upsertMoodEntry(mood).catch(err => 
+            console.error("Error syncing mood entry:", err)
+          );
+        });
+        
+        // Sync achievements
+        gameData.achievements.forEach(achievement => {
+          upsertAchievement(achievement).catch(err => 
+            console.error("Error syncing achievement:", err)
+          );
+        });
+      }
     } catch (error) {
-      console.error("Error saving data to localStorage:", error);
+      console.error("Error saving data:", error);
     }
   }, [gameData]);
 
@@ -89,11 +136,7 @@ export function useGameDataManager() {
       }));
       
       // Display level up notification
-      toast({
-        title: "Level Up!",
-        description: `You've reached level ${character.level + 1}!`,
-        variant: "default"
-      });
+      toast(`You've reached level ${character.level + 1}!`);
     }
   }, [gameData.character?.xp]);
 
