@@ -97,6 +97,9 @@ export function useSupabaseSync() {
       abortControllerRef.current.abort();
     }
     
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    
     setIsLoading(true);
     
     try {
@@ -118,6 +121,7 @@ export function useSupabaseSync() {
       const initialData = localData ? JSON.parse(localData) : loadInitialData();
       
       if (initialData) {
+        console.log("Setting initial data while waiting for server data:", initialData);
         setGameData(prevData => ({
           ...prevData,
           ...initialData,
@@ -126,6 +130,7 @@ export function useSupabaseSync() {
       
       if (session) {
         storeSession(session);
+        console.log("User is authenticated, fetching server data...");
 
         const timeoutDuration = isMobile ? 20000 : 30000;
         const timeoutPromise = new Promise((_, reject) => {
@@ -135,7 +140,7 @@ export function useSupabaseSync() {
         });
 
         try {
-          console.log("Attempting quick load of all game data");
+          console.log("Attempting to load all game data");
           
           const allData = await Promise.race([
             loadAllGameData(),
@@ -148,9 +153,23 @@ export function useSupabaseSync() {
           }
           
           if (Object.keys(allData).length > 0) {
+            console.log("Successfully loaded data from server:", allData);
+            
+            const updatedData: Partial<any> = {};
+            
+            if (allData.character) updatedData.character = allData.character;
+            if (allData.quests && allData.quests.length > 0) updatedData.quests = allData.quests;
+            if (allData.inventory && allData.inventory.length > 0) updatedData.inventory = allData.inventory;
+            if (allData.shopItems && allData.shopItems.length > 0) updatedData.shopItems = allData.shopItems;
+            if (allData.skillTree && allData.skillTree.length > 0) updatedData.skillTree = allData.skillTree;
+            if (allData.challenges && allData.challenges.length > 0) updatedData.challenges = allData.challenges;
+            if (allData.habits && allData.habits.length > 0) updatedData.habits = allData.habits;
+            if (allData.moods && allData.moods.length > 0) updatedData.moods = allData.moods;
+            if (allData.achievements && allData.achievements.length > 0) updatedData.achievements = allData.achievements;
+            
             setGameData(prevData => ({
               ...prevData,
-              ...allData,
+              ...updatedData,
             }));
             
             toast.success("Successfully loaded your game data", {
@@ -158,7 +177,8 @@ export function useSupabaseSync() {
             });
             hasLoadedData.current = true;
           } else {
-            await syncFromSupabase();
+            console.log("No data received from server, falling back to progressive loading");
+            await syncFromSupabase(signal);
             hasLoadedData.current = true;
           }
         } catch (error) {
@@ -174,7 +194,7 @@ export function useSupabaseSync() {
             hasLoadedData.current = true;
           } else {
             try {
-              await syncFromSupabase();
+              await syncFromSupabase(signal);
               hasLoadedData.current = true;
             } catch (syncError) {
               console.error("Progressive sync also failed:", syncError);
@@ -185,6 +205,7 @@ export function useSupabaseSync() {
           }
         }
       } else {
+        console.log("User is not authenticated, using local data only");
         loadLocalData();
         hasLoadedData.current = true;
       }

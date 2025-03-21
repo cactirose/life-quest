@@ -13,7 +13,25 @@ import { GameData } from "../types/gameData";
 export const loadInitialData = (): Omit<GameData, keyof Omit<GameData, 'character' | 'quests' | 'inventory' | 'shopItems' | 'skillTree' | 'challenges' | 'habits' | 'moods' | 'achievements'>> => {
   const savedData = localStorage.getItem("rpgProductivityData");
   if (savedData) {
-    return JSON.parse(savedData);
+    try {
+      const parsedData = JSON.parse(savedData);
+      console.log("Loaded data from localStorage:", parsedData);
+      
+      // Validate data has required collections
+      if (!parsedData.challenges) parsedData.challenges = [];
+      if (!parsedData.inventory) parsedData.inventory = [];
+      if (!parsedData.habits) parsedData.habits = [];
+      if (!parsedData.quests) parsedData.quests = [];
+      if (!parsedData.skillTree) parsedData.skillTree = [];
+      if (!parsedData.shopItems) parsedData.shopItems = [];
+      if (!parsedData.moods) parsedData.moods = [];
+      if (!parsedData.achievements) parsedData.achievements = [];
+      
+      return parsedData;
+    } catch (error) {
+      console.error("Error parsing saved data:", error);
+      // Fall through to create default data if parsing fails
+    }
   }
   
   // Get tomorrow date for the initial daily challenge

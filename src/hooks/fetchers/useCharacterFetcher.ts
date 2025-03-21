@@ -10,9 +10,7 @@ export const useCharacterFetcher = (
     try {
       updateStatus('character', 'loading');
       
-      const { character } = await import('@/services/characterService').then(module => ({
-        character: module.fetchCharacter(signal)
-      }));
+      const { fetchCharacter } = await import('@/services/characterService');
       
       // Check if the request was aborted
       if (signal?.aborted) {
@@ -20,13 +18,15 @@ export const useCharacterFetcher = (
         return null;
       }
       
-      const data = await character;
+      const data = await fetchCharacter(signal);
       
       if (data) {
+        console.log("Loaded character data:", data);
         setGameData(prev => ({ ...prev, character: data }));
         updateStatus('character', 'loaded');
         return data;
       } else {
+        console.log("No character data returned from service");
         updateStatus('character', 'error');
         return null;
       }

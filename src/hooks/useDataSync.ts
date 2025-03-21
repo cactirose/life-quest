@@ -18,15 +18,17 @@ export const useDataSync = () => {
   
   const dataFetchers = useDataFetchers(setGameData, updateStatus);
 
-  const syncFromSupabase = useCallback(async () => {
+  const syncFromSupabase = useCallback(async (signal?: AbortSignal) => {
     console.log("Starting data sync from Supabase");
     
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+    if (!signal) {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      
+      abortControllerRef.current = new AbortController();
+      signal = abortControllerRef.current.signal;
     }
-    
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
     
     setIsSyncing(true);
     
@@ -35,6 +37,7 @@ export const useDataSync = () => {
         dataFetchers.fetchCharacter(signal),
         dataFetchers.fetchQuests(signal),
         dataFetchers.fetchInventory(signal),
+        dataFetchers.fetchShopItems(signal),
         dataFetchers.fetchSkillTree(signal),
         dataFetchers.fetchChallenges(signal),
         dataFetchers.fetchHabits(signal),
@@ -87,7 +90,7 @@ export const useDataSync = () => {
       setIsSyncing(false);
       setIsLoading(false);
     }
-  }, [dataFetchers, isMobile, updateStatus]);
+  }, [dataFetchers, isMobile, loadLocalData]);
 
   const loadLocalData = useCallback(() => {
     console.log("Loading local data");
