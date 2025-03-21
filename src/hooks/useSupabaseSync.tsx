@@ -1,29 +1,24 @@
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { supabase } from "@/integrations/supabase/client";
-import { loadAllGameData } from "@/services";
-import { toast } from "sonner";
 import { loadInitialData } from "@/utils/loadInitialData";
+import { toast } from "sonner";
 import { storeSession } from "@/utils/auth";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Character } from "@/types/character";
+import { useDataSync } from "./useDataSync";
 
 export function useSupabaseSync() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [dataStatus, setDataStatus] = useState({
-    character: 'loading',
-    quests: 'loading',
-    inventory: 'loading',
-    skillTree: 'loading',
-    challenges: 'loading',
-    habits: 'loading',
-    moods: 'loading',
-    achievements: 'loading'
-  });
   const gameContext = useGameData();
   const { setGameData } = gameContext;
+  const { 
+    isLoading, 
+    setIsLoading, 
+    isSyncing, 
+    setIsSyncing, 
+    dataStatus, 
+    syncFromSupabase, 
+    loadLocalData 
+  } = useDataSync();
 
   // Load user data from Supabase when authenticated
   const loadUserData = async () => {
@@ -53,192 +48,19 @@ export function useSupabaseSync() {
           }));
         }
         
-        // Then progressively update with remote data as it comes in
-        const fetchCharacter = async () => {
-          try {
-            const { character } = await import('@/services/characterService').then(module => ({
-              character: module.fetchCharacter()
-            }));
-            
-            const data = await character;
-            if (data) {
-              setGameData(prev => ({ ...prev, character: data }));
-              setDataStatus(prev => ({ ...prev, character: 'loaded' }));
-            }
-          } catch (error) {
-            console.error("Error loading character:", error);
-            setDataStatus(prev => ({ ...prev, character: 'error' }));
-          }
-        };
-        
-        const fetchQuests = async () => {
-          try {
-            const { quests } = await import('@/services/questService').then(module => ({
-              quests: module.fetchQuests()
-            }));
-            
-            const data = await quests;
-            if (data && data.length > 0) {
-              setGameData(prev => ({ ...prev, quests: data }));
-            }
-            setDataStatus(prev => ({ ...prev, quests: 'loaded' }));
-          } catch (error) {
-            console.error("Error loading quests:", error);
-            setDataStatus(prev => ({ ...prev, quests: 'error' }));
-          }
-        };
-        
-        const fetchInventory = async () => {
-          try {
-            const { inventory, shopItems } = await import('@/services/inventoryService').then(module => ({
-              inventory: module.fetchInventory(),
-              shopItems: module.fetchShopItems()
-            }));
-            
-            const inventoryData = await inventory;
-            const shopItemsData = await shopItems;
-            
-            if (inventoryData && inventoryData.length > 0) {
-              setGameData(prev => ({ ...prev, inventory: inventoryData }));
-            }
-            
-            if (shopItemsData && shopItemsData.length > 0) {
-              setGameData(prev => ({ ...prev, shopItems: shopItemsData }));
-            }
-            
-            setDataStatus(prev => ({ ...prev, inventory: 'loaded' }));
-          } catch (error) {
-            console.error("Error loading inventory or shop items:", error);
-            setDataStatus(prev => ({ ...prev, inventory: 'error' }));
-          }
-        };
-        
-        const fetchSkillTree = async () => {
-          try {
-            const { skillTree } = await import('@/services/skillTreeService').then(module => ({
-              skillTree: module.fetchSkillTree()
-            }));
-            
-            const data = await skillTree;
-            if (data && data.length > 0) {
-              setGameData(prev => ({ ...prev, skillTree: data }));
-            }
-            setDataStatus(prev => ({ ...prev, skillTree: 'loaded' }));
-          } catch (error) {
-            console.error("Error loading skill tree:", error);
-            setDataStatus(prev => ({ ...prev, skillTree: 'error' }));
-          }
-        };
-        
-        const fetchChallenges = async () => {
-          try {
-            const { challenges } = await import('@/services/challengeService').then(module => ({
-              challenges: module.fetchChallenges()
-            }));
-            
-            const data = await challenges;
-            if (data && data.length > 0) {
-              setGameData(prev => ({ ...prev, challenges: data }));
-            }
-            setDataStatus(prev => ({ ...prev, challenges: 'loaded' }));
-          } catch (error) {
-            console.error("Error loading challenges:", error);
-            setDataStatus(prev => ({ ...prev, challenges: 'error' }));
-          }
-        };
-        
-        const fetchHabits = async () => {
-          try {
-            const { habits } = await import('@/services/habitService').then(module => ({
-              habits: module.fetchHabits()
-            }));
-            
-            const data = await habits;
-            if (data && data.length > 0) {
-              setGameData(prev => ({ ...prev, habits: data }));
-            }
-            setDataStatus(prev => ({ ...prev, habits: 'loaded' }));
-          } catch (error) {
-            console.error("Error loading habits:", error);
-            setDataStatus(prev => ({ ...prev, habits: 'error' }));
-          }
-        };
-        
-        const fetchMoods = async () => {
-          try {
-            const { moods } = await import('@/services/moodService').then(module => ({
-              moods: module.fetchMoodEntries()
-            }));
-            
-            const data = await moods;
-            if (data && data.length > 0) {
-              setGameData(prev => ({ ...prev, moods: data }));
-            }
-            setDataStatus(prev => ({ ...prev, moods: 'loaded' }));
-          } catch (error) {
-            console.error("Error loading moods:", error);
-            setDataStatus(prev => ({ ...prev, moods: 'error' }));
-          }
-        };
-        
-        const fetchAchievements = async () => {
-          try {
-            const { achievements } = await import('@/services/achievementService').then(module => ({
-              achievements: module.fetchAchievements()
-            }));
-            
-            const data = await achievements;
-            if (data && data.length > 0) {
-              setGameData(prev => ({ ...prev, achievements: data }));
-            }
-            setDataStatus(prev => ({ ...prev, achievements: 'loaded' }));
-          } catch (error) {
-            console.error("Error loading achievements:", error);
-            setDataStatus(prev => ({ ...prev, achievements: 'error' }));
-          }
-        };
-        
-        // Start loading data in parallel
-        Promise.all([
-          fetchCharacter(),
-          fetchQuests(),
-          fetchInventory(),
-          fetchSkillTree(),
-          fetchChallenges(),
-          fetchHabits(),
-          fetchMoods(),
-          fetchAchievements(),
-        ]).finally(() => {
-          setIsSyncing(false);
-          setIsLoading(false);
-          toast.success("Your data has been synced from the cloud");
-        });
+        // Then progressively update with remote data
+        await syncFromSupabase();
         
       } else {
         // No session, use local data
-        const localData = localStorage.getItem("rpgProductivityData");
-        const initialData = localData ? JSON.parse(localData) : loadInitialData();
-        
-        setGameData(prevData => ({
-          ...prevData,
-          ...initialData,
-        }));
-        console.log("Using local data (user not logged in)");
-        setIsLoading(false);
+        loadLocalData();
       }
     } catch (error) {
       console.error("Error loading user data:", error);
       toast.error("Failed to load your data");
       
       // Fallback to local data
-      const localData = localStorage.getItem("rpgProductivityData");
-      const initialData = localData ? JSON.parse(localData) : loadInitialData();
-      
-      setGameData(prevData => ({
-        ...prevData,
-        ...initialData,
-      }));
-      setIsLoading(false);
+      loadLocalData();
     }
   };
 
