@@ -33,7 +33,7 @@ export const useInventoryFetcher = (
       }
       
       updateStatus('inventory', 'loaded');
-      return inventoryData;
+      return { inventory: inventoryData, shopItems: shopItemsData };
     } catch (error) {
       // Check if the request was aborted
       if (signal?.aborted) {
@@ -41,7 +41,7 @@ export const useInventoryFetcher = (
         return null;
       }
       
-      console.error("Error loading inventory or shop items:", error);
+      console.error("Error loading inventory:", error);
       updateStatus('inventory', 'error');
       return null;
     }

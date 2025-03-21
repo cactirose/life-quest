@@ -4,6 +4,15 @@ import { useGameData } from "@/contexts/DataContext";
 const StatusBar = () => {
   const { character } = useGameData();
   
+  // Make sure character data is available
+  if (!character || !character.level) {
+    return (
+      <div className="flex items-center gap-4 text-[hsl(var(--nav-text))] font-pixel animate-pulse">
+        <span>Loading...</span>
+      </div>
+    );
+  }
+  
   return (
     <div className="flex items-center gap-4 text-[hsl(var(--nav-text))] font-pixel">
       <span>Level: {character.level}</span>
