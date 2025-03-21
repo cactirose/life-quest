@@ -1,4 +1,3 @@
-
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useGameData } from "@/contexts/DataContext";
 import { 
@@ -104,7 +103,6 @@ const Navbar = () => {
     }
   ];
 
-  // Mobile menu items - flattened for better mobile navigation
   const mobileMenuItems = [
     {
       label: "Home",
@@ -130,7 +128,6 @@ const Navbar = () => {
     )
   ];
   
-  // Mobile Status Bar component
   const StatusBar = () => (
     <div className="flex items-center gap-4 text-[hsl(var(--nav-text))] font-pixel">
       <span>Level: {character.level}</span>
@@ -139,13 +136,12 @@ const Navbar = () => {
     </div>
   );
 
-  // Mobile menu component - updated with proper styling and positioning
   const MobileMenu = () => (
     <Sheet>
       <SheetTrigger asChild>
         <Button 
           variant="ghost" 
-          className="text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none px-2"
+          className="text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none p-2 h-10 w-10"
         >
           <Menu size={24} />
         </Button>
@@ -198,23 +194,19 @@ const Navbar = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] shadow-md py-2">
       <div className="container mx-auto">
         <div className="flex items-center justify-between">
-          {/* Logo - no longer includes mobile menu */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-2">
               <h1 className="text-xl font-pixel text-[hsl(var(--nav-text))]">Life Quest</h1>
             </Link>
           </div>
           
-          {/* Status Bar - hidden on mobile */}
           <div className="hidden md:flex items-center gap-4">
             <StatusBar />
           </div>
           
-          {/* Desktop Navigation - hidden on mobile */}
           {!isMobile && (
             <NavigationMenu className="font-pixel hidden md:flex">
               <NavigationMenuList>
-                {/* Home page */}
                 <NavigationMenuItem className="relative">
                   <Link to="/dashboard" className={cn(navigationMenuTriggerStyle(), 
                     "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none", 
@@ -226,7 +218,6 @@ const Navbar = () => {
                   </Link>
                 </NavigationMenuItem>
                 
-                {/* Quests standalone page */}
                 <NavigationMenuItem className="relative">
                   <Link to="/quests" className={cn(navigationMenuTriggerStyle(), 
                     "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none", 
@@ -238,7 +229,6 @@ const Navbar = () => {
                   </Link>
                 </NavigationMenuItem>
                 
-                {/* Dropdown menus */}
                 {navStructure.map(item => (
                   <NavigationMenuItem key={item.label} className="relative">
                     <NavigationMenuTrigger className={cn(
@@ -270,7 +260,6 @@ const Navbar = () => {
                   </NavigationMenuItem>
                 ))}
                 
-                {/* Shop standalone page */}
                 <NavigationMenuItem className="relative">
                   <Link to="/shop" className={cn(navigationMenuTriggerStyle(), 
                     "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none", 
@@ -282,7 +271,6 @@ const Navbar = () => {
                   </Link>
                 </NavigationMenuItem>
                 
-                {/* Logout button */}
                 <NavigationMenuItem className="relative">
                   <Button 
                     variant="ghost" 
@@ -299,12 +287,12 @@ const Navbar = () => {
             </NavigationMenu>
           )}
           
-          {/* Mobile menu button - now on the right side */}
           {isMobile && (
-            <MobileMenu />
+            <div className="z-50">
+              <MobileMenu />
+            </div>
           )}
           
-          {/* Theme Settings - hidden on mobile and shown inside mobile menu */}
           <div className="hidden md:block">
             <ThemeSettings />
           </div>
