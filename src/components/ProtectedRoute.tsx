@@ -1,11 +1,12 @@
 
 import { Navigate } from "react-router-dom";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { useAuthenticatedRoute } from "@/hooks/useAuthenticatedRoute";
 import { useSupabaseSync } from "@/hooks/useSupabaseSync";
 import { AuthChecking } from "./auth/AuthChecking";
 import { AuthCheckFailed } from "./auth/AuthCheckFailed";
 import { DataSyncingIndicator } from "./auth/DataSyncingIndicator";
+import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -13,7 +14,25 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isChecking, isAuthed, checkFailed } = useAuthenticatedRoute();
-  const { isLoading } = useSupabaseSync();
+  const { isLoading, isSyncing } = useSupabaseSync();
+  
+  // Show timeout toast if loading takes too long
+  useEffect(() => {
+    let timeoutId: number | null = null;
+    
+    if (isLoading && !isChecking) {
+      timeoutId = window.setTimeout(() => {
+        toast.info("Still loading your data... This is taking longer than expected.", {
+          id: "loading-timeout",
+          duration: 5000,
+        });
+      }, 8000); // Show toast after 8 seconds of loading
+    }
+    
+    return () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, [isLoading, isChecking]);
   
   // If auth check failed, show a recovery UI
   if (checkFailed) {
@@ -31,10 +50,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   // If authenticated but still loading data, render the children anyway
-  // with a small loading indicator at the top
+  // with a small loading indicator at the bottom right
   return (
     <>
-      {isLoading && <DataSyncingIndicator />}
+      {(isLoading || isSyncing) && <DataSyncingIndicator />}
       {children}
     </>
   );

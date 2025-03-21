@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { loadInitialData } from "@/utils/loadInitialData";
@@ -28,7 +28,6 @@ export function useSupabaseSync() {
       
       if (session) {
         // User is logged in, load their data from Supabase
-        setIsSyncing(true);
         storeSession(session);
         
         // Get local data first for immediate display
@@ -50,29 +49,42 @@ export function useSupabaseSync() {
         
         // Then progressively update with remote data
         await syncFromSupabase();
-        
+        toast.success("Successfully loaded your game data", {
+          id: "data-loaded",
+        });
       } else {
         // No session, use local data
         loadLocalData();
       }
     } catch (error) {
       console.error("Error loading user data:", error);
-      toast.error("Failed to load your data");
+      toast.error("Failed to load your data. Using local data instead.");
       
       // Fallback to local data
       loadLocalData();
+    } finally {
+      // Ensure loading state is turned off regardless of outcome
+      setIsLoading(false);
     }
   };
 
   // Subscribe to auth changes
   useEffect(() => {
+    let isMounted = true;
+    
     // First set up the auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event);
         
+        if (!isMounted) return;
+        
         if (event === 'SIGNED_IN') {
-          await loadUserData();
+          // When signed in, load user data with a slight delay to ensure
+          // the session is properly established
+          setTimeout(() => {
+            if (isMounted) loadUserData();
+          }, 500);
         } else if (event === 'SIGNED_OUT') {
           // Reset to local data when signing out
           const initialData = loadInitialData();
@@ -85,11 +97,14 @@ export function useSupabaseSync() {
       }
     );
 
-    // Initial load
-    loadUserData();
+    // Initial load with a slight delay to avoid race conditions
+    setTimeout(() => {
+      if (isMounted) loadUserData();
+    }, 300);
 
     // Cleanup subscription
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);
