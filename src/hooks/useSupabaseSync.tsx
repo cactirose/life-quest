@@ -21,7 +21,7 @@ export function useSupabaseSync() {
         // User is logged in, load their data from Supabase
         const supabaseData = await loadAllGameData();
         
-        if (Object.keys(supabaseData).length > 0) {
+        if (supabaseData.character) {
           // If we have data from Supabase, use it
           setGameData(prevData => ({
             ...prevData,

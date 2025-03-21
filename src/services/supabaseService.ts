@@ -2,33 +2,53 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { GameData } from "@/types/gameData";
-import { Character } from "@/types/character";
-import { Quest } from "@/types/quests";
+import { Character, StatName } from "@/types/character";
+import { Quest, QuestStep } from "@/types/quests";
 import { GearItem } from "@/types/inventory";
 import { SkillNode } from "@/types/skills";
 import { Challenge } from "@/types/challenges";
-import { Habit } from "@/types/habits";
+import { Habit, HabitCompletion } from "@/types/habits";
 import { MoodEntry } from "@/types/mood";
 import { Achievement } from "@/types/achievements";
+import { Json } from "@/integrations/supabase/types";
+
+// Helper functions to convert between Supabase and app types
+const jsonToString = (value: any): string => {
+  return typeof value === 'string' ? value : JSON.stringify(value);
+};
 
 // Character methods
 export const fetchCharacter = async (): Promise<Character | null> => {
   try {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) return null;
+    
     const { data, error } = await supabase
       .from("characters")
       .select("*")
-      .eq("user_id", supabase.auth.getUser().then(u => u.data.user?.id))
-      .single();
+      .eq("user_id", user.data.user.id)
+      .maybeSingle();
 
     if (error) {
       console.error("Error fetching character:", error);
       return null;
     }
 
-    // Convert the JSONB stats field to the Stats object format
+    if (!data) return null;
+
+    // Map database fields to Character type
     return {
-      ...data,
-      stats: data.stats
+      name: data.name,
+      level: data.level,
+      xp: data.xp,
+      nextLevelXp: data.next_level_xp,
+      coins: data.coins,
+      portrait: data.portrait || "/placeholder.svg",
+      bio: data.bio || "A brave adventurer ready to conquer life's challenges.",
+      stats: data.stats as any,
+      lastLoginDate: data.last_login_date,
+      loginStreak: data.login_streak,
+      dailyBonusClaimed: data.daily_bonus_claimed
     } as Character;
   } catch (error) {
     console.error("Error in fetchCharacter:", error);
@@ -71,25 +91,33 @@ export const upsertCharacter = async (character: Character): Promise<void> => {
 // Quests methods
 export const fetchQuests = async (): Promise<Quest[]> => {
   try {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) return [];
+    
     const { data, error } = await supabase
       .from("quests")
       .select("*")
-      .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
+      .eq("user_id", user.data.user.id);
 
     if (error) {
       console.error("Error fetching quests:", error);
       return [];
     }
 
-    // Convert the JSONB fields to their respective formats
+    // Map database fields to Quest type
     return data.map(quest => ({
-      ...quest,
       id: quest.id,
-      statRewards: quest.stat_rewards,
+      title: quest.title,
+      description: quest.description || "",
+      type: quest.quest_type,
+      difficulty: quest.difficulty,
+      steps: Array.isArray(quest.steps) ? quest.steps as QuestStep[] : [],
+      status: quest.status,
       xpReward: quest.xp_reward,
       coinReward: quest.coin_reward,
-      steps: quest.steps
-    })) as Quest[];
+      statRewards: quest.stat_rewards,
+      dueDate: quest.due_date
+    } as Quest));
   } catch (error) {
     console.error("Error in fetchQuests:", error);
     return [];
@@ -115,7 +143,7 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
         xp_reward: quest.xpReward,
         coin_reward: quest.coinReward,
         stat_rewards: quest.statRewards,
-        steps: quest.steps
+        steps: quest.steps as any
       });
 
     if (error) {
@@ -148,10 +176,13 @@ export const deleteQuest = async (questId: string): Promise<void> => {
 // Inventory methods
 export const fetchInventory = async (): Promise<GearItem[]> => {
   try {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) return [];
+    
     const { data, error } = await supabase
       .from("inventory_items")
       .select("*")
-      .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
+      .eq("user_id", user.data.user.id);
 
     if (error) {
       console.error("Error fetching inventory:", error);
@@ -159,11 +190,17 @@ export const fetchInventory = async (): Promise<GearItem[]> => {
     }
 
     return data.map(item => ({
-      ...item,
       id: item.id,
-      statBonuses: item.stat_bonuses,
-      levelRequired: item.level_required
-    })) as GearItem[];
+      name: item.name,
+      description: item.description || "",
+      type: item.type,
+      rarity: item.rarity,
+      icon: item.icon || "",
+      cost: item.cost,
+      statBonuses: item.stat_bonuses as any,
+      equipped: item.equipped,
+      levelRequired: item.level_required || 1
+    }) as GearItem);
   } catch (error) {
     console.error("Error in fetchInventory:", error);
     return [];
@@ -186,7 +223,7 @@ export const upsertInventoryItem = async (item: GearItem): Promise<void> => {
         rarity: item.rarity,
         icon: item.icon,
         cost: item.cost,
-        stat_bonuses: item.statBonuses,
+        stat_bonuses: item.statBonuses as any,
         equipped: item.equipped,
         level_required: item.levelRequired
       });
@@ -231,12 +268,17 @@ export const fetchShopItems = async (): Promise<GearItem[]> => {
     }
 
     return data.map(item => ({
-      ...item,
       id: item.id,
-      statBonuses: item.stat_bonuses,
-      levelRequired: item.level_required,
+      name: item.name,
+      description: item.description || "",
+      type: item.type,
+      rarity: item.rarity,
+      icon: item.icon || "",
+      cost: item.cost,
+      statBonuses: item.stat_bonuses as any,
+      levelRequired: item.level_required || 1,
       equipped: false // Shop items are not equipped by default
-    })) as GearItem[];
+    }) as GearItem);
   } catch (error) {
     console.error("Error in fetchShopItems:", error);
     return [];
@@ -246,10 +288,13 @@ export const fetchShopItems = async (): Promise<GearItem[]> => {
 // Skill Tree methods
 export const fetchSkillTree = async (): Promise<SkillNode[]> => {
   try {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) return [];
+    
     const { data, error } = await supabase
       .from("skill_nodes")
       .select("*")
-      .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
+      .eq("user_id", user.data.user.id);
 
     if (error) {
       console.error("Error fetching skill tree:", error);
@@ -257,12 +302,15 @@ export const fetchSkillTree = async (): Promise<SkillNode[]> => {
     }
 
     return data.map(node => ({
-      ...node,
       id: node.id,
-      statBonuses: node.stat_bonuses,
-      position: node.position,
-      connectedTo: node.connected_to
-    })) as SkillNode[];
+      name: node.name,
+      description: node.description || "",
+      icon: node.icon || "",
+      unlocked: node.unlocked,
+      statBonuses: node.stat_bonuses as any,
+      position: node.position as unknown as { x: number, y: number },
+      connectedTo: Array.isArray(node.connected_to) ? node.connected_to as string[] : []
+    }) as SkillNode);
   } catch (error) {
     console.error("Error in fetchSkillTree:", error);
     return [];
@@ -283,9 +331,9 @@ export const upsertSkillNode = async (node: SkillNode): Promise<void> => {
         description: node.description,
         icon: node.icon,
         unlocked: node.unlocked,
-        stat_bonuses: node.statBonuses,
-        position: node.position,
-        connected_to: node.connectedTo
+        stat_bonuses: node.statBonuses as any,
+        position: node.position as any,
+        connected_to: node.connectedTo as any
       });
 
     if (error) {
@@ -318,10 +366,13 @@ export const deleteSkillNode = async (nodeId: string): Promise<void> => {
 // Challenges methods
 export const fetchChallenges = async (): Promise<Challenge[]> => {
   try {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) return [];
+    
     const { data, error } = await supabase
       .from("challenges")
       .select("*")
-      .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
+      .eq("user_id", user.data.user.id);
 
     if (error) {
       console.error("Error fetching challenges:", error);
@@ -329,16 +380,19 @@ export const fetchChallenges = async (): Promise<Challenge[]> => {
     }
 
     return data.map(challenge => ({
-      ...challenge,
       id: challenge.id,
+      title: challenge.title,
+      description: challenge.description || "",
+      frequency: challenge.frequency,
       xpReward: challenge.xp_reward,
       coinReward: challenge.coin_reward,
-      statRewards: challenge.stat_rewards,
-      specialReward: challenge.special_reward,
+      statRewards: challenge.stat_rewards as any,
+      specialReward: challenge.special_reward as any,
       requiredCount: challenge.required_count,
       currentCount: challenge.current_count,
-      resetDate: challenge.reset_date
-    })) as Challenge[];
+      status: challenge.status,
+      resetDate: challenge.reset_date || ""
+    }) as Challenge);
   } catch (error) {
     console.error("Error in fetchChallenges:", error);
     return [];
@@ -363,8 +417,8 @@ export const upsertChallenge = async (challenge: Challenge): Promise<void> => {
         status: challenge.status,
         xp_reward: challenge.xpReward,
         coin_reward: challenge.coinReward,
-        stat_rewards: challenge.statRewards,
-        special_reward: challenge.specialReward,
+        stat_rewards: challenge.statRewards as any,
+        special_reward: challenge.specialReward as any,
         reset_date: challenge.resetDate
       });
 
@@ -398,10 +452,13 @@ export const deleteChallenge = async (challengeId: string): Promise<void> => {
 // Habits methods
 export const fetchHabits = async (): Promise<Habit[]> => {
   try {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) return [];
+    
     const { data, error } = await supabase
       .from("habits")
       .select("*")
-      .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
+      .eq("user_id", user.data.user.id);
 
     if (error) {
       console.error("Error fetching habits:", error);
@@ -409,13 +466,21 @@ export const fetchHabits = async (): Promise<Habit[]> => {
     }
 
     return data.map(habit => ({
-      ...habit,
       id: habit.id,
+      name: habit.name,
+      description: habit.description || "",
+      icon: habit.icon || "",
+      frequency: habit.frequency,
+      customDays: habit.custom_days as any,
+      streak: habit.streak,
       xpReward: habit.xp_reward,
       coinReward: habit.coin_reward,
-      customDays: habit.custom_days,
-      completionHistory: habit.completion_history
-    })) as Habit[];
+      reminder: habit.reminder,
+      completionHistory: Array.isArray(habit.completion_history) 
+        ? habit.completion_history as HabitCompletion[]
+        : [],
+      color: habit.color
+    }) as Habit);
   } catch (error) {
     console.error("Error in fetchHabits:", error);
     return [];
@@ -436,12 +501,12 @@ export const upsertHabit = async (habit: Habit): Promise<void> => {
         description: habit.description,
         icon: habit.icon,
         frequency: habit.frequency,
-        custom_days: habit.customDays,
+        custom_days: habit.customDays as any,
         streak: habit.streak,
         xp_reward: habit.xpReward,
         coin_reward: habit.coinReward,
         reminder: habit.reminder,
-        completion_history: habit.completionHistory,
+        completion_history: habit.completionHistory as any,
         color: habit.color
       });
 
@@ -475,10 +540,13 @@ export const deleteHabit = async (habitId: string): Promise<void> => {
 // Mood entries methods
 export const fetchMoodEntries = async (): Promise<MoodEntry[]> => {
   try {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) return [];
+    
     const { data, error } = await supabase
       .from("mood_entries")
       .select("*")
-      .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
+      .eq("user_id", user.data.user.id);
 
     if (error) {
       console.error("Error fetching mood entries:", error);
@@ -486,10 +554,11 @@ export const fetchMoodEntries = async (): Promise<MoodEntry[]> => {
     }
 
     return data.map(entry => ({
-      ...entry,
       id: entry.id,
-      date: entry.date
-    })) as MoodEntry[];
+      date: entry.date,
+      mood: entry.mood,
+      notes: entry.notes || ""
+    }) as MoodEntry);
   } catch (error) {
     console.error("Error in fetchMoodEntries:", error);
     return [];
@@ -541,10 +610,13 @@ export const deleteMoodEntry = async (entryId: string): Promise<void> => {
 // Achievements methods
 export const fetchAchievements = async (): Promise<Achievement[]> => {
   try {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) return [];
+    
     const { data, error } = await supabase
       .from("achievements")
       .select("*")
-      .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
+      .eq("user_id", user.data.user.id);
 
     if (error) {
       console.error("Error fetching achievements:", error);
@@ -552,15 +624,19 @@ export const fetchAchievements = async (): Promise<Achievement[]> => {
     }
 
     return data.map(achievement => ({
-      ...achievement,
       id: achievement.id,
+      title: achievement.title,
+      description: achievement.description || "",
+      category: achievement.category,
+      icon: achievement.icon || "",
       xpReward: achievement.xp_reward,
       coinReward: achievement.coin_reward,
-      specialReward: achievement.special_reward,
-      dateUnlocked: achievement.date_unlocked,
+      specialReward: achievement.special_reward as any,
+      unlocked: achievement.unlocked,
+      dateUnlocked: achievement.date_unlocked || undefined,
       requiredCount: achievement.required_count,
       currentCount: achievement.current_count
-    })) as Achievement[];
+    }) as Achievement);
   } catch (error) {
     console.error("Error in fetchAchievements:", error);
     return [];
@@ -583,7 +659,7 @@ export const upsertAchievement = async (achievement: Achievement): Promise<void>
         icon: achievement.icon,
         xp_reward: achievement.xpReward,
         coin_reward: achievement.coinReward,
-        special_reward: achievement.specialReward,
+        special_reward: achievement.specialReward as any,
         unlocked: achievement.unlocked,
         date_unlocked: achievement.dateUnlocked,
         required_count: achievement.requiredCount,
