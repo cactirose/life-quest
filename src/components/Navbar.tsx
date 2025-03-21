@@ -1,59 +1,31 @@
 
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useGameData } from "@/contexts/DataContext";
 import { 
   HomeIcon, 
   UserCircle, 
   Scroll, 
-  Settings, 
-  ChevronDown, 
-  ChevronUp, 
-  Palette, 
-  ShoppingCart, 
-  MapPin,
   Target,
   Award,
   Backpack,
   ListChecks,
   Smile,
   Flag,
-  LogOut,
-  Menu
+  ShoppingCart,
+  MapPin
 } from "lucide-react";
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
 import { ThemeSettings } from "./ThemeSettings";
-import { logout } from "@/utils/auth";
-import { toast } from "@/components/ui/use-toast";
-import { Button } from "./ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavMenu from "./MobileNavMenu";
+import StatusBar from "./navigation/StatusBar";
+import DesktopNav from "./navigation/DesktopNav";
+import { toast } from "@/components/ui/use-toast";
+import { logout } from "@/utils/auth";
 
 const Navbar = () => {
-  const {
-    character
-  } = useGameData();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const { character } = useGameData();
   const isMobile = useIsMobile();
-  
-  const handleLogout = async () => {
-    try {
-      await logout();
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      });
-      navigate("/");
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast({
-        title: "Logout error",
-        description: "An error occurred while logging out. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  const navigate = useNavigate();
   
   const navStructure = [
     {
@@ -126,14 +98,24 @@ const Navbar = () => {
       }))
     )
   ];
-  
-  const StatusBar = () => (
-    <div className="flex items-center gap-4 text-[hsl(var(--nav-text))] font-pixel">
-      <span>Level: {character.level}</span>
-      <span>XP: {character.xp}/{character.nextLevelXp}</span>
-      <span>Coins: {character.coins}</span>
-    </div>
-  );
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Logout error",
+        description: "An error occurred while logging out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] shadow-md py-2">
@@ -150,86 +132,7 @@ const Navbar = () => {
           </div>
           
           {!isMobile && (
-            <NavigationMenu className="font-pixel hidden md:flex">
-              <NavigationMenuList>
-                <NavigationMenuItem className="relative">
-                  <Link to="/dashboard" className={cn(navigationMenuTriggerStyle(), 
-                    "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none", 
-                    location.pathname === "/dashboard" && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
-                    <span className="flex items-center gap-1">
-                      <HomeIcon size={20} />
-                      <span className="hidden md:inline">Home</span>
-                    </span>
-                  </Link>
-                </NavigationMenuItem>
-                
-                <NavigationMenuItem className="relative">
-                  <Link to="/quests" className={cn(navigationMenuTriggerStyle(), 
-                    "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none", 
-                    location.pathname === "/quests" && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
-                    <span className="flex items-center gap-1">
-                      <Scroll size={20} />
-                      <span className="hidden md:inline">Quests</span>
-                    </span>
-                  </Link>
-                </NavigationMenuItem>
-                
-                {navStructure.map(item => (
-                  <NavigationMenuItem key={item.label} className="relative">
-                    <NavigationMenuTrigger className={cn(
-                      "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none", 
-                      location.pathname.startsWith(item.path) && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
-                      <span className="flex items-center gap-1">
-                        {item.icon}
-                        <span className="hidden md:inline">{item.label}</span>
-                      </span>
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent className="min-w-[220px]">
-                      <ul className="grid w-full p-2 gap-1">
-                        {item.subnav.map(subItem => (
-                          <li key={subItem.path}>
-                            <NavigationMenuLink asChild>
-                              <Link to={subItem.path} className={cn(
-                                "block select-none space-y-1 rounded-md p-3 text-[hsl(var(--nav-text))] no-underline outline-none transition-colors hover:bg-[hsl(var(--nav-hover))] hover:text-[hsl(var(--nav-text))]", 
-                                location.pathname === subItem.path && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
-                                <div className="flex items-center gap-2">
-                                  {subItem.icon}
-                                  <span className="text-sm font-medium">{subItem.label}</span>
-                                </div>
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                ))}
-                
-                <NavigationMenuItem className="relative">
-                  <Link to="/shop" className={cn(navigationMenuTriggerStyle(), 
-                    "bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none", 
-                    location.pathname === "/shop" && "bg-[hsl(var(--nav-active))] text-[hsl(var(--nav-active-text))]")}>
-                    <span className="flex items-center gap-1">
-                      <ShoppingCart size={20} />
-                      <span className="hidden md:inline">Shop</span>
-                    </span>
-                  </Link>
-                </NavigationMenuItem>
-                
-                <NavigationMenuItem className="relative">
-                  <Button 
-                    variant="ghost" 
-                    className="bg-[hsl(var(--nav-bg))] text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))] border-none px-4 py-2 h-10"
-                    onClick={handleLogout}
-                  >
-                    <span className="flex items-center gap-1">
-                      <LogOut size={20} />
-                      <span className="hidden md:inline">Logout</span>
-                    </span>
-                  </Button>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+            <DesktopNav navStructure={navStructure} />
           )}
           
           {isMobile && (
