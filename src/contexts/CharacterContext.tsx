@@ -1,3 +1,4 @@
+
 import { createContext, useContext, ReactNode } from "react";
 import { Character, StatName, DEFAULT_CHARACTER } from "../types/character";
 import { upsertCharacter } from "@/services/characterService";
@@ -149,9 +150,7 @@ export const createCharacterContextValue = (
         
         // Sync new inventory item with Supabase
         if (specialItem) {
-          import("@/services/supabaseService").then(({ upsertInventoryItem }) => {
-            upsertInventoryItem(specialItem);
-          });
+          upsertInventoryItem(specialItem);
         }
       }
       
@@ -201,26 +200,20 @@ export const createCharacterContextValue = (
       // Sync with Supabase
       upsertCharacter(resetData.character);
       
-      // Reset other data in Supabase
-      import("@/services/supabaseService").then(({ 
-        upsertQuest, 
-        deleteInventoryItem, 
-        upsertSkillNode 
-      }) => {
-        // Update quests
-        resetData.quests.forEach(quest => {
-          upsertQuest(quest);
-        });
-        
-        // Delete inventory
-        prevData.inventory.forEach(item => {
-          deleteInventoryItem(item.id);
-        });
-        
-        // Update skill tree
-        resetData.skillTree.forEach(node => {
-          upsertSkillNode(node);
-        });
+      // Reset other data in Supabase - calling services directly instead of using dynamic import
+      // Update quests
+      resetData.quests.forEach(quest => {
+        upsertQuest(quest);
+      });
+      
+      // Delete inventory
+      prevData.inventory.forEach(item => {
+        deleteInventoryItem(item.id);
+      });
+      
+      // Update skill tree
+      resetData.skillTree.forEach(node => {
+        upsertSkillNode(node);
       });
       
       return resetData;

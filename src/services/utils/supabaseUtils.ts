@@ -1,6 +1,6 @@
 
 import { Json } from "@/integrations/supabase/types";
-import { QuestStep, HabitCompletion } from "@/types/quests";
+import { QuestStep } from "@/types/quests";
 import { HabitCompletion as HabitCompletionType } from "@/types/habits";
 
 // Helper functions to convert between Supabase and app types
