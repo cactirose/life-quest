@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { supabase } from "@/integrations/supabase/client";
-import { loadAllGameData } from "@/services/supabaseService";
+import { loadAllGameData } from "@/services";
 import { toast } from "sonner";
 import { loadInitialData } from "@/utils/loadInitialData";
 
