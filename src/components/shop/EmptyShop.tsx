@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, PlusCircle } from "lucide-react";
+import { ShopItemEditor } from "@/components/ShopItemEditor";
 
 interface EmptyShopProps {
   isAdmin: boolean;
