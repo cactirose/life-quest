@@ -21,7 +21,8 @@ export const useDataEffects = (
       const { checkDailyLogin } = useDailyLogin(characterContext.character, setGameData);
       checkDailyLogin();
     }
-  }, [characterContext.character?.id]); // Only depend on character ID, not the full context
+  // Use lastLoginDate instead of id since Character doesn't have an id property
+  }, [characterContext.character?.lastLoginDate]); 
 
   // Check achievements when challenges or character changes
   useEffect(() => {
