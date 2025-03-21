@@ -1,8 +1,6 @@
-
 import { useState, useCallback, useRef } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { loadInitialData } from "@/utils/loadInitialData";
-import { storeSession } from "@/utils/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useDataFetchers } from "./useDataFetchers";
@@ -20,23 +18,19 @@ export const useDataSync = () => {
   
   const dataFetchers = useDataFetchers(setGameData, updateStatus);
 
-  // Function to sync data from Supabase with improved performance
   const syncFromSupabase = useCallback(async () => {
     console.log("Starting data sync from Supabase");
     
-    // Cancel any ongoing fetch operations
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     
-    // Create a new abort controller for this sync operation
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
     
     setIsSyncing(true);
     
     try {
-      // Prepare all data fetch promises
       const fetchPromises = [
         dataFetchers.fetchCharacter(signal),
         dataFetchers.fetchQuests(signal),
@@ -48,16 +42,11 @@ export const useDataSync = () => {
         dataFetchers.fetchAchievements(signal),
       ];
       
-      // Check if we're on mobile for optimized loading
       if (isMobile) {
-        // For mobile, use Promise.allSettled to continue even if some requests fail
         const results = await Promise.allSettled(fetchPromises);
-        
-        // Log results for debugging
         console.log("Mobile data sync results:", 
           results.map((r, i) => `${i}: ${r.status}`).join(', '));
         
-        // Count successful fetches
         const successCount = results.filter(r => r.status === 'fulfilled').length;
         
         if (successCount > 0) {
@@ -67,9 +56,8 @@ export const useDataSync = () => {
           loadLocalData();
         }
       } else {
-        // For desktop, use Promise.all with a timeout
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Data sync timeout")), 15000) // Increased timeout
+          setTimeout(() => reject(new Error("Data sync timeout")), 15000)
         );
         
         try {
@@ -101,7 +89,6 @@ export const useDataSync = () => {
     }
   }, [dataFetchers, isMobile, updateStatus]);
 
-  // Load local data as fallback or initial state with improved reliability
   const loadLocalData = useCallback(() => {
     console.log("Loading local data");
     try {

@@ -6,20 +6,36 @@ export const useChallengesFetcher = (
   setGameData: React.Dispatch<React.SetStateAction<any>>,
   updateStatus: (key: keyof GameData, status: DataLoadingStatus) => void
 ) => {
-  const fetchChallenges = async () => {
+  const fetchChallenges = async (signal?: AbortSignal) => {
     try {
+      updateStatus('challenges', 'loading');
+      
       const { challenges } = await import('@/services/challengeService').then(module => ({
-        challenges: module.fetchChallenges()
+        challenges: module.fetchChallenges(signal)
       }));
+      
+      // Check if the request was aborted
+      if (signal?.aborted) {
+        console.log("Challenges fetch aborted");
+        return null;
+      }
       
       const data = await challenges;
       if (data && data.length > 0) {
         setGameData(prev => ({ ...prev, challenges: data }));
       }
       updateStatus('challenges', 'loaded');
+      return data;
     } catch (error) {
+      // Check if the request was aborted
+      if (signal?.aborted) {
+        console.log("Challenges fetch aborted");
+        return null;
+      }
+      
       console.error("Error loading challenges:", error);
       updateStatus('challenges', 'error');
+      return null;
     }
   };
 

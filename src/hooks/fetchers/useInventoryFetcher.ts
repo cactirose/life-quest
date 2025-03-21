@@ -6,12 +6,20 @@ export const useInventoryFetcher = (
   setGameData: React.Dispatch<React.SetStateAction<any>>,
   updateStatus: (key: keyof GameData, status: DataLoadingStatus) => void
 ) => {
-  const fetchInventory = async () => {
+  const fetchInventory = async (signal?: AbortSignal) => {
     try {
+      updateStatus('inventory', 'loading');
+      
       const { inventory, shopItems } = await import('@/services/inventoryService').then(module => ({
-        inventory: module.fetchInventory(),
-        shopItems: module.fetchShopItems()
+        inventory: module.fetchInventory(signal),
+        shopItems: module.fetchShopItems(signal)
       }));
+      
+      // Check if the request was aborted
+      if (signal?.aborted) {
+        console.log("Inventory fetch aborted");
+        return null;
+      }
       
       const inventoryData = await inventory;
       const shopItemsData = await shopItems;
@@ -25,9 +33,17 @@ export const useInventoryFetcher = (
       }
       
       updateStatus('inventory', 'loaded');
+      return inventoryData;
     } catch (error) {
+      // Check if the request was aborted
+      if (signal?.aborted) {
+        console.log("Inventory fetch aborted");
+        return null;
+      }
+      
       console.error("Error loading inventory or shop items:", error);
       updateStatus('inventory', 'error');
+      return null;
     }
   };
 

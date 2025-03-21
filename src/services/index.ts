@@ -25,9 +25,9 @@ import { supabase } from "@/integrations/supabase/client";
 // Ping function to check Supabase connectivity
 export const pingSupabase = async (): Promise<boolean> => {
   try {
-    // Simple health check
-    const { error } = await supabase.from('healthcheck').select('count').single();
-    return !error;
+    // Simple authentication check
+    const { data, error } = await supabase.auth.getSession();
+    return !error && data !== null;
   } catch (error) {
     console.error("Supabase ping failed:", error);
     return false;
