@@ -10,11 +10,29 @@ export const isAuthenticated = async (): Promise<boolean> => {
       console.error("Error checking authentication:", error);
       return false;
     }
+    
+    // If we have a session but it's expired, try to refresh it
+    if (data.session && isSessionExpired(data.session)) {
+      return await refreshSession();
+    }
+    
     return !!data.session;
   } catch (error) {
     console.error("Exception checking authentication:", error);
     return false;
   }
+};
+
+// Check if a session is expired or about to expire (within 5 minutes)
+const isSessionExpired = (session: Session): boolean => {
+  if (!session.expires_at) return true;
+  
+  const expiresAt = session.expires_at;
+  const now = Math.floor(Date.now() / 1000);
+  const fiveMinutes = 5 * 60; // 5 minutes in seconds
+  
+  // Return true if token expires within 5 minutes
+  return expiresAt < now + fiveMinutes;
 };
 
 // Synchronous check for protected routes (uses local storage as fallback)
@@ -29,15 +47,20 @@ export const isAuthenticatedSync = (): boolean => {
     
     if (authData) {
       try {
-        const { access_token, expires_at } = JSON.parse(authData);
-        // Check if token exists and hasn't expired
-        const now = Math.floor(Date.now() / 1000);
-        if (access_token && expires_at && expires_at > now) {
-          return true;
+        const parsedData = JSON.parse(authData);
+        
+        // Check if we have the necessary fields
+        if (parsedData && parsedData.access_token) {
+          // Check if token hasn't expired yet
+          if (parsedData.expires_at) {
+            const now = Math.floor(Date.now() / 1000);
+            if (parsedData.expires_at > now) {
+              return true;
+            }
+          }
         }
       } catch (e) {
-        // If we can't parse the JSON, fall back to the isAuthenticated flag
-        console.log("Error parsing auth data, falling back to isAuthenticated flag");
+        console.log("Error parsing auth data:", e);
       }
     }
     
@@ -75,7 +98,9 @@ export const storeSession = (session: Session | null): void => {
 // Helper to refresh the session if needed
 export const refreshSession = async (): Promise<boolean> => {
   try {
+    console.log("Attempting to refresh session...");
     const { data, error } = await supabase.auth.refreshSession();
+    
     if (error) {
       console.error("Error refreshing session:", error);
       return false;
@@ -84,11 +109,42 @@ export const refreshSession = async (): Promise<boolean> => {
     const { session } = data;
     if (session) {
       storeSession(session);
+      console.log("Session refreshed successfully");
       return true;
     }
+    
+    console.log("No session returned after refresh attempt");
     return false;
   } catch (error) {
     console.error("Exception refreshing session:", error);
+    return false;
+  }
+};
+
+// Check session health and refresh if necessary
+export const ensureValidSession = async (): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error("Error getting session:", error);
+      return false;
+    }
+    
+    if (!data.session) {
+      console.log("No session found");
+      return false;
+    }
+    
+    // If session exists but is expired or about to expire, refresh it
+    if (isSessionExpired(data.session)) {
+      return await refreshSession();
+    }
+    
+    // Session is valid and not expired
+    return true;
+  } catch (error) {
+    console.error("Exception in ensureValidSession:", error);
     return false;
   }
 };

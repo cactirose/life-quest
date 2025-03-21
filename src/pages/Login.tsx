@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from "sonner";
 import { useGameData } from "@/contexts/DataContext";
 import { supabase } from "@/integrations/supabase/client";
-import { storeSession } from "@/utils/auth";
+import { storeSession, refreshSession } from "@/utils/auth";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -23,15 +23,21 @@ const Login = () => {
   // Check if user is already logged in with a timeout
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: number;
     
     const checkSession = async () => {
       try {
+        // Try to refresh the session first if it exists
+        const wasRefreshed = await refreshSession();
+        
+        // Get the current session
         const { data, error } = await supabase.auth.getSession();
         
         if (error) throw error;
         
         if (isMounted) {
           if (data.session) {
+            storeSession(data.session);
             navigate("/dashboard");
           }
           setAuthCheckDone(true);
@@ -40,26 +46,38 @@ const Login = () => {
         console.error("Session check error:", error);
         if (isMounted) {
           setAuthCheckDone(true);
-          setAuthCheckFailed(true);
-          toast.error("Failed to check login status. Please try again.");
+          setAuthCheckFailed(false); // Don't show error on login page
         }
       }
     };
     
     // Set a timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
+    timeoutId = setTimeout(() => {
       if (isMounted && !authCheckDone) {
         console.log("Auth check timed out after 5 seconds");
         setAuthCheckDone(true);
-        setAuthCheckFailed(true);
       }
-    }, 5000);
+    }, 5000) as unknown as number;
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log("Auth state changed on login page:", event);
+        if (isMounted) {
+          if (event === 'SIGNED_IN' && session) {
+            storeSession(session);
+            navigate("/dashboard");
+          }
+        }
+      }
+    );
     
     checkSession();
     
     return () => {
       isMounted = false;
       clearTimeout(timeoutId);
+      subscription.unsubscribe();
     };
   }, [navigate]);
 
@@ -82,45 +100,22 @@ const Login = () => {
       if (error) throw error;
       
       // Store session for sync auth checks
-      storeSession(data.session);
-      
-      toast("Login successful! Welcome back to Life Quest!");
-      
-      // Navigate to dashboard immediately - data loading will happen in background
-      navigate("/dashboard");
+      if (data.session) {
+        storeSession(data.session);
+        toast.success("Login successful! Welcome back to Life Quest!");
+        
+        // Navigate to dashboard immediately - data loading will happen in background
+        navigate("/dashboard");
+      } else {
+        throw new Error("No session returned from login");
+      }
     } catch (error) {
       console.error("Login error:", error);
       toast.error(error instanceof Error ? error.message : "Please check your credentials and try again.");
+    } finally {
       setIsLoading(false);
     }
   };
-
-  // Show error UI if auth check failed
-  if (authCheckFailed) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-3xl font-pixel text-primary">Login</CardTitle>
-            <CardDescription className="text-destructive">
-              Error checking authentication status
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-center text-muted-foreground">
-              We encountered a problem checking your login status. This might be due to network issues or a problem with the authentication service.
-            </p>
-            <Button 
-              className="w-full" 
-              onClick={() => window.location.reload()}
-            >
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   // Show loading state while checking auth
   if (!authCheckDone) {

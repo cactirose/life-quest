@@ -1,11 +1,10 @@
 
 import { Navigate } from "react-router-dom";
-import { isAuthenticatedSync } from "@/utils/auth";
+import { isAuthenticatedSync, ensureValidSession } from "@/utils/auth";
 import { ReactNode, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSupabaseSync } from "@/hooks/useSupabaseSync";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -35,17 +34,26 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     
     const checkAuth = async () => {
       try {
-        // Get the current session
-        const { data, error } = await supabase.auth.getSession();
+        // Try quick local check first
+        const quickCheck = isAuthenticatedSync();
+        if (quickCheck && isMounted) {
+          setIsAuthed(true);
+          setIsChecking(false);
+          return;
+        }
         
-        if (error) throw error;
+        // If quick check fails, do a proper check with potential refresh
+        const isValid = await ensureValidSession();
         
         if (isMounted) {
-          if (data.session) {
+          if (isValid) {
             setIsAuthed(true);
           } else {
             setIsAuthed(false);
-            toast("Authentication required. Please log in to access this page");
+            // Only show toast if user was previously authed but now isn't
+            if (isAuthed) {
+              toast("Authentication required. Please log in to access this page");
+            }
           }
           setIsChecking(false);
         }
@@ -59,13 +67,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         }
       }
     };
-
-    // Immediately check the local storage for a quick initial check
-    const quickCheck = isAuthenticatedSync();
-    if (quickCheck && isMounted) {
-      setIsAuthed(true);
-      // Still do the proper check in the background
-    }
     
     checkAuth();
     
@@ -76,10 +77,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         if (isMounted) {
           if (event === 'SIGNED_IN') {
             setIsAuthed(true);
+            setIsChecking(false);
           } else if (event === 'SIGNED_OUT') {
             setIsAuthed(false);
+            setIsChecking(false);
           }
-          setIsChecking(false);
         }
       }
     );
@@ -88,7 +90,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [isAuthed]);
 
   // If auth check failed, show a recovery UI
   if (checkFailed) {
@@ -109,6 +111,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
           <button 
             onClick={() => {
               supabase.auth.signOut().then(() => {
+                localStorage.removeItem("isAuthenticated");
                 window.location.href = "/login";
               });
             }} 
