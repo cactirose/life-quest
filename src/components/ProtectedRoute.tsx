@@ -27,76 +27,76 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [checkFailed, setCheckFailed] = useState(false);
 
   // Set up online/offline detection
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
+  // useEffect(() => {
+  //   const handleOnline = () => setIsOnline(true);
+  //   const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+  //   window.addEventListener('online', handleOnline);
+  //   window.addEventListener('offline', handleOffline);
 
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('online', handleOnline);
+  //     window.removeEventListener('offline', handleOffline);
+  //   };
+  // }, []);
 
   // Set a timeout to prevent infinite loading
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (authLoading) {
-        console.log("Auth check timed out after 5 seconds");
-        setCheckFailed(true);
-      }
-    }, 5000); // 5 second timeout
+  // useEffect(() => {
+  //   const timeoutId = setTimeout(() => {
+  //     if (authLoading) {
+  //       console.log("Auth check timed out after 5 seconds");
+  //       setCheckFailed(true);
+  //     }
+  //   }, 5000); // 5 second timeout
 
-    return () => clearTimeout(timeoutId);
-  }, [authLoading]);
+  //   return () => clearTimeout(timeoutId);
+  // }, [authLoading]);
 
   // Handle Supabase connection status
-  useEffect(() => {
-    if (!isOnline) {
-      setSupabaseConnected(false);
-      return;
-    }
+  // useEffect(() => {
+  //   if (!isOnline) {
+  //     setSupabaseConnected(false);
+  //     return;
+  //   }
 
-    const checkSupabaseConnection = async () => {
-      // We now use the session from context instead of making a direct call
-      setSupabaseConnected(!!session);
-    };
+  //   const checkSupabaseConnection = async () => {
+  //     // We now use the session from context instead of making a direct call
+  //     setSupabaseConnected(!!session);
+  //   };
 
-    // Initial check
-    checkSupabaseConnection();
+  //   // Initial check
+  //   checkSupabaseConnection();
 
-    // Set up periodic check
-    const interval = setInterval(checkSupabaseConnection, 30000);
+  //   // Set up periodic check
+  //   const interval = setInterval(checkSupabaseConnection, 30000);
 
-    return () => clearInterval(interval);
-  }, [isOnline, session]);
+  //   return () => clearInterval(interval);
+  // }, [isOnline, session]);
 
   // Handle data loading timeout
-  useEffect(() => {
-    let timeoutId: number | null = null;
+  // useEffect(() => {
+  //   let timeoutId: number | null = null;
 
-    if (isLoading) {
-      const timeoutDuration = isMobile ? 10000 : 7000;
+  //   if (isLoading) {
+  //     const timeoutDuration = isMobile ? 10000 : 7000;
 
-      timeoutId = window.setTimeout(() => {
-        setShowTimeoutMessage(true);
-        setShowRetry(true);
+  //     timeoutId = window.setTimeout(() => {
+  //       setShowTimeoutMessage(true);
+  //       setShowRetry(true);
 
-        toast.info(
-          "Taking longer than expected to load your data. You can continue using the app with local data.",
-          { duration: 6000 }
-        );
-      }, timeoutDuration) as unknown as number;
-    } else {
-      setShowTimeoutMessage(false);
-    }
+  //       toast.info(
+  //         "Taking longer than expected to load your data. You can continue using the app with local data.",
+  //         { duration: 6000 }
+  //       );
+  //     }, timeoutDuration) as unknown as number;
+  //   } else {
+  //     setShowTimeoutMessage(false);
+  //   }
 
-    return () => {
-      if (timeoutId) window.clearTimeout(timeoutId);
-    };
-  }, [isLoading, isMobile]);
+  //   return () => {
+  //     if (timeoutId) window.clearTimeout(timeoutId);
+  //   };
+  // }, [isLoading, isMobile]);
 
   // Function to retry data load
   const retryDataLoad = async () => {

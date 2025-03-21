@@ -27,6 +27,8 @@ import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useSupabaseSync } from "./hooks/useSupabaseSync";
+import { useDataSync } from "./hooks/useDataSync";
+import { useGameDataManager } from "./hooks/gameData";
 
 const queryClient = new QueryClient();
 
@@ -36,7 +38,7 @@ initializeTheme();
 // Layout component that includes the navbar
 const Layout = ({ children }: { children: ReactNode }) => {
   // Initialize Supabase sync (will load data on auth change)
-  const { isLoading } = useSupabaseSync();
+  const { isLoading } = useGameDataManager();
 
   if (isLoading) {
     return (
@@ -55,9 +57,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex flex-col min-h-screen relative">
       <Navbar />
-      <main className="flex-grow px-4 pb-16 pt-20">
-        {children}
-      </main>
+      <main className="flex-grow px-4 pb-16 pt-20">{children}</main>
     </div>
   );
 };
@@ -66,9 +66,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 const PublicLayout = ({ children }: { children: ReactNode }) => (
   <div className="flex flex-col min-h-screen relative">
     <Navbar />
-    <main className="flex-grow px-4 pb-16 pt-20">
-      {children}
-    </main>
+    <main className="flex-grow px-4 pb-16 pt-20">{children}</main>
   </div>
 );
 
@@ -82,64 +80,121 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               {/* Public Routes */}
-              <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
+              <Route
+                path="/"
+                element={
+                  <PublicLayout>
+                    <Index />
+                  </PublicLayout>
+                }
+              />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/update-password" element={<UpdatePassword />} />
-              
+
               {/* Protected Routes */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Layout><Dashboard /></Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/quests" element={
-                <ProtectedRoute>
-                  <Layout><Quests /></Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/character" element={
-                <ProtectedRoute>
-                  <Layout><Character /></Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/skills" element={
-                <ProtectedRoute>
-                  <Layout><SkillTree /></Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/shop" element={
-                <ProtectedRoute>
-                  <Layout><Shop /></Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/inventory" element={
-                <ProtectedRoute>
-                  <Layout><Inventory /></Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/challenges" element={
-                <ProtectedRoute>
-                  <Layout><Challenges /></Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/habits" element={
-                <ProtectedRoute>
-                  <Layout><Habits /></Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/mood" element={
-                <ProtectedRoute>
-                  <Layout><Mood /></Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/achievements" element={
-                <ProtectedRoute>
-                  <Layout><Achievements /></Layout>
-                </ProtectedRoute>
-              } />
-              
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/quests"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Quests />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/character"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Character />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/skills"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <SkillTree />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/shop"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Shop />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/inventory"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Inventory />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/challenges"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Challenges />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/habits"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Habits />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/mood"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Mood />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/achievements"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Achievements />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Not Found Route */}
               <Route path="*" element={<NotFound />} />
             </Routes>

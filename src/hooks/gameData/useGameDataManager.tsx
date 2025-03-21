@@ -1,6 +1,5 @@
-
 import { useState, useCallback, useEffect } from "react";
-import { loadInitialData } from "@/utils/loadInitialData";
+// import { loadInitialData } from "@/utils/loadInitialData";
 import { GameData } from "@/types/gameData";
 import { toast } from "sonner";
 import { useDataPersistence } from "./useDataPersistence";
@@ -10,41 +9,54 @@ import { isAuthenticated } from "@/utils/auth";
 import { loadAllGameData } from "@/services";
 
 export function useGameDataManager() {
-  const [gameData, setGameData] = useState<GameData>(() => {
-    // Always start with empty state, will be populated properly in useEffect
-    const initialData = loadInitialData();
-    console.log("Initial game data loaded:", initialData);
-    return initialData as GameData;
-  });
-  
+  const [gameData, setGameData] = useState<GameData>({
+    character: {},
+    quests: [],
+    inventory: [],
+    shopItems: [],
+    skillTree: [],
+    challenges: [],
+    habits: [],
+    moods: [],
+    achievements: [],
+  } as GameData);
+  // () => {
+  // Always start with empty state, will be populated properly in useEffect
+  // const initialData = loadInitialData();
+  // console.log("Initial game data loaded:", initialData);
+  // return initialData as GameData;
+  // }
+
   const [isLoading, setIsLoading] = useState(true);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
   // Set up data persistence (local storage and Supabase)
   useDataPersistence(gameData);
-  
+
   // Set up character progression (level up logic)
   useCharacterProgression(gameData, setGameData);
 
   // Load data when authenticated and handle auth state changes
   useEffect(() => {
     let isMounted = true;
-    let authSubscription: { data: { subscription: { unsubscribe: () => void } } } | null = null;
-    
+    let authSubscription: {
+      data: { subscription: { unsubscribe: () => void } };
+    } | null = null;
+
     const loadData = async () => {
       setIsLoading(true);
       try {
         const authenticated = await isAuthenticated();
-        
+
         if (authenticated) {
           console.log("User is authenticated, fetching data from Supabase");
           const serverData = await loadAllGameData();
-          
+
           if (isMounted && Object.keys(serverData).length > 0) {
             console.log("Supabase data loaded:", serverData);
-            setGameData(prevData => ({
+            setGameData((prevData) => ({
               ...prevData,
-              ...serverData
+              ...serverData,
             }));
             setLastSyncTime(new Date());
             toast.success("Your game data has been synced", {
@@ -60,20 +72,20 @@ export function useGameDataManager() {
         } else {
           console.log("User is not authenticated, using local data");
           // If we reached here, user is not authenticated, use local data
-          const localData = localStorage.getItem("rpgProductivityData");
-          if (localData) {
-            try {
-              const parsedData = JSON.parse(localData);
-              if (isMounted) {
-                setGameData(prevData => ({
-                  ...prevData,
-                  ...parsedData
-                }));
-              }
-            } catch (error) {
-              console.error("Error parsing local data:", error);
-            }
-          }
+          // const localData = localStorage.getItem("rpgProductivityData");
+          // if (localData) {
+          //   try {
+          //     const parsedData = JSON.parse(localData);
+          //     if (isMounted) {
+          //       setGameData((prevData) => ({
+          //         ...prevData,
+          //         ...parsedData,
+          //       }));
+          //     }
+          //   } catch (error) {
+          //     console.error("Error parsing local data:", error);
+          //   }
+          // }
         }
       } catch (error) {
         console.error("Error loading game data:", error);
@@ -90,17 +102,17 @@ export function useGameDataManager() {
     // Set up auth state listener - FIXED to prevent deadlocks
     authSubscription = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event);
-      
+
       // Use setTimeout to avoid potential deadlocks with Supabase
       setTimeout(() => {
         if (!isMounted) return;
-        
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
           loadData();
-        } else if (event === 'SIGNED_OUT') {
+        } else if (event === "SIGNED_OUT") {
           // Reset to initial data when user signs out
-          const initialData = loadInitialData();
-          setGameData(initialData as GameData);
+          // const initialData = loadInitialData();
+          setGameData({} as GameData);
           toast.info("Signed out - local data will be used", {
             id: "signed-out",
           });
@@ -129,12 +141,12 @@ export function useGameDataManager() {
         setIsLoading(false);
         return;
       }
-      
+
       const serverData = await loadAllGameData();
       if (Object.keys(serverData).length > 0) {
-        setGameData(prevData => ({
+        setGameData((prevData) => ({
           ...prevData,
-          ...serverData
+          ...serverData,
         }));
         setLastSyncTime(new Date());
         toast.success("Your game data has been refreshed");
@@ -149,11 +161,11 @@ export function useGameDataManager() {
     }
   }, []);
 
-  return { 
-    gameData, 
-    setGameData, 
-    isLoading, 
+  return {
+    gameData,
+    setGameData,
+    isLoading,
     lastSyncTime,
-    refreshData
+    refreshData,
   };
 }

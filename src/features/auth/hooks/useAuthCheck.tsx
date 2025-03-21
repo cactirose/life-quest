@@ -11,7 +11,7 @@ export const useAuthCheck = (navigate: (path: string) => void) => {
   useEffect(() => {
     let isMounted = true;
     let timeoutId: number;
-    
+
     const checkSession = async () => {
       try {
         // Use the AuthContext to check if we're authenticated
@@ -19,37 +19,35 @@ export const useAuthCheck = (navigate: (path: string) => void) => {
           navigate("/dashboard");
           return;
         }
-        
+
         // If we're not authenticated, check if we can refresh the session
-        const wasRefreshed = await refreshSession();
-        
-        if (isMounted) {
-          if (wasRefreshed) {
-            navigate("/dashboard");
-          } else {
-            setAuthCheckDone(true);
-          }
+        // const wasRefreshed = await refreshSession();
+
+        if (isAuthenticated) {
+          navigate("/dashboard");
+
+          setAuthCheckDone(true);
         }
       } catch (error) {
         console.error("Session check error:", error);
         if (isMounted) {
           setAuthCheckDone(true);
-          setAuthCheckFailed(false); // Don't show error on login page
+          setAuthCheckFailed(true); // Don't show error on login page
         }
       }
     };
-    
+
     // Set a timeout to prevent infinite loading
-    const timeoutDuration = isMobile ? 3000 : 5000;
+    const timeoutDuration = isMobile ? 1000 : 3000;
     timeoutId = setTimeout(() => {
       if (isMounted && !authCheckDone) {
         console.log("Auth check timed out after 5 seconds");
         setAuthCheckDone(true);
       }
     }, timeoutDuration) as unknown as number;
-    
+
     checkSession();
-    
+
     return () => {
       isMounted = false;
       clearTimeout(timeoutId);
