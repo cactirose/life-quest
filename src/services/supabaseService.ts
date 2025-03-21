@@ -26,10 +26,13 @@ const toQuestSteps = (steps: Json | null): QuestStep[] => {
     if (typeof step !== 'object' || step === null) {
       return { id: '', description: '', completed: false };
     }
+    
+    // Safe access with type checking
+    const stepObj = step as Record<string, any>;
     return {
-      id: typeof step.id === 'string' ? step.id : '',
-      description: typeof step.description === 'string' ? step.description : '',
-      completed: typeof step.completed === 'boolean' ? step.completed : false
+      id: typeof stepObj.id === 'string' ? stepObj.id : '',
+      description: typeof stepObj.description === 'string' ? stepObj.description : '',
+      completed: typeof stepObj.completed === 'boolean' ? stepObj.completed : false
     };
   });
 };
@@ -42,9 +45,12 @@ const toHabitCompletions = (completions: Json | null): HabitCompletion[] => {
     if (typeof completion !== 'object' || completion === null) {
       return { date: '', completed: false };
     }
+    
+    // Safe access with type checking
+    const completionObj = completion as Record<string, any>;
     return {
-      date: typeof completion.date === 'string' ? completion.date : '',
-      completed: typeof completion.completed === 'boolean' ? completion.completed : false
+      date: typeof completionObj.date === 'string' ? completionObj.date : '',
+      completed: typeof completionObj.completed === 'boolean' ? completionObj.completed : false
     };
   });
 };
