@@ -10,9 +10,7 @@ export const useSkillTreeFetcher = (
     try {
       updateStatus('skillTree', 'loading');
       
-      const { skillTree } = await import('@/services/skillTreeService').then(module => ({
-        skillTree: module.fetchSkillTree(signal)
-      }));
+      const { fetchSkillTree } = await import('@/services/skillTreeService');
       
       // Check if the request was aborted
       if (signal?.aborted) {
@@ -20,7 +18,7 @@ export const useSkillTreeFetcher = (
         return null;
       }
       
-      const data = await skillTree;
+      const data = await fetchSkillTree();
       if (data && data.length > 0) {
         setGameData(prev => ({ ...prev, skillTree: data }));
       }

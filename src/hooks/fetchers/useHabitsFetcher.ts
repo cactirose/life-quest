@@ -10,9 +10,7 @@ export const useHabitsFetcher = (
     try {
       updateStatus('habits', 'loading');
       
-      const { habits } = await import('@/services/habitService').then(module => ({
-        habits: module.fetchHabits(signal)
-      }));
+      const { fetchHabits } = await import('@/services/habitService');
       
       // Check if the request was aborted
       if (signal?.aborted) {
@@ -20,7 +18,7 @@ export const useHabitsFetcher = (
         return null;
       }
       
-      const data = await habits;
+      const data = await fetchHabits();
       if (data && data.length > 0) {
         setGameData(prev => ({ ...prev, habits: data }));
       }

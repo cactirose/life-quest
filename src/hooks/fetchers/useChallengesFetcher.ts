@@ -10,9 +10,7 @@ export const useChallengesFetcher = (
     try {
       updateStatus('challenges', 'loading');
       
-      const { challenges } = await import('@/services/challengeService').then(module => ({
-        challenges: module.fetchChallenges(signal)
-      }));
+      const { fetchChallenges } = await import('@/services/challengeService');
       
       // Check if the request was aborted
       if (signal?.aborted) {
@@ -20,7 +18,7 @@ export const useChallengesFetcher = (
         return null;
       }
       
-      const data = await challenges;
+      const data = await fetchChallenges();
       if (data && data.length > 0) {
         setGameData(prev => ({ ...prev, challenges: data }));
       }

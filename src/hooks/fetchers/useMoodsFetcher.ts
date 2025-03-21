@@ -10,9 +10,7 @@ export const useMoodsFetcher = (
     try {
       updateStatus('moods', 'loading');
       
-      const { moods } = await import('@/services/moodService').then(module => ({
-        moods: module.fetchMoodEntries(signal)
-      }));
+      const { fetchMoodEntries } = await import('@/services/moodService');
       
       // Check if the request was aborted
       if (signal?.aborted) {
@@ -20,7 +18,7 @@ export const useMoodsFetcher = (
         return null;
       }
       
-      const data = await moods;
+      const data = await fetchMoodEntries();
       if (data && data.length > 0) {
         setGameData(prev => ({ ...prev, moods: data }));
       }

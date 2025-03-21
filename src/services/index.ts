@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCharacter } from "./characterService";
 import { fetchQuests } from "./questService";
-import { fetchInventory, fetchShopItems } from "./inventoryService";
+import { fetchInventory, fetchShopItems, upsertInventoryItem } from "./inventoryService";
 import { fetchSkillTree } from "./skillTreeService";
 import { fetchChallenges } from "./challengeService";
 import { fetchHabits } from "./habitService";
@@ -101,8 +101,7 @@ export {
 } from "./questService";
 
 export {
-  upsertInventoryItem,
-  upsertShopItem
+  upsertInventoryItem
 } from "./inventoryService";
 
 export {

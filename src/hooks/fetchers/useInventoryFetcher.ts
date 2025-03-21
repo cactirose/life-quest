@@ -10,10 +10,7 @@ export const useInventoryFetcher = (
     try {
       updateStatus('inventory', 'loading');
       
-      const { inventory, shopItems } = await import('@/services/inventoryService').then(module => ({
-        inventory: module.fetchInventory(signal),
-        shopItems: module.fetchShopItems(signal)
-      }));
+      const { fetchInventory, fetchShopItems } = await import('@/services/inventoryService');
       
       // Check if the request was aborted
       if (signal?.aborted) {
@@ -21,8 +18,8 @@ export const useInventoryFetcher = (
         return null;
       }
       
-      const inventoryData = await inventory;
-      const shopItemsData = await shopItems;
+      const inventoryData = await fetchInventory();
+      const shopItemsData = await fetchShopItems();
       
       if (inventoryData && inventoryData.length > 0) {
         setGameData(prev => ({ ...prev, inventory: inventoryData }));

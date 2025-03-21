@@ -10,9 +10,7 @@ export const useAchievementsFetcher = (
     try {
       updateStatus('achievements', 'loading');
       
-      const { achievements } = await import('@/services/achievementService').then(module => ({
-        achievements: module.fetchAchievements(signal)
-      }));
+      const { fetchAchievements } = await import('@/services/achievementService');
       
       // Check if the request was aborted
       if (signal?.aborted) {
@@ -20,7 +18,7 @@ export const useAchievementsFetcher = (
         return null;
       }
       
-      const data = await achievements;
+      const data = await fetchAchievements();
       if (data && data.length > 0) {
         setGameData(prev => ({ ...prev, achievements: data }));
       }

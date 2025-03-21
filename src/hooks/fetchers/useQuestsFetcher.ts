@@ -10,9 +10,7 @@ export const useQuestsFetcher = (
     try {
       updateStatus('quests', 'loading');
       
-      const { quests } = await import('@/services/questService').then(module => ({
-        quests: module.fetchQuests(signal)
-      }));
+      const { fetchQuests } = await import('@/services/questService');
       
       // Check if the request was aborted
       if (signal?.aborted) {
@@ -20,7 +18,7 @@ export const useQuestsFetcher = (
         return null;
       }
       
-      const data = await quests;
+      const data = await fetchQuests();
       if (data && data.length > 0) {
         setGameData(prev => ({ ...prev, quests: data }));
       }
