@@ -10,7 +10,8 @@ import { storeSession } from "@/utils/auth";
 export function useSupabaseSync() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
-  const { gameData, setGameData } = useGameData();
+  const gameContext = useGameData();
+  const { setGameData } = gameContext;
 
   // Load user data from Supabase when authenticated
   const loadUserData = async () => {

@@ -13,7 +13,7 @@ import { storeSession } from "@/utils/auth";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { gameData, setGameData } = useGameData();
+  const { setGameData } = useGameData();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
