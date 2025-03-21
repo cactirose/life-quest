@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { loadInitialData } from "../utils/loadInitialData";
 import { GameData } from "../types/gameData";
 import { toast } from "sonner";
@@ -14,6 +13,20 @@ import {
   upsertMoodEntry,
   upsertAchievement
 } from "@/services";
+
+const useDebounce = (callback: Function, delay: number) => {
+  const timeoutRef = useRef<number | null>(null);
+  
+  return useCallback((...args: any[]) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
+    timeoutRef.current = window.setTimeout(() => {
+      callback(...args);
+    }, delay) as unknown as number;
+  }, [callback, delay]);
+};
 
 export function useGameDataManager() {
   const [gameData, setGameData] = useState<GameData>(() => {
@@ -51,75 +64,112 @@ export function useGameDataManager() {
     }
   });
 
-  // Save data to localStorage whenever it changes
+  const changedFields = useRef<Set<string>>(new Set());
+  const previousData = useRef<GameData | null>(null);
+
+  const syncWithSupabase = useDebounce(async () => {
+    if (!isAuthenticatedSync()) return;
+    
+    try {
+      // Only sync fields that have changed
+      if (changedFields.current.has('character') && gameData.character) {
+        await upsertCharacter(gameData.character);
+      }
+      
+      if (changedFields.current.has('quests')) {
+        const promises = gameData.quests.map(quest => upsertQuest(quest));
+        await Promise.all(promises);
+      }
+      
+      if (changedFields.current.has('inventory')) {
+        const promises = gameData.inventory.map(item => upsertInventoryItem(item));
+        await Promise.all(promises);
+      }
+      
+      if (changedFields.current.has('skillTree')) {
+        const promises = gameData.skillTree.map(node => upsertSkillNode(node));
+        await Promise.all(promises);
+      }
+      
+      if (changedFields.current.has('challenges')) {
+        const promises = gameData.challenges.map(challenge => upsertChallenge(challenge));
+        await Promise.all(promises);
+      }
+      
+      if (changedFields.current.has('habits')) {
+        const promises = gameData.habits.map(habit => upsertHabit(habit));
+        await Promise.all(promises);
+      }
+      
+      if (changedFields.current.has('moods')) {
+        const promises = gameData.moods.map(mood => upsertMoodEntry(mood));
+        await Promise.all(promises);
+      }
+      
+      if (changedFields.current.has('achievements')) {
+        const promises = gameData.achievements.map(achievement => upsertAchievement(achievement));
+        await Promise.all(promises);
+      }
+      
+      // Clear changed fields after sync
+      changedFields.current.clear();
+    } catch (error) {
+      console.error("Error syncing with Supabase:", error);
+    }
+  }, 2000);
+
   useEffect(() => {
     try {
-      localStorage.setItem("rpgProductivityData", JSON.stringify(gameData));
-      
-      // Sync with Supabase if user is authenticated
-      if (isAuthenticatedSync()) {
-        // Sync character data
-        if (gameData.character) {
-          upsertCharacter(gameData.character).catch(err => 
-            console.error("Error syncing character:", err)
-          );
+      // First, determine what's changed
+      if (previousData.current) {
+        if (previousData.current.character !== gameData.character) {
+          changedFields.current.add('character');
         }
         
-        // Sync quests
-        gameData.quests.forEach(quest => {
-          upsertQuest(quest).catch(err => 
-            console.error("Error syncing quest:", err)
-          );
-        });
+        if (previousData.current.quests !== gameData.quests) {
+          changedFields.current.add('quests');
+        }
         
-        // Sync inventory
-        gameData.inventory.forEach(item => {
-          upsertInventoryItem(item).catch(err => 
-            console.error("Error syncing inventory item:", err)
-          );
-        });
+        if (previousData.current.inventory !== gameData.inventory) {
+          changedFields.current.add('inventory');
+        }
         
-        // Sync skill tree
-        gameData.skillTree.forEach(node => {
-          upsertSkillNode(node).catch(err => 
-            console.error("Error syncing skill node:", err)
-          );
-        });
+        if (previousData.current.skillTree !== gameData.skillTree) {
+          changedFields.current.add('skillTree');
+        }
         
-        // Sync challenges
-        gameData.challenges.forEach(challenge => {
-          upsertChallenge(challenge).catch(err => 
-            console.error("Error syncing challenge:", err)
-          );
-        });
+        if (previousData.current.challenges !== gameData.challenges) {
+          changedFields.current.add('challenges');
+        }
         
-        // Sync habits
-        gameData.habits.forEach(habit => {
-          upsertHabit(habit).catch(err => 
-            console.error("Error syncing habit:", err)
-          );
-        });
+        if (previousData.current.habits !== gameData.habits) {
+          changedFields.current.add('habits');
+        }
         
-        // Sync mood entries
-        gameData.moods.forEach(mood => {
-          upsertMoodEntry(mood).catch(err => 
-            console.error("Error syncing mood entry:", err)
-          );
-        });
+        if (previousData.current.moods !== gameData.moods) {
+          changedFields.current.add('moods');
+        }
         
-        // Sync achievements
-        gameData.achievements.forEach(achievement => {
-          upsertAchievement(achievement).catch(err => 
-            console.error("Error syncing achievement:", err)
-          );
-        });
+        if (previousData.current.achievements !== gameData.achievements) {
+          changedFields.current.add('achievements');
+        }
+      }
+      
+      // Save to localStorage immediately
+      localStorage.setItem("rpgProductivityData", JSON.stringify(gameData));
+      
+      // Update previous data
+      previousData.current = gameData;
+      
+      // Sync with Supabase if authenticated (debounced)
+      if (isAuthenticatedSync() && changedFields.current.size > 0) {
+        syncWithSupabase();
       }
     } catch (error) {
       console.error("Error saving data:", error);
     }
-  }, [gameData]);
+  }, [gameData, syncWithSupabase]);
 
-  // Check for level up
   useEffect(() => {
     const { character } = gameData;
     if (character && character.xp >= character.nextLevelXp) {

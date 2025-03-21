@@ -17,6 +17,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [authCheckDone, setAuthCheckDone] = useState(false);
 
   // Check if user is already logged in
   useEffect(() => {
@@ -25,6 +26,7 @@ const Login = () => {
       if (data.session) {
         navigate("/dashboard");
       }
+      setAuthCheckDone(true);
     };
     
     checkSession();
@@ -56,7 +58,7 @@ const Login = () => {
         description: "Welcome back to Life Quest!",
       });
       
-      // Navigate to dashboard - data loading will be handled by useSupabaseSync
+      // Navigate to dashboard immediately - data loading will happen in background
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
@@ -65,10 +67,32 @@ const Login = () => {
         description: error instanceof Error ? error.message : "Please check your credentials and try again.",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
+
+  // Show loading state while checking auth
+  if (!authCheckDone) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-3xl font-pixel text-primary">Login</CardTitle>
+            <CardDescription>
+              Checking authentication status...
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-4">
+              <div className="h-10 w-full bg-muted animate-pulse rounded"></div>
+              <div className="h-10 w-full bg-muted animate-pulse rounded"></div>
+              <div className="h-10 w-full bg-muted animate-pulse rounded"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
