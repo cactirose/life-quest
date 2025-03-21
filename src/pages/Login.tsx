@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useGameData } from "@/contexts/DataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { storeSession } from "@/utils/auth";
@@ -18,18 +18,49 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [authCheckDone, setAuthCheckDone] = useState(false);
+  const [authCheckFailed, setAuthCheckFailed] = useState(false);
 
-  // Check if user is already logged in
+  // Check if user is already logged in with a timeout
   useEffect(() => {
+    let isMounted = true;
+    
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        navigate("/dashboard");
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) throw error;
+        
+        if (isMounted) {
+          if (data.session) {
+            navigate("/dashboard");
+          }
+          setAuthCheckDone(true);
+        }
+      } catch (error) {
+        console.error("Session check error:", error);
+        if (isMounted) {
+          setAuthCheckDone(true);
+          setAuthCheckFailed(true);
+          toast.error("Failed to check login status. Please try again.");
+        }
       }
-      setAuthCheckDone(true);
     };
     
+    // Set a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (isMounted && !authCheckDone) {
+        console.log("Auth check timed out after 5 seconds");
+        setAuthCheckDone(true);
+        setAuthCheckFailed(true);
+      }
+    }, 5000);
+    
     checkSession();
+    
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -53,23 +84,43 @@ const Login = () => {
       // Store session for sync auth checks
       storeSession(data.session);
       
-      toast({
-        title: "Login successful",
-        description: "Welcome back to Life Quest!",
-      });
+      toast("Login successful! Welcome back to Life Quest!");
       
       // Navigate to dashboard immediately - data loading will happen in background
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
-      toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Please check your credentials and try again.",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Please check your credentials and try again.");
       setIsLoading(false);
     }
   };
+
+  // Show error UI if auth check failed
+  if (authCheckFailed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-3xl font-pixel text-primary">Login</CardTitle>
+            <CardDescription className="text-destructive">
+              Error checking authentication status
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-center text-muted-foreground">
+              We encountered a problem checking your login status. This might be due to network issues or a problem with the authentication service.
+            </p>
+            <Button 
+              className="w-full" 
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Show loading state while checking auth
   if (!authCheckDone) {
@@ -83,10 +134,8 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-4">
-              <div className="h-10 w-full bg-muted animate-pulse rounded"></div>
-              <div className="h-10 w-full bg-muted animate-pulse rounded"></div>
-              <div className="h-10 w-full bg-muted animate-pulse rounded"></div>
+            <div className="flex justify-center">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
           </CardContent>
         </Card>
