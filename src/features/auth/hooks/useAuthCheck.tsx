@@ -67,16 +67,20 @@ export const useAuthCheck = (navigate: (path: string) => void) => {
       }
     }, timeoutDuration) as unknown as number;
     
-    // Set up auth state listener
+    // Set up auth state listener - Fixed to prevent deadlocks
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log("Auth state changed on login page:", event);
-        if (isMounted) {
+        
+        // Use setTimeout to prevent deadlocks with Supabase
+        setTimeout(() => {
+          if (!isMounted) return;
+          
           if (event === 'SIGNED_IN' && session) {
             storeSession(session);
             navigate("/dashboard");
           }
-        }
+        }, 0);
       }
     );
     

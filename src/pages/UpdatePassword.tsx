@@ -21,28 +21,37 @@ const UpdatePassword = () => {
 
   // Check if the user has a valid recovery session
   useEffect(() => {
+    let isMounted = true;
+    
     const checkSession = async () => {
       try {
         setIsCheckingAuth(true);
         const { data } = await supabase.auth.getSession();
         console.log("Auth session check:", data.session ? "Session exists" : "No session");
-        setHasSession(!!data.session);
+        if (isMounted) setHasSession(!!data.session);
       } catch (error) {
         console.error("Error checking session:", error);
       } finally {
-        setIsCheckingAuth(false);
+        if (isMounted) setIsCheckingAuth(false);
       }
     };
     
     checkSession();
     
-    // Set up auth state change listener
+    // Set up auth state change listener - Fixed to prevent deadlocks
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state change event:", event);
-      setHasSession(!!session);
+      
+      // Use setTimeout to prevent deadlocks with Supabase
+      setTimeout(() => {
+        if (isMounted) setHasSession(!!session);
+      }, 0);
     });
     
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {

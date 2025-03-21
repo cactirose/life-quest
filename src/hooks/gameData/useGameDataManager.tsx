@@ -87,22 +87,25 @@ export function useGameDataManager() {
       }
     };
 
-    // Set up auth state listener
+    // Set up auth state listener - FIXED to prevent deadlocks
     authSubscription = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event);
       
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        loadData();
-      } else if (event === 'SIGNED_OUT') {
-        // Reset to initial data when user signs out
-        const initialData = loadInitialData();
-        if (isMounted) {
+      // Use setTimeout to avoid potential deadlocks with Supabase
+      setTimeout(() => {
+        if (!isMounted) return;
+        
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          loadData();
+        } else if (event === 'SIGNED_OUT') {
+          // Reset to initial data when user signs out
+          const initialData = loadInitialData();
           setGameData(initialData as GameData);
           toast.info("Signed out - local data will be used", {
             id: "signed-out",
           });
         }
-      }
+      }, 0);
     });
 
     // Initial data load

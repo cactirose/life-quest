@@ -8,21 +8,24 @@ import { loadInitialData } from "@/utils/loadInitialData";
 export function useAuthStateHandler(loadUserData: () => Promise<void>, setGameData: React.Dispatch<React.SetStateAction<any>>) {
   const hasLoadedData = useRef(false);
 
-  const handleAuthStateChange = useCallback(async (event: string, session: any) => {
+  const handleAuthStateChange = useCallback((event: string, session: any) => {
     console.log("Auth state changed:", event);
     
-    if (event === 'SIGNED_IN') {
-      hasLoadedData.current = false;
-      await loadUserData();
-    } else if (event === 'SIGNED_OUT') {
-      const initialData = loadInitialData();
-      setGameData(prevData => ({
-        ...prevData,
-        ...initialData,
-      }));
-      hasLoadedData.current = true;
-      toast.info("Signed out - using local data");
-    }
+    // Use setTimeout to prevent deadlocks with Supabase
+    setTimeout(() => {
+      if (event === 'SIGNED_IN') {
+        hasLoadedData.current = false;
+        loadUserData();
+      } else if (event === 'SIGNED_OUT') {
+        const initialData = loadInitialData();
+        setGameData(prevData => ({
+          ...prevData,
+          ...initialData,
+        }));
+        hasLoadedData.current = true;
+        toast.info("Signed out - using local data");
+      }
+    }, 0);
   }, [loadUserData, setGameData]);
 
   useEffect(() => {

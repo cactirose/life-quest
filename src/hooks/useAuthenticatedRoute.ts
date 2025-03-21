@@ -63,11 +63,15 @@ export function useAuthenticatedRoute() {
     
     checkAuth();
     
-    // Set up auth change listener with proper cleanup
+    // Set up auth change listener with proper cleanup - Fixed to prevent deadlocks
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log("Auth state changed:", event);
-        if (isMounted) {
+        
+        // Use setTimeout to prevent deadlocks with Supabase
+        setTimeout(() => {
+          if (!isMounted) return;
+          
           if (event === 'SIGNED_IN') {
             setIsAuthed(true);
             setIsChecking(false);
@@ -75,7 +79,7 @@ export function useAuthenticatedRoute() {
             setIsAuthed(false);
             setIsChecking(false);
           }
-        }
+        }, 0);
       }
     );
 
