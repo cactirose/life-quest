@@ -165,7 +165,7 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
         xp_reward: quest.xpReward,
         coin_reward: quest.coinReward,
         stat_rewards: quest.statRewards,
-        steps: quest.steps as any
+        steps: quest.steps
       });
 
     if (error) {
@@ -500,7 +500,7 @@ export const fetchHabits = async (): Promise<Habit[]> => {
       reminder: habit.reminder,
       completionHistory: toHabitCompletions(habit.completion_history),
       color: habit.color
-    }) as Habit));
+    }) as Habit);
   } catch (error) {
     console.error("Error in fetchHabits:", error);
     return [];
