@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useRef } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { loadInitialData } from "@/utils/loadInitialData";
@@ -18,6 +19,32 @@ export const useDataSync = () => {
   
   const dataFetchers = useDataFetchers(setGameData, updateStatus);
 
+  // Define loadLocalData first to avoid the "used before declaration" error
+  const loadLocalData = useCallback(() => {
+    console.log("Loading local data");
+    try {
+      const localData = localStorage.getItem("rpgProductivityData");
+      const initialData = localData ? JSON.parse(localData) : loadInitialData();
+      
+      setGameData(prevData => ({
+        ...prevData,
+        ...initialData,
+      }));
+      
+      console.log("Using local data (user not logged in or data sync failed)");
+    } catch (error) {
+      console.error("Error loading local data:", error);
+      const initialData = loadInitialData();
+      setGameData(prevData => ({
+        ...prevData,
+        ...initialData,
+      }));
+      toast.error("Error loading saved data. Starting with defaults.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setGameData]);
+
   const syncFromSupabase = useCallback(async (signal?: AbortSignal) => {
     console.log("Starting data sync from Supabase");
     
@@ -37,7 +64,7 @@ export const useDataSync = () => {
         dataFetchers.fetchCharacter(signal),
         dataFetchers.fetchQuests(signal),
         dataFetchers.fetchInventory(signal),
-        dataFetchers.fetchShopItems(signal),
+        // Remove the direct fetchShopItems call as it's handled by fetchInventory
         dataFetchers.fetchSkillTree(signal),
         dataFetchers.fetchChallenges(signal),
         dataFetchers.fetchHabits(signal),
@@ -91,31 +118,6 @@ export const useDataSync = () => {
       setIsLoading(false);
     }
   }, [dataFetchers, isMobile, loadLocalData]);
-
-  const loadLocalData = useCallback(() => {
-    console.log("Loading local data");
-    try {
-      const localData = localStorage.getItem("rpgProductivityData");
-      const initialData = localData ? JSON.parse(localData) : loadInitialData();
-      
-      setGameData(prevData => ({
-        ...prevData,
-        ...initialData,
-      }));
-      
-      console.log("Using local data (user not logged in or data sync failed)");
-    } catch (error) {
-      console.error("Error loading local data:", error);
-      const initialData = loadInitialData();
-      setGameData(prevData => ({
-        ...prevData,
-        ...initialData,
-      }));
-      toast.error("Error loading saved data. Starting with defaults.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [setGameData]);
 
   return {
     isLoading,
