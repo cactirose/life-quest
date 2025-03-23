@@ -14,23 +14,28 @@ export const useCharacterFetcher = (
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
 
+      // Create the query
       const query = supabase
         .from("characters")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
         
-      // Only add abort signal if provided
-      const { data, error } = signal 
-        ? await query.abortSignal(signal)
-        : await query;
+      // Execute the query with or without signal
+      const { data, error } = await query;
+      
+      // If aborted, return early
+      if (signal?.aborted) {
+        console.log('Character fetch aborted');
+        return null;
+      }
 
       if (error) throw error;
 
       if (data) {
-        setGameData(prev => ({ ...prev, character: data }));
+        setGameData(prev => ({ ...prev, character: data as Character }));
         updateStatus('character', 'loaded');
-        return data;
+        return data as Character;
       }
 
       // Create new character if none exists
@@ -44,8 +49,11 @@ export const useCharacterFetcher = (
       
       const newCharacter = await upsertCharacter(newCharacterData);
 
-      setGameData(prev => ({ ...prev, character: newCharacter }));
-      updateStatus('character', 'loaded');
+      if (newCharacter) {
+        setGameData(prev => ({ ...prev, character: newCharacter }));
+        updateStatus('character', 'loaded');
+      }
+      
       return newCharacter;
 
     } catch (error) {

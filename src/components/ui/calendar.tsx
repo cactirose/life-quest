@@ -15,7 +15,7 @@ function Calendar({
   ...props
 }: CalendarProps) {
   return (
-    <div className="calendar-container">
+    <div className="calendar-container flex justify-center">
       <DayPicker
         showOutsideDays={showOutsideDays}
         className={cn("p-4 pointer-events-auto", className)}
