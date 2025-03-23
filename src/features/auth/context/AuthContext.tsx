@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../../../integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
@@ -10,6 +11,7 @@ type Profile = {
   language?: string;
   created_at: string;
   updated_at: string;
+  username?: string;
 };
 
 type AuthContextType = {
@@ -23,7 +25,7 @@ type AuthContextType = {
   verifyOtp: (email: string, token: string) => Promise<{ error: any }>;
   signInWithGoogle: () => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
-  // refreshSession: () => Promise<boolean>;
+  refreshSession: () => Promise<boolean>;
   ensureValidSession: () => Promise<boolean>;
   isSessionExpired: (session: Session) => boolean;
 };
@@ -98,8 +100,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (error) {
       console.error("Error fetching profile:", error);
-    } else {
-      setProfile(data);
+    } else if (data) {
+      // Transform data to match Profile type
+      const profileData: Profile = {
+        id: data.id,
+        name: data.username || 'User',  // Use username as name if available
+        email: user?.email || '',       // Get email from user object
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        username: data.username
+      };
+      setProfile(profileData);
     }
   };
 
@@ -168,11 +179,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Check session health and refresh if necessary
+  const refreshSession = async (): Promise<boolean> => {
+    try {
+      console.log("Attempting to refresh session...");
+      const { data, error } = await supabase.auth.refreshSession();
+      
+      if (error) {
+        console.error("Error refreshing session:", error);
+        return false;
+      }
+      
+      const { session } = data;
+      if (session) {
+        setSession(session);
+        setUser(session.user);
+        setIsAuthenticated(true);
+        console.log("Session refreshed successfully");
+        return true;
+      }
+      
+      console.log("No session returned after refresh attempt");
+      return false;
+    } catch (error) {
+      console.error("Exception refreshing session:", error);
+      return false;
+    }
+  };
+
   const ensureValidSession = async (): Promise<boolean> => {
     try {
       if (!session) {
         console.log("No session found");
         return false;
+      }
+
+      // If session exists but is expired or about to expire, refresh it
+      if (isSessionExpired(session)) {
+        return await refreshSession();
       }
 
       // Session is valid and not expired
@@ -196,6 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         verifyOtp,
         signInWithGoogle,
         signOut,
+        refreshSession,
         ensureValidSession,
         isSessionExpired,
       }}

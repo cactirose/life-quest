@@ -1,3 +1,4 @@
+
 import { GameData } from "@/types/gameData";
 import { DataLoadingStatus } from "../useDataStatus";
 import { Character } from "@/types/character";
@@ -5,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const useCharacterFetcher = (
-  setGameData: GameDataUpdater,
+  setGameData: React.Dispatch<React.SetStateAction<GameData>>,
   updateStatus: (entity: string, status: string) => void
 ) => {
   const fetchCharacter = async (signal?: AbortSignal) => {
@@ -13,12 +14,16 @@ export const useCharacterFetcher = (
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
 
-      const { data, error } = await supabase
+      const query = supabase
         .from("characters")
         .select("*")
         .eq("user_id", user.id)
-        .maybeSingle()
-        .abortSignal(signal);
+        .maybeSingle();
+        
+      // Only add abort signal if provided
+      const { data, error } = signal 
+        ? await query.abortSignal(signal)
+        : await query;
 
       if (error) throw error;
 
@@ -32,10 +37,12 @@ export const useCharacterFetcher = (
       const { DEFAULT_CHARACTER } = await import('@/types/character');
       const { upsertCharacter } = await import('@/services/characterService');
       
-      const newCharacter = await upsertCharacter({
+      const newCharacterData = {
         ...DEFAULT_CHARACTER,
         user_id: user.id
-      });
+      };
+      
+      const newCharacter = await upsertCharacter(newCharacterData);
 
       setGameData(prev => ({ ...prev, character: newCharacter }));
       updateStatus('character', 'loaded');
