@@ -1,7 +1,7 @@
 
 import { GameData } from "@/types/gameData";
 import { DataLoadingStatus } from "../useDataStatus";
-import { Character } from "@/types/character";
+import { Character, Stats } from "@/types/character";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -42,7 +42,7 @@ export const useCharacterFetcher = (
           coins: data.coins,
           portrait: data.portrait,
           bio: data.bio,
-          stats: data.stats,
+          stats: data.stats as Stats, // Cast the Json type to Stats
           lastLoginDate: data.last_login_date,
           loginStreak: data.login_streak,
           dailyBonusClaimed: data.daily_bonus_claimed
