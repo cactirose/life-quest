@@ -1,65 +1,28 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
 import PasswordUpdateForm from "@/features/auth/components/PasswordUpdateForm";
 import PasswordUpdateSuccess from "@/features/auth/components/PasswordUpdateSuccess";
 import InvalidResetLink from "@/features/auth/components/InvalidResetLink";
 import AuthCheckingState from "@/features/auth/components/AuthCheckingState";
+import { useAuth } from "@/features/auth/context/AuthContext";
 
 const UpdatePassword = () => {
+  const { session, isLoading } = useAuth();
   const [isSuccess, setIsSuccess] = useState(false);
-  const [hasSession, setHasSession] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-
-  // Check if the user has a valid recovery session
-  useEffect(() => {
-    let isMounted = true;
-    
-    const checkSession = async () => {
-      try {
-        setIsCheckingAuth(true);
-        const { data } = await supabase.auth.getSession();
-        console.log("Auth session check:", data.session ? "Session exists" : "No session");
-        if (isMounted) setHasSession(!!data.session);
-      } catch (error) {
-        console.error("Error checking session:", error);
-      } finally {
-        if (isMounted) setIsCheckingAuth(false);
-      }
-    };
-    
-    checkSession();
-    
-    // Set up auth state change listener - Fixed to prevent deadlocks
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state change event:", event);
-      
-      // Use setTimeout to prevent deadlocks with Supabase
-      setTimeout(() => {
-        if (isMounted) setHasSession(!!session);
-      }, 0);
-    });
-    
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
 
   const handleSuccess = () => {
     setIsSuccess(true);
   };
 
   const renderContent = () => {
-    if (isCheckingAuth) {
+    if (isLoading) {
       return <AuthCheckingState 
         title="Checking Auth Status" 
         description="Please wait while we verify your session..." 
       />;
     }
 
-    if (!hasSession && !isSuccess) {
+    if (!session && !isSuccess) {
       return <InvalidResetLink />;
     }
 

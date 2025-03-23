@@ -77,6 +77,6 @@ export function useDataLoader(
     retryCount,
     loadUserData,
     retryDataLoad,
-    syncTimeoutRef
+    syncTimeoutRef,
   };
 }
