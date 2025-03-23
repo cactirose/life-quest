@@ -69,7 +69,7 @@ export const fetchCharacter = async (signal?: AbortSignal): Promise<Character | 
   }
 };
 
-export const upsertCharacter = async (character: Character): Promise<void> => {
+export const upsertCharacter = async (character: Character): Promise<Character | null> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No authenticated user");
@@ -113,7 +113,7 @@ export const upsertCharacter = async (character: Character): Promise<void> => {
       if (updateError) {
         console.error("Error updating character:", updateError);
         toast.error("Failed to update character data");
-        return;
+        return null;
       }
     } else {
       // Only try to insert if no existing character
@@ -136,18 +136,22 @@ export const upsertCharacter = async (character: Character): Promise<void> => {
           if (updateError) {
             console.error("Error updating character after duplicate detection:", updateError);
             toast.error("Failed to save character data");
-            return;
+            return null;
           }
         } else {
           console.error("Error inserting character:", insertError);
           toast.error("Failed to save character data");
-          return;
+          return null;
         }
       }
       console.log("Character data saved successfully");
     }
+    
+    // After successful update/insert, return the character
+    return character;
   } catch (error) {
     console.error("Error in upsertCharacter:", error);
     toast.error("Failed to save character data");
+    return null;
   }
 };

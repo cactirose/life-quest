@@ -33,9 +33,24 @@ export const useCharacterFetcher = (
       if (error) throw error;
 
       if (data) {
-        setGameData(prev => ({ ...prev, character: data as Character }));
+        // Map database fields to Character type
+        const character: Character = {
+          name: data.name,
+          level: data.level,
+          xp: data.xp,
+          nextLevelXp: data.next_level_xp,
+          coins: data.coins,
+          portrait: data.portrait,
+          bio: data.bio,
+          stats: data.stats,
+          lastLoginDate: data.last_login_date,
+          loginStreak: data.login_streak,
+          dailyBonusClaimed: data.daily_bonus_claimed
+        };
+        
+        setGameData(prev => ({ ...prev, character }));
         updateStatus('character', 'loaded');
-        return data as Character;
+        return character;
       }
 
       // Create new character if none exists
@@ -48,7 +63,8 @@ export const useCharacterFetcher = (
       };
       
       const newCharacter = await upsertCharacter(newCharacterData);
-
+      
+      // Only update game data if we have a character
       if (newCharacter) {
         setGameData(prev => ({ ...prev, character: newCharacter }));
         updateStatus('character', 'loaded');
