@@ -1,17 +1,19 @@
-import { useState, useCallback, useRef } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { storeSession } from "@/utils/auth";
-import { loadInitialData } from "@/utils/loadInitialData";
-import { loadAllGameData } from "@/services";
+import { useState, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { storeSession } from '@/utils/auth';
+import { loadInitialData } from '@/utils/loadInitialData';
+import { loadAllGameData } from '@/services';
 import { useIsMobile } from "../use-mobile";
+import { type Dispatch, type SetStateAction, type MutableRefObject } from 'react';
+import { type GameData } from '@/types';
 
 export function useDataLoader(
-  setGameData: React.Dispatch<React.SetStateAction<GameData>>,
+  setGameData: Dispatch<SetStateAction<GameData>>,
   syncFromSupabase: (signal?: AbortSignal) => Promise<void>,
   loadLocalData: () => void,
-  hasLoadedData: React.MutableRefObject<boolean>,
-  abortControllerRef: React.MutableRefObject<AbortController | null>
+  hasLoadedData: MutableRefObject<boolean>,
+  abortControllerRef: MutableRefObject<AbortController | null>
 ) {
   const [loadingState, setLoadingState] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
   const [errorDetails, setErrorDetails] = useState<string | null>(null);

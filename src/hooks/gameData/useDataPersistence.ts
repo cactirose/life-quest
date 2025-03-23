@@ -1,9 +1,8 @@
-
-import { useEffect, useRef, useCallback } from "react";
-import { GameData } from "@/types/gameData";
-import { isAuthenticatedSync, ensureValidSession } from "@/utils/auth";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { detectChangedFields } from "./changeDetectionUtils";
+import { useEffect, useRef, useCallback } from 'react';
+import { GameData } from '@/types/gameData';
+import { isAuthenticatedSync, ensureValidSession } from '@/utils/auth';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { detectChangedFields } from './changeDetectionUtils';
 import { useDebounce } from "./persistence/useDebounce";
 import { useSyncWithSupabase } from "./persistence/useSyncWithSupabase";
 
@@ -22,31 +21,58 @@ export function useDataPersistence(gameData: GameData) {
     await syncWithSupabase(gameData, changedFields.current, syncErrorCount);
   }, syncDelay);
 
+  // Add sync recovery
+  useEffect(() => {
+    const attemptRecovery = async () => {
+      const pendingSync = localStorage.getItem('pendingSync');
+      if (pendingSync) {
+        try {
+          const { timestamp, operations, gameData: failedData } = JSON.parse(pendingSync);
+          
+          // Only retry if the pending sync is less than 1 hour old
+          if (Date.now() - timestamp < 3600000) {
+            console.log('Attempting to recover failed sync operations');
+            await syncWithSupabase(failedData, new Set(operations.map(op => op.field)), syncErrorCount);
+          } else {
+            localStorage.removeItem('pendingSync');
+          }
+        } catch (error) {
+          console.error('Error recovering sync:', error);
+        }
+      }
+    };
+
+    // Try recovery on mount and when coming back online
+    attemptRecovery();
+    window.addEventListener('online', attemptRecovery);
+    return () => window.removeEventListener('online', attemptRecovery);
+  }, []);
+
+  // Modify the existing effect to ensure Supabase sync
   useEffect(() => {
     try {
-      // Skip initial render comparison
       if (!previousData.current) {
         previousData.current = JSON.parse(JSON.stringify(gameData));
         return;
       }
       
-      // Detect which fields have changed
       const changes = detectChangedFields(previousData.current, gameData);
       changes.forEach(field => changedFields.current.add(field));
       
-      // Save to localStorage as a fallback, but prioritize Supabase
-      localStorage.setItem("rpgProductivityData", JSON.stringify(gameData));
-      
-      // Update previous data by deep cloning
-      previousData.current = JSON.parse(JSON.stringify(gameData));
-      
-      // Always attempt to sync with Supabase if there are changes
+      // Always try Supabase first
       if (changedFields.current.size > 0) {
-        console.log("Changed fields, triggering sync with Supabase:", Array.from(changedFields.current));
+        console.log("Changes detected, syncing to Supabase:", Array.from(changedFields.current));
         debouncedSync();
+        
+        // Only save to localStorage as backup
+        localStorage.setItem("rpgProductivityData_backup", JSON.stringify(gameData));
       }
+      
+      previousData.current = JSON.parse(JSON.stringify(gameData));
     } catch (error) {
-      console.error("Error during data persistence cycle:", error);
+      console.error("Error during data persistence:", error);
+      // Save to localStorage as emergency backup
+      localStorage.setItem("rpgProductivityData_emergency", JSON.stringify(gameData));
     }
   }, [gameData, debouncedSync]);
 
