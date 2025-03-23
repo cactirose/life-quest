@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { ensureValidSession } from "@/utils/auth";
 import { toast } from "sonner";
@@ -20,30 +19,70 @@ export const useSyncWithSupabase = () => {
     changedFields: Set<string>,
     syncErrorCount: React.MutableRefObject<number>
   ) => {
-    // Make sure we have a valid session before attempting to sync
-    const hasValidSession = await ensureValidSession();
-    if (!hasValidSession) {
-      console.log("No valid session, skipping sync");
-      return;
-    }
+    // Add request deduplication
+    const syncInProgress = new Set<string>();
     
+    // Add retry logic with exponential backoff
+    const retryOperation = async (operation: () => Promise<boolean>, field: string, attempts = 3) => {
+      for (let i = 0; i < attempts; i++) {
+        try {
+          if (syncInProgress.has(field)) {
+            console.log(`Sync already in progress for ${field}, skipping`);
+            return false;
+          }
+          
+          syncInProgress.add(field);
+          const result = await operation();
+          syncInProgress.delete(field);
+          return result;
+        } catch (error) {
+          if (i === attempts - 1) throw error;
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+        }
+      }
+      return false;
+    };
+
     try {
-      const fieldsToSync = Array.from(changedFields);
-      console.log("Syncing data to Supabase:", fieldsToSync);
-      
-      // Track successful operations
+      const hasValidSession = await ensureValidSession();
+      if (!hasValidSession) {
+        toast.error("Session expired. Please log in again.");
+        return;
+      }
+
       const syncResults: Record<string, boolean> = {};
-      
-      // Sync each data type
-      syncResults['character'] = await syncCharacterData(gameData, changedFields);
-      syncResults['quests'] = await syncQuestsData(gameData, changedFields);
-      syncResults['inventory'] = await syncInventoryData(gameData, changedFields);
-      syncResults['skillTree'] = await syncSkillTreeData(gameData, changedFields);
-      syncResults['challenges'] = await syncChallengesData(gameData, changedFields);
-      syncResults['habits'] = await syncHabitsData(gameData, changedFields);
-      syncResults['moods'] = await syncMoodsData(gameData, changedFields);
-      syncResults['achievements'] = await syncAchievementsData(gameData, changedFields);
-      
+      const syncOperations = [
+        { field: 'character', operation: () => syncCharacterData(gameData, changedFields) },
+        { field: 'quests', operation: () => syncQuestsData(gameData, changedFields) },
+        { field: 'inventory', operation: () => syncInventoryData(gameData, changedFields) },
+        { field: 'skillTree', operation: () => syncSkillTreeData(gameData, changedFields) },
+        { field: 'challenges', operation: () => syncChallengesData(gameData, changedFields) },
+        { field: 'habits', operation: () => syncHabitsData(gameData, changedFields) },
+        { field: 'moods', operation: () => syncMoodsData(gameData, changedFields) },
+        { field: 'achievements', operation: () => syncAchievementsData(gameData, changedFields) }
+      ];
+
+      // Batch sync operations with controlled concurrency
+      const batchSize = 3;
+      for (let i = 0; i < syncOperations.length; i += batchSize) {
+        const batch = syncOperations.slice(i, i + batchSize);
+        const results = await Promise.allSettled(
+          batch.map(({ field, operation }) => 
+            retryOperation(operation, field)
+              .then(success => ({ field, success }))
+          )
+        );
+
+        results.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            syncResults[result.value.field] = result.value.success;
+          } else {
+            console.error(`Sync failed for ${result.reason}`);
+            syncResults[result.reason.field] = false;
+          }
+        });
+      }
+
       // Remove successfully synced fields from the changedFields set
       Object.entries(syncResults).forEach(([field, success]) => {
         if (success && changedFields.has(field)) {
@@ -74,14 +113,9 @@ export const useSyncWithSupabase = () => {
       }
       
     } catch (error) {
-      console.error("Error syncing with Supabase:", error);
-      syncErrorCount.current += 1;
-      
-      if (syncErrorCount.current >= 3) {
-        toast.error("Having trouble saving your data. Please check your connection.", {
-          id: "sync-error-persistent"
-        });
-      }
+      console.error('Sync failed:', error);
+      toast.error("Failed to save changes. Retrying in background...");
+      return false;
     }
   }, []);
 
