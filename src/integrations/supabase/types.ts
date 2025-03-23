@@ -347,7 +347,7 @@ export type Database = {
           description?: string | null
           difficulty: string
           due_date?: string | null
-          id?: string
+          id: string
           quest_type: string
           stat_rewards?: Json | null
           status?: string
