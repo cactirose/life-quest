@@ -20,12 +20,25 @@ export function TutorialSection() {
   const [showTutorial, setShowTutorial] = useState(true);
   const { character } = useGameData();
   
+  // Guard clause - if character is undefined, show the tutorial by default
+  if (!character) {
+    // Just return the tutorial with default settings for new users
+    return renderTutorialContent(true);
+  }
+  
   // If the character is above level 3, don't show the tutorial by default
   const isNewUser = character.level <= 3;
   
   // Control visibility with local state
   const [isVisible, setIsVisible] = useState(isNewUser);
   
+  if (!isVisible) return null;
+  
+  return renderTutorialContent(isVisible, () => setIsVisible(false));
+}
+
+// Extracted the tutorial content to a separate function to avoid duplication
+function renderTutorialContent(isVisible: boolean, onClose?: () => void) {
   if (!isVisible) return null;
   
   return (
@@ -96,15 +109,18 @@ export function TutorialSection() {
         </CardContent>
         
         <CardFooter className="flex justify-end pt-0">
-          <Button 
-            variant="outline" 
-            className="text-rpg-brown border-rpg-brown hover:bg-rpg-brown hover:text-rpg-tan"
-            onClick={() => setIsVisible(false)}
-          >
-            Got it!
-          </Button>
+          {onClose && (
+            <Button 
+              variant="outline" 
+              className="text-rpg-brown border-rpg-brown hover:bg-rpg-brown hover:text-rpg-tan"
+              onClick={onClose}
+            >
+              Got it!
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>
   );
 }
+
