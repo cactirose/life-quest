@@ -1,11 +1,9 @@
-
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
 import { JournalFormValues } from "./JournalFormSchema";
 
 const JournalFormOptions = () => {
   const form = useFormContext<JournalFormValues>();
-
   return (
     <div className="flex items-center gap-4">
       <FormField
@@ -45,6 +43,6 @@ const JournalFormOptions = () => {
       />
     </div>
   );
-};
+}
 
 export default JournalFormOptions;

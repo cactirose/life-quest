@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useCallback } from 'react';
 import { GameData } from '@/types/gameData';
 import { isAuthenticatedSync, ensureValidSession } from '@/utils/auth';
@@ -66,7 +65,9 @@ export function useDataPersistence(gameData: GameData) {
           'inventory_items',
           'challenges',
           'skill_nodes',
-          'shop_items'
+          'shop_items',
+          'journal_entries',
+          'shopping_lists'
         ] as const; // This is crucial for type safety
 
         const results = await Promise.all(tables.map(async (table) => {

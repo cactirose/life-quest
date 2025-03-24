@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { ensureValidSession } from '@/utils/auth';
 import { toast } from "sonner";
@@ -11,7 +10,9 @@ import {
   syncChallengesData,
   syncHabitsData,
   syncMoodsData,
-  syncAchievementsData
+  syncAchievementsData,
+  syncJournalEntriesData,
+  syncShoppingListsData
 } from "./entitySync";
 
 export const useSyncWithSupabase = () => {
@@ -67,7 +68,9 @@ export const useSyncWithSupabase = () => {
         { field: 'challenges', operation: () => syncChallengesData(gameData, changedFields) },
         { field: 'habits', operation: () => syncHabitsData(gameData, changedFields) },
         { field: 'moods', operation: () => syncMoodsData(gameData, changedFields) },
-        { field: 'achievements', operation: () => syncAchievementsData(gameData, changedFields) }
+        { field: 'achievements', operation: () => syncAchievementsData(gameData, changedFields) },
+        { field: 'journalEntries', operation: () => syncJournalEntriesData(gameData, changedFields) },
+        { field: 'shoppingLists', operation: () => syncShoppingListsData(gameData, changedFields) }
       ];
 
       // Process priority operations first
@@ -88,6 +91,8 @@ export const useSyncWithSupabase = () => {
       const batchSize = 3;
       for (let i = 0; i < regularOperations.length; i += batchSize) {
         const batch = regularOperations.slice(i, i + batchSize);
+        console.log(`Processing batch ${i/batchSize + 1}:`, batch.map(op => op.field));
+        
         const results = await Promise.allSettled(
           batch.map(({ field, operation }) => 
             retryOperation(operation, field, 5)
@@ -121,12 +126,9 @@ export const useSyncWithSupabase = () => {
           gameData: gameData
         }));
 
-        if (syncErrorCount.current >= 3) {
-          toast.error("Having trouble saving your data. Please check your connection.", {
-            id: "sync-error-persistent",
-            description: `Failed to sync: ${failedOperations.map(op => op.field).join(', ')}`
-          });
-        }
+        toast.error("Some changes couldn't be saved", {
+          description: `Failed to sync: ${failedOperations.map(op => op.field).join(', ')}`
+        });
       } else {
         syncErrorCount.current = 0;
         localStorage.removeItem('pendingSync'); // Clear any pending sync data
@@ -143,8 +145,7 @@ export const useSyncWithSupabase = () => {
     } catch (error) {
       console.error('Sync failed:', error);
       toast.error("Failed to save changes", {
-        description: "Your changes will be saved when connection is restored",
-        duration: 5000
+        description: error.message
       });
       return false;
     }
