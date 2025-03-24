@@ -364,11 +364,13 @@ export type Database = {
         Row: {
           coin_reward: number
           created_at: string
+          custom_reset_days: Json | null
           description: string | null
           difficulty: string
           due_date: string | null
           id: string
           quest_type: string
+          repeat_type: string | null
           stat_rewards: Json | null
           status: string
           steps: Json | null
@@ -380,11 +382,13 @@ export type Database = {
         Insert: {
           coin_reward?: number
           created_at?: string
+          custom_reset_days?: Json | null
           description?: string | null
           difficulty: string
           due_date?: string | null
           id: string
           quest_type: string
+          repeat_type?: string | null
           stat_rewards?: Json | null
           status?: string
           steps?: Json | null
@@ -396,11 +400,13 @@ export type Database = {
         Update: {
           coin_reward?: number
           created_at?: string
+          custom_reset_days?: Json | null
           description?: string | null
           difficulty?: string
           due_date?: string | null
           id?: string
           quest_type?: string
+          repeat_type?: string | null
           stat_rewards?: Json | null
           status?: string
           steps?: Json | null
