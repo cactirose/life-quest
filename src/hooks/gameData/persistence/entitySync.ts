@@ -8,4 +8,7 @@ export { syncChallengesData } from './syncChallenges';
 export { syncHabitsData } from './syncHabits';
 export { syncMoodsData } from './syncMoods';
 export { syncAchievementsData } from './syncAchievements';
-export { validateEntity, retrySyncOperation } from './syncUtils';
+export { syncJournalEntriesData } from './syncJournalEntries';
+export { syncShoppingListsData } from './syncShoppingLists';
+export { validateEntity } from './syncUtils';
+export { retrySyncOperation } from './syncUtils';

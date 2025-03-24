@@ -1,7 +1,8 @@
+
 import { GameData } from '@/types/gameData';
 import { supabase } from '@/integrations/supabase/client';
 import { ensureValidSession } from '@/utils/auth';
-import { retrySyncOperation } from './syncUtils';
+import { validateEntity } from './syncUtils';
 
 export const syncJournalEntriesData = async (
   gameData: GameData, 
@@ -16,7 +17,7 @@ export const syncJournalEntriesData = async (
     console.log('Syncing journal entries:', gameData.journalEntries);
 
     const validEntries = gameData.journalEntries.filter(entry => 
-      validateEntity(entry, 'journal_entries')
+      validateEntity(entry, ['id', 'title', 'content'])
     );
 
     if (validEntries.length === 0) {

@@ -7,6 +7,8 @@ import { Challenge } from "./challenges";
 import { Habit } from "./habits";
 import { MoodEntry } from "./mood";
 import { Achievement } from "./achievements";
+import { JournalEntry } from "./journal";
+import { ShoppingList } from "./shoppingList";
 
 // The actual data structure
 export interface GameData {
@@ -19,6 +21,8 @@ export interface GameData {
   habits: Habit[];
   moods: MoodEntry[];
   achievements: Achievement[];
+  journalEntries: JournalEntry[];
+  shoppingLists: ShoppingList[];
   
   // Character methods
   setCharacter: (character: Character) => void;
