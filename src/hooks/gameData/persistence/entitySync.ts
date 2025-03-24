@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { 
   upsertCharacter,
@@ -9,7 +10,7 @@ import {
   upsertMoodEntry,
   upsertAchievement
 } from "@/services";
-import { GameData } from "@/types/gameData";
+import { GameData } from '@/types/gameData';
 import { supabase } from '@/integrations/supabase/client';
 import { ensureValidSession } from '@/utils/auth';
 

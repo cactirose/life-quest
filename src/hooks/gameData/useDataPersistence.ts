@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useCallback } from 'react';
 import { GameData } from '@/types/gameData';
 import { isAuthenticatedSync, ensureValidSession } from '@/utils/auth';
@@ -6,7 +7,7 @@ import { detectChangedFields } from './changeDetectionUtils';
 import { useDebounce } from "./persistence/useDebounce";
 import { useSyncWithSupabase } from "./persistence/useSyncWithSupabase";
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'react-hot-toast';
+import { toast } from "sonner";
 
 export function useDataPersistence(gameData: GameData) {
   const isMobile = useIsMobile();
