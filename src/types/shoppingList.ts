@@ -7,7 +7,7 @@ export interface ShoppingItem {
   category?: string;
   notes?: string;
   purchased: boolean;
-  order: number;
+  sort_order: number;
   created_at: string;
   updated_at: string;
 }
