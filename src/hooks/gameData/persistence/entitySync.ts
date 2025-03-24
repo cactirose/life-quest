@@ -164,26 +164,31 @@ export const syncMoodsData = async (gameData: GameData, changedFields: Set<strin
   if (!changedFields.has('moods')) return true;
   
   try {
-    const { user } = await ensureValidSession();
-    if (!user) throw new Error('No authenticated user');
+    const sessionResult = await ensureValidSession();
+    if (!sessionResult) throw new Error('No authenticated user');
+
+    const userData = await supabase.auth.getUser();
+    if (!userData.data.user) throw new Error('No authenticated user');
 
     const validMoods = gameData.moods.filter(mood => 
-      validateEntity(mood, ['id', 'user_id', 'mood_type', 'timestamp'])
+      validateEntity(mood, ['id', 'mood', 'date'])
     );
 
     if (validMoods.length === 0) return true; // Skip if no valid entries
 
     const { error } = await supabase
-      .from('moods')
+      .from('mood_entries')
       .upsert(
         validMoods.map(mood => ({
-          ...mood,
-          user_id: user.id,
+          id: mood.id,
+          user_id: userData.data.user!.id,
+          mood: mood.mood,
+          date: mood.date,
+          notes: mood.notes,
           updated_at: new Date().toISOString()
         })),
         { 
-          onConflict: 'id',
-          returning: 'minimal' // Optimize response
+          onConflict: 'id'
         }
       );
 
@@ -203,11 +208,14 @@ export const syncAchievementsData = async (gameData: GameData, changedFields: Se
   if (!changedFields.has('achievements')) return true;
   
   try {
-    const { user } = await ensureValidSession();
-    if (!user) throw new Error('No authenticated user');
+    const sessionResult = await ensureValidSession();
+    if (!sessionResult) throw new Error('No authenticated user');
+
+    const userData = await supabase.auth.getUser();
+    if (!userData.data.user) throw new Error('No authenticated user');
 
     const validAchievements = gameData.achievements.filter(achievement => 
-      validateEntity(achievement, ['id', 'user_id', 'achievement_type', 'completed_at'])
+      validateEntity(achievement, ['id', 'category', 'title'])
     );
 
     if (validAchievements.length === 0) return true;
@@ -216,13 +224,23 @@ export const syncAchievementsData = async (gameData: GameData, changedFields: Se
       .from('achievements')
       .upsert(
         validAchievements.map(achievement => ({
-          ...achievement,
-          user_id: user.id,
+          id: achievement.id,
+          user_id: userData.data.user!.id,
+          title: achievement.title,
+          description: achievement.description,
+          category: achievement.category,
+          icon: achievement.icon,
+          xp_reward: achievement.xpReward,
+          coin_reward: achievement.coinReward,
+          special_reward: achievement.specialReward,
+          unlocked: achievement.unlocked,
+          date_unlocked: achievement.dateUnlocked,
+          required_count: achievement.requiredCount,
+          current_count: achievement.currentCount,
           updated_at: new Date().toISOString()
         })),
         { 
-          onConflict: 'id',
-          returning: 'minimal'
+          onConflict: 'id'
         }
       );
 

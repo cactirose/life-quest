@@ -55,17 +55,18 @@ export function useDataPersistence(gameData: GameData) {
   useEffect(() => {
     const checkDatabaseHealth = async () => {
       try {
+        // Define tables that should be checked, ensuring they match the table names in Supabase
         const tables = [
           'characters',
           'quests',
-          'moods',
+          'mood_entries', // Fixed from 'moods' to 'mood_entries'
           'achievements',
           'habits',
-          'inventory',
+          'inventory_items', // Fixed from 'inventory' to 'inventory_items'
           'challenges',
-          'skills',
+          'skill_nodes', // Fixed from 'skills' to 'skill_nodes'
           'shop_items'
-        ];
+        ] as const;
 
         const results = await Promise.all(tables.map(async (table) => {
           try {
@@ -127,14 +128,14 @@ export function useDataPersistence(gameData: GameData) {
           // Add specific validation for each data type
           switch(field) {
             case 'moods':
-              return data.some(item => !item.id || !item.mood_type || !item.timestamp);
+              return data.some(item => !item.id || !item.mood || !item.date);
             case 'achievements':
-              return data.some(item => !item.id || !item.achievement_type);
+              return data.some(item => !item.id || !item.category || !item.title);
             case 'habits':
-              return data.some(item => !item.id || !item.habit_type);
+              return data.some(item => !item.id || !item.name || !item.frequency);
             // Add cases for other entities...
             default:
-              return Array.isArray(data) && data.some(item => !item.id || !item.user_id);
+              return Array.isArray(data) && data.some(item => !item.id);
           }
         });
 
