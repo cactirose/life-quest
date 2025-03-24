@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
@@ -150,7 +151,7 @@ const Dashboard = () => {
             </div>
             
             <div className="grid grid-cols-2 gap-3">
-              {Object.entries(character.stats).map(([stat, value]) => (
+              {character && character.stats && Object.entries(character.stats).map(([stat, value]) => (
                 <div key={stat} className="wood-texture p-2">
                   <div className="text-sm capitalize text-rpg-brown">{stat}</div>
                   <div className="font-pixel text-lg text-rpg-brown">{value}</div>
