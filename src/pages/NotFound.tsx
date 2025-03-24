@@ -1,11 +1,12 @@
 
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { MapPin } from "lucide-react";
+import { MapPin, ArrowLeft } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.error(
@@ -13,6 +14,10 @@ const NotFound = () => {
       location.pathname
     );
   }, [location.pathname]);
+
+  const goBack = () => {
+    navigate(-1);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -26,11 +31,17 @@ const NotFound = () => {
           <p className="mb-6 text-rpg-brown">
             The quest you're looking for doesn't exist or you don't have access to it yet.
           </p>
-          <Link to="/">
-            <Button className="pixel-button">
-              Return to Home Village
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button onClick={goBack} className="pixel-button">
+              <ArrowLeft size={16} className="mr-2" />
+              Go Back
             </Button>
-          </Link>
+            <Link to="/">
+              <Button className="pixel-button w-full sm:w-auto">
+                Return to Home Village
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

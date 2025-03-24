@@ -31,7 +31,10 @@ import { useSupabaseSync } from "./hooks/useSupabaseSync";
 import { useDataSync } from "./hooks/useDataSync";
 import { useGameDataManager } from "./hooks/gameData";
 import ShoppingList from "./pages/ShoppingList";
+import ShoppingListForm from "./pages/ShoppingListForm";
+import ShoppingListDetail from "./pages/ShoppingListDetail";
 import Journal from "./pages/Journal";
+import JournalEntryForm from "./pages/JournalEntryForm";
 
 const queryClient = new QueryClient();
 
@@ -197,6 +200,8 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+              
+              {/* Shopping List Routes */}
               <Route
                 path="/shopping-list"
                 element={
@@ -208,11 +213,43 @@ const App = () => (
                 }
               />
               <Route
+                path="/shopping-list/new"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ShoppingListForm />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/shopping-list/:id"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ShoppingListDetail />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Journal Routes */}
+              <Route
                 path="/journal"
                 element={
                   <ProtectedRoute>
                     <Layout>
                       <Journal />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/journal/new"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <JournalEntryForm />
                     </Layout>
                   </ProtectedRoute>
                 }
