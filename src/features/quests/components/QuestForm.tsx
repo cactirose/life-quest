@@ -23,6 +23,7 @@ const questFormSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   description: z.string().optional(),
   type: z.enum(["main", "side", "boss"] as const),
+  difficulty: z.enum(["easy", "medium", "hard"] as const),
   steps: z.array(
     z.object({
       id: z.string(),
@@ -62,6 +63,7 @@ export const QuestForm = ({
     title: initialData?.title || "",
     description: initialData?.description || "",
     type: initialData?.type || "side",
+    difficulty: initialData?.difficulty || "medium",
     steps: initialData?.steps?.map(step => ({ 
       id: step.id, 
       description: step.description 
@@ -100,6 +102,7 @@ export const QuestForm = ({
       title: data.title,
       description: data.description || "",
       type: data.type,
+      difficulty: data.difficulty,
       steps: data.steps.map(step => ({ 
         id: step.id || Date.now().toString(), // Ensure id is always present
         description: step.description,

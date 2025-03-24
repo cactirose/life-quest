@@ -46,8 +46,9 @@ export const fetchQuests = async (): Promise<Quest[]> => {
         coinReward: quest.coin_reward,
         statRewards,
         dueDate: quest.due_date,
-        repeatType: quest.repeat_type,
-        customResetDays: quest.custom_reset_days
+        // Handle potentially missing fields in older database records
+        repeatType: quest.repeat_type || "none",
+        customResetDays: quest.custom_reset_days || []
       } as Quest;
     });
   } catch (error) {
@@ -92,8 +93,8 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
         coin_reward: quest.coinReward,
         stat_rewards: statRewardsAsJson,
         steps: stepsAsJson as unknown as Json,
-        repeat_type: quest.repeatType,
-        custom_reset_days: quest.customResetDays
+        repeat_type: quest.repeatType || "none",
+        custom_reset_days: quest.customResetDays || []
       });
 
     if (error) {

@@ -61,31 +61,59 @@ export const QuestBasicInfoSection = () => {
         )}
       />
 
-      <FormField
-        control={control}
-        name="type"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel htmlFor="type">Quest Type</FormLabel>
-            <Select
-              onValueChange={field.onChange}
-              defaultValue={field.value}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="main">Main Quest</SelectItem>
-                <SelectItem value="side">Side Quest</SelectItem>
-                <SelectItem value="boss">Boss Battle</SelectItem>
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="grid grid-cols-2 gap-4">
+        <FormField
+          control={control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="type">Quest Type</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="main">Main Quest</SelectItem>
+                  <SelectItem value="side">Side Quest</SelectItem>
+                  <SelectItem value="boss">Boss Battle</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
+          name="difficulty"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="difficulty">Difficulty</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select difficulty" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="easy">Easy</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="hard">Hard</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   );
 };
