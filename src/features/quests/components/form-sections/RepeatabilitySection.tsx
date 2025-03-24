@@ -7,7 +7,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { QuestRepeatType } from "@/types/quests";
+import { QuestRepeatInterval } from "@/types/quests";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -17,7 +17,7 @@ export const RepeatabilitySection = () => {
   const repeatType = watch("repeatType") || "none";
   const customResetDays = watch("customResetDays") || [];
 
-  const handleRepeatTypeChange = (value: QuestRepeatType) => {
+  const handleRepeatTypeChange = (value: QuestRepeatInterval) => {
     setValue("repeatType", value);
   };
 

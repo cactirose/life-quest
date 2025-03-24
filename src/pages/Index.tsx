@@ -158,15 +158,15 @@ const Index = () => {
               {/* Login Streak Section */}
               <div className="flex flex-col items-center">
                 <span className="text-3xl">🔥</span>
-                <span>{character.login_streak} Day Streak</span>
+                <span>{character.loginStreak} Day Streak</span>
               </div>
             </div>
             
-            {character.last_login_date && (
+            {character.lastLoginDate && (
               <div className="mt-4 flex justify-center items-center gap-2">
                 <Calendar size={16} className="text-rpg-brown" />
-                <span className="text-sm text-rpg-brown">Last Login: {formatDate(character.last_login_date)}</span>
-                {character.daily_bonus_claimed && (
+                <span className="text-sm text-rpg-brown">Last Login: {formatDate(character.lastLoginDate)}</span>
+                {character.dailyBonusClaimed && (
                   <Badge variant="secondary" className="text-xs">
                     Daily Bonus Claimed
                   </Badge>

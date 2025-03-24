@@ -53,6 +53,15 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
       completed: step.completed
     }));
 
+    // Convert statRewards to a format that Supabase can store as JSON
+    let statRewardsAsJson = null;
+    if (quest.statRewards && quest.statRewards.length > 0) {
+      statRewardsAsJson = {};
+      quest.statRewards.forEach(reward => {
+        statRewardsAsJson[reward.stat] = reward.value;
+      });
+    }
+
     const { error } = await supabase
       .from("quests")
       .upsert({
@@ -66,7 +75,7 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
         status: quest.status,
         xp_reward: quest.xpReward,
         coin_reward: quest.coinReward,
-        stat_rewards: quest.statRewards,
+        stat_rewards: statRewardsAsJson,
         steps: stepsAsJson as unknown as Json
       });
 

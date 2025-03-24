@@ -1,6 +1,6 @@
 
 import { createContext, useContext } from "react";
-import { Quest, QuestStatus, QuestRepeatType } from "../types/quests";
+import { Quest, QuestStatus, QuestRepeatInterval } from "../types/quests";
 import { generateId } from "../utils/idGenerator";
 import { StatName } from "../types/character";
 import { addDays, addMonths, addWeeks, format } from "date-fns";
@@ -127,7 +127,10 @@ export const createQuestContextValue = (
             ...step,
             completed: false, // Reset completion status
           })),
-          nextResetDate: nextResetDate.toISOString(),
+          repeat: {
+            interval: quest.repeatType,
+            nextRepeatDate: nextResetDate.toISOString(),
+          }
         };
         
         // Add the new quest instance to the list
