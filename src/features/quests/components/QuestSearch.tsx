@@ -1,6 +1,7 @@
 
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 type QuestSearchProps = {
   searchQuery: string;
@@ -8,6 +9,10 @@ type QuestSearchProps = {
 };
 
 export const QuestSearch = ({ searchQuery, setSearchQuery }: QuestSearchProps) => {
+  const handleClearSearch = () => {
+    setSearchQuery("");
+  };
+
   return (
     <div className="relative mb-6">
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -20,6 +25,18 @@ export const QuestSearch = ({ searchQuery, setSearchQuery }: QuestSearchProps) =
         onChange={(e) => setSearchQuery(e.target.value)}
         className="pl-10 py-6 rounded-lg border-rpg-brown/30"
       />
+      {searchQuery && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute inset-y-0 right-0 pr-3 h-full"
+          onClick={handleClearSearch}
+          type="button"
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Clear search</span>
+        </Button>
+      )}
     </div>
   );
 };

@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { Quest } from "@/types/quests";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
 // Import refactored components
 import { QuestHeader } from "@/features/quests/components/QuestHeader";

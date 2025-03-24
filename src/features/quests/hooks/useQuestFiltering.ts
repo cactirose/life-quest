@@ -1,65 +1,49 @@
-import { useMemo } from "react";
+
+import { useState, useEffect } from "react";
 import { Quest } from "@/types/quests";
 
-export const useQuestFiltering = (
-  quests: Quest[], 
-  searchQuery: string
-) => {
-  const baseActiveQuests = quests.filter(quest => quest.status === "active");
-  const baseCompletedQuests = quests.filter(quest => quest.status === "completed");
+export const useQuestFiltering = (quests: Quest[], searchQuery: string) => {
+  const [filteredActiveQuests, setFilteredActiveQuests] = useState<Quest[]>([]);
+  const [filteredCompletedQuests, setFilteredCompletedQuests] = useState<Quest[]>([]);
   
-  const filteredActiveQuests = useMemo(() => {
-    if (!searchQuery.trim()) return baseActiveQuests;
+  useEffect(() => {
+    const activeQuests = quests.filter(quest => quest.status === "active");
+    const completedQuests = quests.filter(quest => quest.status === "completed");
+    
+    if (!searchQuery.trim()) {
+      setFilteredActiveQuests(activeQuests);
+      setFilteredCompletedQuests(completedQuests);
+      return;
+    }
     
     const query = searchQuery.toLowerCase();
-    return baseActiveQuests.filter(quest => {
-      // Search in title
-      if (quest.title.toLowerCase().includes(query)) return true;
-      
-      // Search in description
-      if (quest.description.toLowerCase().includes(query)) return true;
-      
-      // Search in tags
-      if (quest.tags?.some(tag => {
-        // If query is a tag (starts with #), match exactly
-        if (query.startsWith('#')) {
-          return tag.toLowerCase() === query.substring(1);
-        }
-        // Otherwise search within tag
-        return tag.toLowerCase().includes(query);
-      })) return true;
-      
-      return false;
-    });
-  }, [baseActiveQuests, searchQuery]);
-  
-  const filteredCompletedQuests = useMemo(() => {
-    if (!searchQuery.trim()) return baseCompletedQuests;
+    const isTagSearch = query.startsWith("#");
     
-    const query = searchQuery.toLowerCase();
-    return baseCompletedQuests.filter(quest => {
-      // Search in title
-      if (quest.title.toLowerCase().includes(query)) return true;
-      
-      // Search in description
-      if (quest.description.toLowerCase().includes(query)) return true;
-      
-      // Search in tags
-      if (quest.tags?.some(tag => {
-        // If query is a tag (starts with #), match exactly
-        if (query.startsWith('#')) {
-          return tag.toLowerCase() === query.substring(1);
+    const filterByQuery = (questList: Quest[]) => {
+      return questList.filter(quest => {
+        // Tag search
+        if (isTagSearch) {
+          const tagQuery = query.slice(1); // Remove the # prefix
+          return quest.tags?.some(tag => 
+            tag.toLowerCase().includes(tagQuery)
+          );
         }
-        // Otherwise search within tag
-        return tag.toLowerCase().includes(query);
-      })) return true;
-      
-      return false;
-    });
-  }, [baseCompletedQuests, searchQuery]);
-
-  return {
-    filteredActiveQuests,
-    filteredCompletedQuests
-  };
+        
+        // Regular text search
+        return (
+          quest.title.toLowerCase().includes(query) ||
+          (quest.description && quest.description.toLowerCase().includes(query)) ||
+          quest.steps.some(step => 
+            step.description.toLowerCase().includes(query)
+          ) ||
+          quest.tags?.some(tag => tag.toLowerCase().includes(query))
+        );
+      });
+    };
+    
+    setFilteredActiveQuests(filterByQuery(activeQuests));
+    setFilteredCompletedQuests(filterByQuery(completedQuests));
+  }, [quests, searchQuery]);
+  
+  return { filteredActiveQuests, filteredCompletedQuests };
 };
