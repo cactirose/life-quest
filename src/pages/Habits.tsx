@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Habit } from "@/types/habits";
+import { migrateToUUID } from "@/utils/idGenerator";
 
 // Import the refactored components
 import { HabitForm } from "@/features/habits/components/HabitForm";
@@ -17,6 +18,37 @@ const Habits = () => {
   
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
+  
+  // Add data migration for non-UUID habit IDs
+  useEffect(() => {
+    if (habits && habits.length > 0) {
+      // Check if any habits have non-UUID IDs
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const habitsWithInvalidIds = habits.filter(habit => !uuidRegex.test(habit.id));
+      
+      if (habitsWithInvalidIds.length > 0) {
+        console.log(`Found ${habitsWithInvalidIds.length} habits with non-UUID IDs. Will migrate them.`);
+        
+        // Migrate each habit with an invalid ID
+        habitsWithInvalidIds.forEach(habit => {
+          const oldId = habit.id;
+          const newHabit = {
+            ...habit,
+            id: migrateToUUID(habit.id)
+          };
+          
+          console.log(`Migrating habit from ID ${oldId} to UUID ${newHabit.id}`);
+          
+          // Update the habit with the new UUID
+          updateHabit(newHabit);
+          
+          // We don't need to delete the old one because updateHabit will overwrite it
+        });
+        
+        toast.success(`Migrated ${habitsWithInvalidIds.length} habits to UUID format`);
+      }
+    }
+  }, [habits, updateHabit]);
   
   const handleAddHabit = (habit: Omit<Habit, "id" | "completionHistory" | "streak">) => {
     addHabit(habit);
