@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { ensureValidSession } from '@/utils/auth';
 import { toast } from 'sonner';
@@ -17,7 +18,7 @@ export const useSyncWithSupabase = () => {
   const syncWithSupabase = useCallback(async (
     gameData: GameData, 
     changedFields: Set<string>,
-    syncErrorCount: MutableRefObject<number>
+    syncErrorCount: React.MutableRefObject<number>
   ) => {
     // Track in-progress sync requests to prevent duplicates
     const syncInProgress = new Set<string>();

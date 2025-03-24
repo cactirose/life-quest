@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -21,11 +22,10 @@ export const useAuthCheck = (navigate: (path: string) => void) => {
         }
 
         // If we're not authenticated, check if we can refresh the session
-        // const wasRefreshed = await refreshSession();
+        const wasRefreshed = await refreshSession();
 
         if (isAuthenticated) {
           navigate("/dashboard");
-
           setAuthCheckDone(true);
         }
       } catch (error) {

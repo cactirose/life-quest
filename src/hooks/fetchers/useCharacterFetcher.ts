@@ -1,11 +1,12 @@
+
 import { GameData } from "@/types/gameData";
 import { DataLoadingStatus } from "../useDataStatus";
-import { Character } from "@/types/character";
+import { Character, Stats } from "@/types/character";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const useCharacterFetcher = (
-  setGameData: GameDataUpdater,
+  setGameData: React.Dispatch<React.SetStateAction<GameData>>,
   updateStatus: (entity: string, status: string) => void
 ) => {
   const fetchCharacter = async (signal?: AbortSignal) => {
@@ -13,32 +14,62 @@ export const useCharacterFetcher = (
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No authenticated user');
 
-      const { data, error } = await supabase
+      // Create the query
+      const query = supabase
         .from("characters")
         .select("*")
         .eq("user_id", user.id)
-        .maybeSingle()
-        .abortSignal(signal);
+        .maybeSingle();
+        
+      // Execute the query with or without signal
+      const { data, error } = await query;
+      
+      // If aborted, return early
+      if (signal?.aborted) {
+        console.log('Character fetch aborted');
+        return null;
+      }
 
       if (error) throw error;
 
       if (data) {
-        setGameData(prev => ({ ...prev, character: data }));
+        // Map database fields to Character type
+        const character: Character = {
+          name: data.name,
+          level: data.level,
+          xp: data.xp,
+          nextLevelXp: data.next_level_xp,
+          coins: data.coins,
+          portrait: data.portrait,
+          bio: data.bio,
+          stats: data.stats as Stats, // Cast the Json type to Stats
+          lastLoginDate: data.last_login_date,
+          loginStreak: data.login_streak,
+          dailyBonusClaimed: data.daily_bonus_claimed
+        };
+        
+        setGameData(prev => ({ ...prev, character }));
         updateStatus('character', 'loaded');
-        return data;
+        return character;
       }
 
       // Create new character if none exists
       const { DEFAULT_CHARACTER } = await import('@/types/character');
       const { upsertCharacter } = await import('@/services/characterService');
       
-      const newCharacter = await upsertCharacter({
+      const newCharacterData = {
         ...DEFAULT_CHARACTER,
         user_id: user.id
-      });
-
-      setGameData(prev => ({ ...prev, character: newCharacter }));
-      updateStatus('character', 'loaded');
+      };
+      
+      const newCharacter = await upsertCharacter(newCharacterData);
+      
+      // Only update game data if we have a character
+      if (newCharacter) {
+        setGameData(prev => ({ ...prev, character: newCharacter }));
+        updateStatus('character', 'loaded');
+      }
+      
       return newCharacter;
 
     } catch (error) {

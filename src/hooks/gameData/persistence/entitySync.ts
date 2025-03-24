@@ -40,7 +40,10 @@ export const syncCharacterData = async (gameData: GameData, changedFields: Set<s
   if (!changedFields.has('character') || !gameData.character) return true;
   
   const success = await retrySyncOperation(
-    async () => await upsertCharacter(gameData.character), 
+    async () => {
+      // Await the character upsert but don't return its result, just let it complete
+      await upsertCharacter(gameData.character);
+    }, 
     'character'
   );
   

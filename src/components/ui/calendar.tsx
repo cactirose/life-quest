@@ -15,10 +15,10 @@ function Calendar({
   ...props
 }: CalendarProps) {
   return (
-    <div className="calendar-container">
+    <div className="calendar-container flex justify-center">
       <DayPicker
         showOutsideDays={showOutsideDays}
-        className={cn("p-3", className)}
+        className={cn("p-4 pointer-events-auto", className)}
         classNames={{
           months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
           month: "space-y-4",

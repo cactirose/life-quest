@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,15 +6,14 @@ import { storeSession } from '@/utils/auth';
 import { loadInitialData } from '@/utils/loadInitialData';
 import { loadAllGameData } from '@/services';
 import { useIsMobile } from "../use-mobile";
-import { type Dispatch, type SetStateAction, type MutableRefObject } from 'react';
-import { type GameData } from '@/types';
+import { type GameData } from '@/types/gameData';
 
 export function useDataLoader(
-  setGameData: Dispatch<SetStateAction<GameData>>,
+  setGameData: React.Dispatch<React.SetStateAction<GameData>>,
   syncFromSupabase: (signal?: AbortSignal) => Promise<void>,
   loadLocalData: () => void,
-  hasLoadedData: MutableRefObject<boolean>,
-  abortControllerRef: MutableRefObject<AbortController | null>
+  hasLoadedData: React.MutableRefObject<boolean>,
+  abortControllerRef: React.MutableRefObject<AbortController | null>
 ) {
   const [loadingState, setLoadingState] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
@@ -63,7 +63,7 @@ export function useDataLoader(
         loadLocalData();
       }
     }
-  }, [loadLocalData, setGameData, hasLoadedData]);
+  }, [loadLocalData, setGameData, hasLoadedData, abortControllerRef]);
 
   const retryDataLoad = useCallback(() => {
     toast.info("Retrying data load...");
