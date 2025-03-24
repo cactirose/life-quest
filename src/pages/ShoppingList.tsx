@@ -7,10 +7,23 @@ import { Plus, Edit, Trash, ShoppingBag } from "lucide-react";
 import { ShoppingList as ShoppingListType, ShoppingItem } from "@/types/shoppingList";
 import { toast } from "sonner";
 import { isAuthenticated } from "@/utils/auth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const ShoppingList = () => {
   const [lists, setLists] = useState<ShoppingListType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [listToDelete, setListToDelete] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuthAndLoadLists = async () => {
@@ -24,31 +37,41 @@ const ShoppingList = () => {
     };
     
     checkAuthAndLoadLists();
-  }, []);
+  }, [navigate]);
 
   const fetchShoppingLists = async () => {
     setIsLoading(true);
     try {
+      console.log("Fetching shopping lists...");
       const { data: listsData, error: listsError } = await supabase
         .from('shopping_lists')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (listsError) throw listsError;
+      if (listsError) {
+        console.error("Error fetching lists:", listsError);
+        throw listsError;
+      }
 
+      console.log("Lists fetched successfully:", listsData);
       const lists = listsData || [];
       
       // Fetch items for each list
       const listsWithItems = await Promise.all(
         lists.map(async (list) => {
+          console.log(`Fetching items for list ${list.id}...`);
           const { data: itemsData, error: itemsError } = await supabase
             .from('shopping_items')
             .select('*')
             .eq('list_id', list.id)
-            .order('order', { ascending: true });
+            .order('sort_order', { ascending: true });
 
-          if (itemsError) throw itemsError;
+          if (itemsError) {
+            console.error(`Error fetching items for list ${list.id}:`, itemsError);
+            throw itemsError;
+          }
 
+          console.log(`Items for list ${list.id} fetched successfully:`, itemsData);
           return {
             ...list,
             items: itemsData || []
@@ -65,7 +88,43 @@ const ShoppingList = () => {
     }
   };
 
-  const navigate = useNavigate();
+  const handleDeleteClick = (listId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setListToDelete(listId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteList = async () => {
+    if (!listToDelete) return;
+    
+    try {
+      // First delete all items in the list
+      const { error: itemsError } = await supabase
+        .from('shopping_items')
+        .delete()
+        .eq('list_id', listToDelete);
+        
+      if (itemsError) throw itemsError;
+      
+      // Then delete the list itself
+      const { error: listError } = await supabase
+        .from('shopping_lists')
+        .delete()
+        .eq('id', listToDelete);
+        
+      if (listError) throw listError;
+      
+      // Update the state to remove the deleted list
+      setLists(lists.filter(list => list.id !== listToDelete));
+      toast.success("Shopping list deleted successfully");
+    } catch (error) {
+      console.error("Error deleting shopping list:", error);
+      toast.error("Failed to delete shopping list");
+    } finally {
+      setListToDelete(null);
+      setDeleteDialogOpen(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -126,10 +185,7 @@ const ShoppingList = () => {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Handle delete
-                    }}
+                    onClick={(e) => handleDeleteClick(list.id, e)}
                   >
                     <Trash size={16} />
                     <span className="sr-only">Delete</span>
@@ -153,6 +209,23 @@ const ShoppingList = () => {
           ))}
         </div>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this shopping list and all its items.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteList} className="bg-red-500 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

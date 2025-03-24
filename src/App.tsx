@@ -33,8 +33,11 @@ import { useGameDataManager } from "./hooks/gameData";
 import ShoppingList from "./pages/ShoppingList";
 import ShoppingListForm from "./pages/ShoppingListForm";
 import ShoppingListDetail from "./pages/ShoppingListDetail";
+import ShoppingListEdit from "./pages/ShoppingListEdit";
 import Journal from "./pages/Journal";
 import JournalEntryForm from "./pages/JournalEntryForm";
+import JournalEntryDetail from "./pages/JournalEntryDetail";
+import JournalEntryEdit from "./pages/JournalEntryEdit";
 
 const queryClient = new QueryClient();
 
@@ -232,6 +235,16 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/shopping-list/:id/edit"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ShoppingListEdit />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
               
               {/* Journal Routes */}
               <Route
@@ -250,6 +263,26 @@ const App = () => (
                   <ProtectedRoute>
                     <Layout>
                       <JournalEntryForm />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/journal/:id"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <JournalEntryDetail />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/journal/:id/edit"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <JournalEntryEdit />
                     </Layout>
                   </ProtectedRoute>
                 }

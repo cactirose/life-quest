@@ -60,14 +60,27 @@ const ShoppingListDetail = () => {
   const fetchShoppingList = async (listId: string) => {
     setIsLoading(true);
     try {
+      console.log(`Fetching shopping list with ID: ${listId}`);
       // Fetch the shopping list
       const { data: listData, error: listError } = await supabase
         .from('shopping_lists')
         .select('*')
         .eq('id', listId)
-        .single();
+        .maybeSingle();
 
-      if (listError) throw listError;
+      if (listError) {
+        console.error("Error fetching shopping list:", listError);
+        throw listError;
+      }
+      
+      if (!listData) {
+        console.error("Shopping list not found");
+        toast.error("Shopping list not found");
+        navigate('/shopping-list');
+        return;
+      }
+      
+      console.log("List data fetched:", listData);
       
       // Fetch the items for this list
       const { data: itemsData, error: itemsError } = await supabase
@@ -76,7 +89,12 @@ const ShoppingListDetail = () => {
         .eq('list_id', listId)
         .order('sort_order', { ascending: true });
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error("Error fetching shopping items:", itemsError);
+        throw itemsError;
+      }
+
+      console.log("Items data fetched:", itemsData);
 
       // Initialize the list with items array to fix TypeScript error
       setList({
@@ -107,16 +125,25 @@ const ShoppingListDetail = () => {
         sort_order: items.length,
       };
 
-      const { error } = await supabase
+      console.log("Adding new item:", newItem);
+      const { data, error } = await supabase
         .from('shopping_items')
-        .insert(newItem);
+        .insert(newItem)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error adding item:", error);
+        throw error;
+      }
 
+      console.log("Item added successfully:", data);
       form.reset();
       setShowAddItem(false);
       toast.success("Item added to list");
-      fetchShoppingList(id);
+      
+      // Update items without refetching everything
+      setItems([...items, data]);
     } catch (error) {
       console.error("Error adding item:", error);
       toast.error("Failed to add item");
@@ -125,16 +152,26 @@ const ShoppingListDetail = () => {
 
   const togglePurchased = async (itemId: string, purchased: boolean) => {
     try {
-      const { error } = await supabase
+      console.log(`Toggling purchased state for item ${itemId} to ${!purchased}`);
+      const { data, error } = await supabase
         .from('shopping_items')
         .update({ purchased: !purchased })
-        .eq('id', itemId);
+        .eq('id', itemId)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating item:", error);
+        throw error;
+      }
 
+      console.log("Item updated successfully:", data);
+      // Update the items array with the updated item
       setItems(items.map(item => 
-        item.id === itemId ? { ...item, purchased: !purchased } : item
+        item.id === itemId ? data : item
       ));
+      
+      toast.success(purchased ? "Item marked as not purchased" : "Item marked as purchased");
     } catch (error) {
       console.error("Error updating item:", error);
       toast.error("Failed to update item");
@@ -143,13 +180,19 @@ const ShoppingListDetail = () => {
 
   const deleteItem = async (itemId: string) => {
     try {
+      console.log(`Deleting item with ID: ${itemId}`);
       const { error } = await supabase
         .from('shopping_items')
         .delete()
         .eq('id', itemId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting item:", error);
+        throw error;
+      }
 
+      console.log("Item deleted successfully");
+      // Update the items array by removing the deleted item
       setItems(items.filter(item => item.id !== itemId));
       toast.success("Item removed from list");
     } catch (error) {
