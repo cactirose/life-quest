@@ -11,8 +11,13 @@ export const syncJournalEntriesData = async (
   if (!changedFields.has('journalEntries')) return true;
   
   try {
-    const { user } = await ensureValidSession();
-    if (!user) throw new Error('No authenticated user');
+    // Check authentication
+    const sessionValid = await ensureValidSession();
+    if (!sessionValid) throw new Error('No authenticated user');
+    
+    // Get the current user
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) throw new Error('No authenticated user');
 
     console.log('Syncing journal entries:', gameData.journalEntries);
 
@@ -25,19 +30,23 @@ export const syncJournalEntriesData = async (
       return true;
     }
 
+    // Properly format entries for upsert operation
+    const formattedEntries = validEntries.map(entry => ({
+      id: entry.id,
+      user_id: userData.user.id,
+      title: entry.title,
+      content: entry.content,
+      mood: entry.mood || null,
+      is_favorite: entry.is_favorite,
+      is_private: entry.is_private,
+      updated_at: new Date().toISOString()
+    }));
+
     const { error } = await supabase
       .from('journal_entries')
-      .upsert(
-        validEntries.map(entry => ({
-          ...entry,
-          user_id: user.id,
-          updated_at: new Date().toISOString()
-        })),
-        { 
-          onConflict: 'id',
-          returning: 'minimal'
-        }
-      );
+      .upsert(formattedEntries, { 
+        onConflict: 'id'
+      });
 
     if (error) {
       console.error('Supabase error syncing journal entries:', error);

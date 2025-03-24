@@ -1,7 +1,8 @@
+
 import { GameData } from '@/types/gameData';
 import { supabase } from '@/integrations/supabase/client';
 import { ensureValidSession } from '@/utils/auth';
-import { retrySyncOperation } from './syncUtils';
+import { validateEntity } from './syncUtils';
 
 export const syncShoppingListsData = async (
   gameData: GameData, 
@@ -10,13 +11,18 @@ export const syncShoppingListsData = async (
   if (!changedFields.has('shoppingLists')) return true;
   
   try {
-    const { user } = await ensureValidSession();
-    if (!user) throw new Error('No authenticated user');
+    // Check authentication
+    const sessionValid = await ensureValidSession();
+    if (!sessionValid) throw new Error('No authenticated user');
+    
+    // Get the current user
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) throw new Error('No authenticated user');
 
     console.log('Syncing shopping lists:', gameData.shoppingLists);
 
     const validLists = gameData.shoppingLists.filter(list => 
-      validateEntity(list, 'shopping_lists')
+      validateEntity(list, ['id', 'name'])
     );
 
     if (validLists.length === 0) {
@@ -24,20 +30,22 @@ export const syncShoppingListsData = async (
       return true;
     }
 
+    // Properly format lists for upsert operation
+    const formattedLists = validLists.map(list => ({
+      id: list.id,
+      user_id: userData.user.id,
+      name: list.name,
+      description: list.description || null,
+      updated_at: new Date().toISOString(),
+      // Ensure items is always an array if present
+      ...(list.items && { items: Array.isArray(list.items) ? list.items : [] })
+    }));
+
     const { error } = await supabase
       .from('shopping_lists')
-      .upsert(
-        validLists.map(list => ({
-          ...list,
-          user_id: user.id,
-          updated_at: new Date().toISOString(),
-          items: Array.isArray(list.items) ? list.items : []  // Ensure items is always an array
-        })),
-        { 
-          onConflict: 'id',
-          returning: 'minimal'
-        }
-      );
+      .upsert(formattedLists, { 
+        onConflict: 'id'
+      });
 
     if (error) {
       console.error('Supabase error syncing shopping lists:', error);

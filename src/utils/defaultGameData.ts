@@ -1,4 +1,3 @@
-
 import { GameData } from "../types/gameData";
 import { DEFAULT_CHARACTER } from "../types/character";
 
@@ -13,6 +12,8 @@ export const DEFAULT_GAME_DATA: GameData = {
   habits: [],
   moods: [],
   achievements: [],
+  journalEntries: [], // Add empty journal entries array
+  shoppingLists: [], // Add empty shopping lists array
   
   // Character methods
   setCharacter: () => {},
