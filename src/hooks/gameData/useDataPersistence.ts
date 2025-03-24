@@ -56,28 +56,27 @@ export function useDataPersistence(gameData: GameData) {
     const checkDatabaseHealth = async () => {
       try {
         // Define tables that should be checked, ensuring they match the table names in Supabase
+        // Use 'as const' to make TypeScript infer the literal types rather than just string
         const tables = [
           'characters',
           'quests',
-          'mood_entries', // Fixed from 'moods' to 'mood_entries'
+          'mood_entries',
           'achievements',
           'habits',
-          'inventory_items', // Fixed from 'inventory' to 'inventory_items'
+          'inventory_items',
           'challenges',
-          'skill_nodes', // Fixed from 'skills' to 'skill_nodes'
+          'skill_nodes',
           'shop_items'
-        ] as const;
+        ] as const; // This is crucial for type safety
 
         const results = await Promise.all(tables.map(async (table) => {
           try {
-            // Test read permission
+            // Test read permission only
             const { error: readError } = await supabase
               .from(table)
               .select('id')
               .limit(1);
 
-            // Remove the RPC call since it's causing type errors and may not be needed
-            // Simply check if we have read access to the table
             return {
               table,
               status: !readError ? 'healthy' : 'error',

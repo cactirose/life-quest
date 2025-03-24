@@ -168,7 +168,7 @@ export const syncMoodsData = async (gameData: GameData, changedFields: Set<strin
     if (!sessionResult) throw new Error('No authenticated user');
 
     const userData = await supabase.auth.getUser();
-    if (!userData.data.user) throw new Error('No authenticated user');
+    if (!userData.data || !userData.data.user) throw new Error('No authenticated user');
 
     const validMoods = gameData.moods.filter(mood => 
       validateEntity(mood, ['id', 'mood', 'date'])
@@ -212,7 +212,7 @@ export const syncAchievementsData = async (gameData: GameData, changedFields: Se
     if (!sessionResult) throw new Error('No authenticated user');
 
     const userData = await supabase.auth.getUser();
-    if (!userData.data.user) throw new Error('No authenticated user');
+    if (!userData.data || !userData.data.user) throw new Error('No authenticated user');
 
     const validAchievements = gameData.achievements.filter(achievement => 
       validateEntity(achievement, ['id', 'category', 'title'])
