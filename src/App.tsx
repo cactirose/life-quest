@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +30,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { useSupabaseSync } from "./hooks/useSupabaseSync";
 import { useDataSync } from "./hooks/useDataSync";
 import { useGameDataManager } from "./hooks/gameData";
+import ShoppingList from "./pages/ShoppingList";
+import Journal from "./pages/Journal";
 
 const queryClient = new QueryClient();
 
@@ -190,6 +193,26 @@ const App = () => (
                   <ProtectedRoute>
                     <Layout>
                       <Achievements />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/shopping-list"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ShoppingList />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/journal"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Journal />
                     </Layout>
                   </ProtectedRoute>
                 }

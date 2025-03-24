@@ -1,10 +1,12 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
-import { ScrollText, Sparkle, Target, Flag } from "lucide-react";
+import { ScrollText, Sparkle, Target, Flag, Calendar } from "lucide-react";
 import { TutorialSection } from "@/components/TutorialSection";
 import { useEffect, useState } from "react";
 import { isAuthenticated } from "@/utils/auth";
+import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -30,6 +32,13 @@ const Index = () => {
     typeof character.level === 'number' &&
     typeof character.xp === 'number' &&
     typeof character.coins === 'number';
+
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    if (!dateString) return "No recent login";
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -145,7 +154,25 @@ const Index = () => {
                 <span className="text-3xl">🪙</span>
                 <span>{character.coins} Coins</span>
               </div>
+              
+              {/* Login Streak Section */}
+              <div className="flex flex-col items-center">
+                <span className="text-3xl">🔥</span>
+                <span>{character.login_streak} Day Streak</span>
+              </div>
             </div>
+            
+            {character.last_login_date && (
+              <div className="mt-4 flex justify-center items-center gap-2">
+                <Calendar size={16} className="text-rpg-brown" />
+                <span className="text-sm text-rpg-brown">Last Login: {formatDate(character.last_login_date)}</span>
+                {character.daily_bonus_claimed && (
+                  <Badge variant="secondary" className="text-xs">
+                    Daily Bonus Claimed
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

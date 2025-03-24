@@ -12,7 +12,9 @@ import {
   Smile,
   Flag,
   ShoppingCart,
-  MapPin
+  MapPin,
+  Book,
+  ShoppingBag
 } from "lucide-react";
 import { ThemeSettings } from "./ThemeSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -53,6 +55,10 @@ const Navbar = () => {
         label: "Inventory",
         path: "/inventory",
         icon: <Backpack size={18} />
+      }, {
+        label: "Shopping List",
+        path: "/shopping-list",
+        icon: <ShoppingBag size={18} />
       }]
     }, {
       label: "Journey",
@@ -70,6 +76,10 @@ const Navbar = () => {
         label: "Challenges",
         path: "/challenges",
         icon: <Flag size={18} />
+      }, {
+        label: "Journal",
+        path: "/journal",
+        icon: <Book size={18} />
       }]
     }
   ];
