@@ -19,9 +19,9 @@ export const useSyncWithSupabase = () => {
     changedFields: Set<string>,
     syncErrorCount: MutableRefObject<number>
   ) => {
-    // Add request deduplication
+    // Track in-progress sync requests to prevent duplicates
     const syncInProgress = new Set<string>();
-    // Add retry logic with exponential backoff
+    // Retry failed operations with exponential backoff
     const retryOperation = async (operation: () => Promise<boolean>, field: string, attempts = 3) => {
       for (let i = 0; i < attempts; i++) {
         try {
@@ -89,7 +89,7 @@ export const useSyncWithSupabase = () => {
         const batch = regularOperations.slice(i, i + batchSize);
         const results = await Promise.allSettled(
           batch.map(({ field, operation }) => 
-            retryOperation(operation, field)
+            retryOperation(operation, field, 5)
               .then(success => ({ field, success }))
           )
         );

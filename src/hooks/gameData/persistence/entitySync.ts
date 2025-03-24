@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { 
   upsertCharacter,
@@ -11,6 +10,8 @@ import {
   upsertAchievement
 } from "@/services";
 import { GameData } from "@/types/gameData";
+import { supabase } from '@/integrations/supabase/client';
+import { ensureValidSession } from '@/utils/auth';
 
 const MAX_RETRY_ATTEMPTS = 3;
 
@@ -146,42 +147,88 @@ export const syncHabitsData = async (gameData: GameData, changedFields: Set<stri
   return allHabitsSuccess;
 };
 
+// Add validation helpers
+const validateEntity = (data: any, requiredFields: string[]): boolean => {
+  return requiredFields.every(field => {
+    const value = data[field];
+    return value !== undefined && value !== null && value !== '';
+  });
+};
+
 // Sync moods data
-export const syncMoodsData = async (gameData: GameData, changedFields: Set<string>): Promise<boolean> => {
+export const syncMoodsData = async (gameData: GameData, changedFields: Set<string>) => {
   if (!changedFields.has('moods')) return true;
   
-  let allMoodsSuccess = true;
-  
-  for (const mood of gameData.moods) {
-    const success = await retrySyncOperation(
-      async () => await upsertMoodEntry(mood),
-      `mood-${mood.id}`
+  try {
+    const { user } = await ensureValidSession();
+    if (!user) throw new Error('No authenticated user');
+
+    const validMoods = gameData.moods.filter(mood => 
+      validateEntity(mood, ['id', 'user_id', 'mood_type', 'timestamp'])
     );
-    
-    if (!success) {
-      allMoodsSuccess = false;
+
+    if (validMoods.length === 0) return true; // Skip if no valid entries
+
+    const { error } = await supabase
+      .from('moods')
+      .upsert(
+        validMoods.map(mood => ({
+          ...mood,
+          user_id: user.id,
+          updated_at: new Date().toISOString()
+        })),
+        { 
+          onConflict: 'id',
+          returning: 'minimal' // Optimize response
+        }
+      );
+
+    if (error) {
+      console.error('Supabase error syncing moods:', error);
+      throw error;
     }
+    return true;
+  } catch (error) {
+    console.error('Error syncing moods:', error);
+    throw new Error(`Failed to sync moods: ${error.message}`);
   }
-  
-  return allMoodsSuccess;
 };
 
 // Sync achievements data
-export const syncAchievementsData = async (gameData: GameData, changedFields: Set<string>): Promise<boolean> => {
+export const syncAchievementsData = async (gameData: GameData, changedFields: Set<string>) => {
   if (!changedFields.has('achievements')) return true;
   
-  let allAchievementsSuccess = true;
-  
-  for (const achievement of gameData.achievements) {
-    const success = await retrySyncOperation(
-      async () => await upsertAchievement(achievement),
-      `achievement-${achievement.id}`
+  try {
+    const { user } = await ensureValidSession();
+    if (!user) throw new Error('No authenticated user');
+
+    const validAchievements = gameData.achievements.filter(achievement => 
+      validateEntity(achievement, ['id', 'user_id', 'achievement_type', 'completed_at'])
     );
-    
-    if (!success) {
-      allAchievementsSuccess = false;
+
+    if (validAchievements.length === 0) return true;
+
+    const { error } = await supabase
+      .from('achievements')
+      .upsert(
+        validAchievements.map(achievement => ({
+          ...achievement,
+          user_id: user.id,
+          updated_at: new Date().toISOString()
+        })),
+        { 
+          onConflict: 'id',
+          returning: 'minimal'
+        }
+      );
+
+    if (error) {
+      console.error('Supabase error syncing achievements:', error);
+      throw error;
     }
+    return true;
+  } catch (error) {
+    console.error('Error syncing achievements:', error);
+    throw new Error(`Failed to sync achievements: ${error.message}`);
   }
-  
-  return allAchievementsSuccess;
 };

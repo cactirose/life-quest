@@ -5,6 +5,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { detectChangedFields } from './changeDetectionUtils';
 import { useDebounce } from "./persistence/useDebounce";
 import { useSyncWithSupabase } from "./persistence/useSyncWithSupabase";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'react-hot-toast';
 
 export function useDataPersistence(gameData: GameData) {
   const isMobile = useIsMobile();
@@ -48,7 +50,61 @@ export function useDataPersistence(gameData: GameData) {
     return () => window.removeEventListener('online', attemptRecovery);
   }, []);
 
-  // Modify the existing effect to ensure Supabase sync
+  // Add health check system
+  useEffect(() => {
+    const checkDatabaseHealth = async () => {
+      try {
+        const tables = [
+          'characters',
+          'quests',
+          'moods',
+          'achievements',
+          'habits',
+          'inventory',
+          'challenges',
+          'skills',
+          'shop_items'
+        ];
+
+        const results = await Promise.all(tables.map(async (table) => {
+          try {
+            // Test read permission
+            const { error: readError } = await supabase
+              .from(table)
+              .select('id')
+              .limit(1);
+
+            // Test write permission with a dummy record (will be rolled back)
+            const { error: writeError } = await supabase.rpc('test_table_permissions', {
+              table_name: table
+            });
+
+            return {
+              table,
+              status: !readError && !writeError ? 'healthy' : 'error',
+              error: readError || writeError
+            };
+          } catch (error) {
+            return { table, status: 'error', error };
+          }
+        }));
+
+        const unhealthyTables = results.filter(r => r.status === 'error');
+        if (unhealthyTables.length > 0) {
+          console.error('Unhealthy tables detected:', unhealthyTables);
+          toast.error('Some features may not work properly', {
+            description: 'Please contact support if issues persist'
+          });
+        }
+      } catch (error) {
+        console.error('Health check failed:', error);
+      }
+    };
+
+    checkDatabaseHealth();
+  }, []);
+
+  // Modify the sync effect
   useEffect(() => {
     try {
       if (!previousData.current) {
@@ -59,20 +115,47 @@ export function useDataPersistence(gameData: GameData) {
       const changes = detectChangedFields(previousData.current, gameData);
       changes.forEach(field => changedFields.current.add(field));
       
-      // Always try Supabase first
       if (changedFields.current.size > 0) {
-        console.log("Changes detected, syncing to Supabase:", Array.from(changedFields.current));
+        console.log("Changes detected:", Array.from(changedFields.current));
+        
+        // Validate data before sync
+        const invalidData = Array.from(changedFields.current).filter(field => {
+          const data = gameData[field];
+          if (!data) return true;
+          
+          // Add specific validation for each data type
+          switch(field) {
+            case 'moods':
+              return data.some(item => !item.id || !item.mood_type || !item.timestamp);
+            case 'achievements':
+              return data.some(item => !item.id || !item.achievement_type);
+            case 'habits':
+              return data.some(item => !item.id || !item.habit_type);
+            // Add cases for other entities...
+            default:
+              return Array.isArray(data) && data.some(item => !item.id || !item.user_id);
+          }
+        });
+
+        if (invalidData.length > 0) {
+          console.error('Invalid data detected:', invalidData);
+          toast.error('Some changes could not be saved', {
+            description: 'Data validation failed'
+          });
+          return;
+        }
+
+        // Immediately try to sync with Supabase
         debouncedSync();
         
-        // Only save to localStorage as backup
-        localStorage.setItem("rpgProductivityData_backup", JSON.stringify(gameData));
+        // Only update previous data after successful sync
+        previousData.current = JSON.parse(JSON.stringify(gameData));
       }
-      
-      previousData.current = JSON.parse(JSON.stringify(gameData));
     } catch (error) {
       console.error("Error during data persistence:", error);
-      // Save to localStorage as emergency backup
-      localStorage.setItem("rpgProductivityData_emergency", JSON.stringify(gameData));
+      toast.error('Error saving changes', {
+        description: error.message
+      });
     }
   }, [gameData, debouncedSync]);
 
