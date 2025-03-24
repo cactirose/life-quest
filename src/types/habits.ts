@@ -3,6 +3,12 @@
 export type HabitFrequency = "daily" | "weekdays" | "weekends" | "weekly" | "custom";
 export type DayOfWeek = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
 
+export interface HabitStep {
+  id: string;
+  description: string;
+  completed: boolean;
+}
+
 export interface HabitCompletion {
   date: string; // ISO date string
   completed: boolean;
@@ -21,6 +27,7 @@ export interface Habit {
   reminder?: string; // Time string for reminder
   completionHistory: HabitCompletion[];
   color: string; // CSS color for the habit
+  steps?: HabitStep[]; // Optional steps for the habit
 }
 
 // Sample habits for first run

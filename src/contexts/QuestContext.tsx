@@ -1,8 +1,9 @@
 
 import { createContext, useContext } from "react";
-import { Quest, QuestStatus } from "../types/quests";
+import { Quest, QuestStatus, QuestRepeatType } from "../types/quests";
 import { generateId } from "../utils/idGenerator";
 import { StatName } from "../types/character";
+import { addDays, addMonths, addWeeks, format } from "date-fns";
 
 interface QuestContextType {
   quests: Quest[];
@@ -81,17 +82,57 @@ export const createQuestContextValue = (
         coins: prevData.character.coins + quest.coinReward,
         stats: {
           ...prevData.character.stats,
-          ...Object.entries(quest.statRewards).reduce((acc, [stat, value]) => ({
+          ...Object.entries(quest.statRewards || {}).reduce((acc, [stat, value]) => ({
             ...acc,
             [stat]: prevData.character.stats[stat as StatName] + (value || 0)
           }), {} as Record<StatName, number>)
         }
       };
 
-      // Update quest status
-      const updatedQuests = prevData.quests.map(q => 
+      let updatedQuests = prevData.quests.map(q => 
         q.id === questId ? { ...q, status: "completed" as QuestStatus } : q
       );
+
+      // If quest is repeatable, create a new instance
+      if (quest.repeatType && quest.repeatType !== "none") {
+        const now = new Date();
+        let nextResetDate: Date;
+        
+        // Calculate the next reset date based on repeatType
+        switch (quest.repeatType) {
+          case "daily":
+            nextResetDate = addDays(now, 1);
+            break;
+          case "weekly":
+            nextResetDate = addWeeks(now, 1);
+            break;
+          case "monthly":
+            nextResetDate = addMonths(now, 1);
+            break;
+          case "custom":
+            // For custom, we'd need more complex logic
+            // This is a simple example that resets in 3 days
+            nextResetDate = addDays(now, 3);
+            break;
+          default:
+            nextResetDate = addDays(now, 1);
+        }
+        
+        // Create new quest instance with reset steps
+        const newQuestInstance: Quest = {
+          ...quest,
+          id: generateId(), // New ID for the new instance
+          status: "active", // Reset status to active
+          steps: quest.steps.map(step => ({
+            ...step,
+            completed: false, // Reset completion status
+          })),
+          nextResetDate: nextResetDate.toISOString(),
+        };
+        
+        // Add the new quest instance to the list
+        updatedQuests = [...updatedQuests, newQuestInstance];
+      }
 
       return { 
         ...prevData, 

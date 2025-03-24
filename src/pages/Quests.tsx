@@ -1,13 +1,13 @@
-
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Search } from "lucide-react";
 import { useGameData } from "@/contexts/DataContext";
 import { Quest } from "@/types/quests";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 
 // Import the refactored components
 import { QuestForm } from "@/features/quests/components/QuestForm";
@@ -26,9 +26,62 @@ const Quests = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingQuest, setEditingQuest] = useState<Quest | null>(null);
   const [activeTab, setActiveTab] = useState("active");
+  const [searchQuery, setSearchQuery] = useState("");
   
-  const activeQuests = quests.filter(quest => quest.status === "active");
-  const completedQuests = quests.filter(quest => quest.status === "completed");
+  // Filter quests based on status
+  const baseActiveQuests = quests.filter(quest => quest.status === "active");
+  const baseCompletedQuests = quests.filter(quest => quest.status === "completed");
+  
+  // Filter quests based on search query
+  const filteredActiveQuests = useMemo(() => {
+    if (!searchQuery.trim()) return baseActiveQuests;
+    
+    const query = searchQuery.toLowerCase();
+    return baseActiveQuests.filter(quest => {
+      // Search in title
+      if (quest.title.toLowerCase().includes(query)) return true;
+      
+      // Search in description
+      if (quest.description.toLowerCase().includes(query)) return true;
+      
+      // Search in tags
+      if (quest.tags?.some(tag => {
+        // If query is a tag (starts with #), match exactly
+        if (query.startsWith('#')) {
+          return tag.toLowerCase() === query;
+        }
+        // Otherwise search within tag
+        return tag.toLowerCase().includes(query);
+      })) return true;
+      
+      return false;
+    });
+  }, [baseActiveQuests, searchQuery]);
+  
+  const filteredCompletedQuests = useMemo(() => {
+    if (!searchQuery.trim()) return baseCompletedQuests;
+    
+    const query = searchQuery.toLowerCase();
+    return baseCompletedQuests.filter(quest => {
+      // Search in title
+      if (quest.title.toLowerCase().includes(query)) return true;
+      
+      // Search in description
+      if (quest.description.toLowerCase().includes(query)) return true;
+      
+      // Search in tags
+      if (quest.tags?.some(tag => {
+        // If query is a tag (starts with #), match exactly
+        if (query.startsWith('#')) {
+          return tag.toLowerCase() === query;
+        }
+        // Otherwise search within tag
+        return tag.toLowerCase().includes(query);
+      })) return true;
+      
+      return false;
+    });
+  }, [baseCompletedQuests, searchQuery]);
   
   const handleAddQuest = (newQuest: Omit<Quest, "id" | "status">) => {
     addQuest({
@@ -97,12 +150,10 @@ const Quests = () => {
             <DialogHeader>
               <DialogTitle className="text-2xl font-pixel text-rpg-brown">Create New Quest</DialogTitle>
             </DialogHeader>
-            <ScrollArea className="max-h-[60vh] pr-4">
-              <QuestForm 
-                onSubmit={handleAddQuest} 
-                onCancel={() => setShowAddDialog(false)}
-              />
-            </ScrollArea>
+            <QuestForm 
+              onSubmit={handleAddQuest} 
+              onCancel={() => setShowAddDialog(false)}
+            />
           </DialogContent>
         </Dialog>
         
@@ -115,16 +166,28 @@ const Quests = () => {
               <DialogTitle className="text-2xl font-pixel text-rpg-brown">Edit Quest</DialogTitle>
             </DialogHeader>
             {editingQuest && (
-              <ScrollArea className="max-h-[60vh] pr-4">
-                <QuestForm 
-                  initialData={editingQuest}
-                  onSubmit={handleEditQuest} 
-                  onCancel={() => setEditingQuest(null)}
-                />
-              </ScrollArea>
+              <QuestForm 
+                initialData={editingQuest}
+                onSubmit={handleEditQuest} 
+                onCancel={() => setEditingQuest(null)}
+              />
             )}
           </DialogContent>
         </Dialog>
+      </div>
+      
+      {/* Search Bar */}
+      <div className="relative mb-6">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search className="h-5 w-5 text-muted-foreground" />
+        </div>
+        <Input
+          type="search"
+          placeholder="Search quests or tags (e.g. #work)"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10 py-6 rounded-lg border-rpg-brown/30"
+        />
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -133,19 +196,19 @@ const Quests = () => {
             value="active" 
             className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
-            Active Quests ({activeQuests.length})
+            Active Quests ({filteredActiveQuests.length})
           </TabsTrigger>
           <TabsTrigger 
             value="completed" 
             className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
           >
-            Completed ({completedQuests.length})
+            Completed ({filteredCompletedQuests.length})
           </TabsTrigger>
         </TabsList>
         
         <TabsContent value="active" className="animate-fade-in">
           <QuestList
-            quests={activeQuests}
+            quests={filteredActiveQuests}
             isCompletedTab={false}
             onEdit={setEditingQuest}
             onDelete={handleDeleteQuest}
@@ -157,7 +220,7 @@ const Quests = () => {
         
         <TabsContent value="completed" className="animate-fade-in">
           <QuestList
-            quests={completedQuests}
+            quests={filteredCompletedQuests}
             isCompletedTab={true}
             onEdit={() => {}}
             onDelete={handleDeleteQuest}

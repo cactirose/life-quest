@@ -8,6 +8,7 @@ export interface QuestStep {
 }
 
 export type QuestType = "main" | "side" | "boss";
+export type QuestRepeatType = "none" | "daily" | "weekly" | "monthly" | "custom";
 
 export interface Quest {
   id: string;
@@ -20,6 +21,10 @@ export interface Quest {
   xpReward: number;
   coinReward: number;
   dueDate?: string;
+  tags?: string[]; // New: Array of tags for categorization
+  repeatType?: QuestRepeatType; // New: Repeatability type
+  nextResetDate?: string; // Date for next reset if repeatable
+  customResetDays?: number[]; // Custom days for reset if using custom repeatType
   statRewards?: {
     strength?: number;
     dexterity?: number;
@@ -56,6 +61,8 @@ export const SAMPLE_QUESTS: Omit<Quest, "id">[] = [
     status: "active",
     xpReward: 100,
     coinReward: 50,
+    tags: ["tutorial"],
+    repeatType: "none",
     statRewards: {
       wisdom: 1
     }

@@ -1,19 +1,22 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Quest, QuestStep, QuestType } from "@/types/quests";
+import { Quest, QuestStep, QuestType, QuestRepeatType } from "@/types/quests";
 import { StatName } from "@/types/character";
 import { DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Import our components
 import { QuestBasicInfoSection } from "./form-sections/QuestBasicInfoSection";
 import { QuestStepsSection } from "./form-sections/QuestStepsSection";
 import { BasicRewardsSection } from "./form-sections/BasicRewardsSection";
 import { StatRewardsSection } from "./form-sections/StatRewardsSection";
+import { QuestTagsSection } from "./form-sections/QuestTagsSection";
+import { RepeatabilitySection } from "./form-sections/RepeatabilitySection";
 
 // Define validation schema
 const questFormSchema = z.object({
@@ -28,6 +31,9 @@ const questFormSchema = z.object({
   ),
   xpReward: z.number().int().min(0),
   coinReward: z.number().int().min(0),
+  tags: z.array(z.string()).optional(),
+  repeatType: z.enum(["none", "daily", "weekly", "monthly", "custom"] as const),
+  customResetDays: z.array(z.number()).optional(),
   statRewards: z.object({
     strength: z.number().int().min(0).max(5).optional(),
     dexterity: z.number().int().min(0).max(5).optional(),
@@ -62,6 +68,9 @@ export const QuestForm = ({
     })) || [],
     xpReward: initialData?.xpReward || 20,
     coinReward: initialData?.coinReward || 10,
+    tags: initialData?.tags || [],
+    repeatType: initialData?.repeatType || "none",
+    customResetDays: initialData?.customResetDays || [],
     statRewards: {
       strength: initialData?.statRewards?.strength || 0,
       dexterity: initialData?.statRewards?.dexterity || 0,
@@ -98,6 +107,9 @@ export const QuestForm = ({
       })),
       xpReward: data.xpReward,
       coinReward: data.coinReward,
+      tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
+      repeatType: data.repeatType,
+      customResetDays: data.repeatType === "custom" ? data.customResetDays : undefined,
       // Filter out zero-value stat rewards
       statRewards: Object.fromEntries(
         Object.entries(data.statRewards || {}).filter(([_, value]) => value > 0)
@@ -108,25 +120,31 @@ export const QuestForm = ({
   };
 
   return (
-    <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(handleFormSubmit)} className="space-y-4">
-        <QuestBasicInfoSection />
+    <ScrollArea className="max-h-[70vh] pr-4">
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(handleFormSubmit)} className="space-y-4 p-1">
+          <QuestBasicInfoSection />
 
-        <QuestStepsSection />
+          <QuestTagsSection />
 
-        <BasicRewardsSection />
+          <QuestStepsSection />
 
-        <StatRewardsSection statNames={statNames} />
+          <RepeatabilitySection />
 
-        <DialogFooter className="flex justify-between">
-          <Button variant="outline" onClick={onCancel} type="button">
-            Cancel
-          </Button>
-          <Button type="submit">
-            {initialData ? 'Update Quest' : 'Create Quest'}
-          </Button>
-        </DialogFooter>
-      </form>
-    </FormProvider>
+          <BasicRewardsSection />
+
+          <StatRewardsSection statNames={statNames} />
+
+          <DialogFooter className="flex justify-between">
+            <Button variant="outline" onClick={onCancel} type="button">
+              Cancel
+            </Button>
+            <Button type="submit">
+              {initialData ? 'Update Quest' : 'Create Quest'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </FormProvider>
+    </ScrollArea>
   );
 };
