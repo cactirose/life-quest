@@ -20,14 +20,16 @@ export function TutorialSection() {
   const [showTutorial, setShowTutorial] = useState(true);
   const { character } = useGameData();
   
-  // Guard clause - if character is undefined, show the tutorial by default
-  if (!character) {
-    // Just return the tutorial with default settings for new users
+  // If game data is not loaded yet or character is undefined, show the tutorial by default
+  // with no ability to close it (it will be replaced when data loads)
+  if (!character || typeof character !== 'object') {
     return renderTutorialContent(true);
   }
   
   // If the character is above level 3, don't show the tutorial by default
-  const isNewUser = character.level <= 3;
+  // Default to true if level is undefined to ensure the tutorial shows
+  const characterLevel = typeof character.level === 'number' ? character.level : 0;
+  const isNewUser = characterLevel <= 3;
   
   // Control visibility with local state
   const [isVisible, setIsVisible] = useState(isNewUser);

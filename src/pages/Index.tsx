@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
@@ -14,12 +13,23 @@ const Index = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const authed = await isAuthenticated();
-      setIsLoggedIn(authed);
+      try {
+        const authed = await isAuthenticated();
+        setIsLoggedIn(authed);
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setIsLoggedIn(false);
+      }
     };
     
     checkAuth();
   }, []);
+
+  const hasValidCharacter = character && 
+    typeof character === 'object' && 
+    typeof character.level === 'number' &&
+    typeof character.xp === 'number' &&
+    typeof character.coins === 'number';
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -117,10 +127,10 @@ const Index = () => {
           </div>
         </div>
 
-        {isLoggedIn && character && (
+        {isLoggedIn && hasValidCharacter && (
           <div className="wood-texture p-6 text-center">
             <h2 className="text-2xl font-pixel text-rpg-brown mb-4">
-              {character.name}'s Journey
+              {character.name ? character.name : "Adventurer"}'s Journey
             </h2>
             <div className="flex flex-wrap justify-center gap-4 text-rpg-brown font-pixel">
               <div className="flex flex-col items-center">
