@@ -1,6 +1,6 @@
 
 import { createContext, useContext } from "react";
-import { Quest, QuestStatus, QuestRepeatInterval } from "../types/quests";
+import { Quest, QuestStatus, QuestRepeatInterval, StatReward } from "../types/quests";
 import { generateId } from "../utils/idGenerator";
 import { StatName } from "../types/character";
 import { addDays, addMonths, addWeeks, format } from "date-fns";
@@ -82,10 +82,10 @@ export const createQuestContextValue = (
         coins: prevData.character.coins + quest.coinReward,
         stats: {
           ...prevData.character.stats,
-          ...Object.entries(quest.statRewards || {}).reduce((acc, [stat, value]) => ({
-            ...acc,
-            [stat]: prevData.character.stats[stat as StatName] + (value || 0)
-          }), {} as Record<StatName, number>)
+          ...Object.fromEntries((quest.statRewards || []).map(reward => [
+            reward.stat, 
+            prevData.character.stats[reward.stat] + reward.value
+          ]))
         }
       };
 

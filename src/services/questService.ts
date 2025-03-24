@@ -1,9 +1,10 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Quest } from "@/types/quests";
+import { Quest, StatReward } from "@/types/quests";
 import { toQuestSteps } from "./utils/supabaseUtils";
 import { Json } from "@/integrations/supabase/types";
+import { StatName } from "@/types/character";
 
 // Quests methods
 export const fetchQuests = async (): Promise<Quest[]> => {
@@ -22,19 +23,33 @@ export const fetchQuests = async (): Promise<Quest[]> => {
     }
 
     // Map database fields to Quest type
-    return data.map(quest => ({
-      id: quest.id,
-      title: quest.title,
-      description: quest.description || "",
-      type: quest.quest_type,
-      difficulty: quest.difficulty || "medium",
-      steps: toQuestSteps(quest.steps),
-      status: quest.status,
-      xpReward: quest.xp_reward,
-      coinReward: quest.coin_reward,
-      statRewards: quest.stat_rewards as any,
-      dueDate: quest.due_date
-    } as Quest));
+    return data.map(quest => {
+      // Convert stat_rewards from object to StatReward[] array
+      let statRewards: StatReward[] = [];
+      if (quest.stat_rewards) {
+        statRewards = Object.entries(quest.stat_rewards as Record<string, number>)
+          .map(([stat, value]) => ({
+            stat: stat as StatName,
+            value
+          }));
+      }
+
+      return {
+        id: quest.id,
+        title: quest.title,
+        description: quest.description || "",
+        type: quest.quest_type,
+        difficulty: quest.difficulty || "medium",
+        steps: toQuestSteps(quest.steps),
+        status: quest.status,
+        xpReward: quest.xp_reward,
+        coinReward: quest.coin_reward,
+        statRewards,
+        dueDate: quest.due_date,
+        repeatType: quest.repeat_type,
+        customResetDays: quest.custom_reset_days
+      } as Quest;
+    });
   } catch (error) {
     console.error("Error in fetchQuests:", error);
     return [];
@@ -53,12 +68,12 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
       completed: step.completed
     }));
 
-    // Convert statRewards to a format that Supabase can store as JSON
-    let statRewardsAsJson = null;
+    // Convert statRewards array to object for storage
+    let statRewardsAsJson: Record<string, number> | null = null;
     if (quest.statRewards && quest.statRewards.length > 0) {
       statRewardsAsJson = {};
       quest.statRewards.forEach(reward => {
-        statRewardsAsJson[reward.stat] = reward.value;
+        statRewardsAsJson![reward.stat] = reward.value;
       });
     }
 
@@ -76,7 +91,9 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
         xp_reward: quest.xpReward,
         coin_reward: quest.coinReward,
         stat_rewards: statRewardsAsJson,
-        steps: stepsAsJson as unknown as Json
+        steps: stepsAsJson as unknown as Json,
+        repeat_type: quest.repeatType,
+        custom_reset_days: quest.customResetDays
       });
 
     if (error) {

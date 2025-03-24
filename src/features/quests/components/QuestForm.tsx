@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Quest, QuestStep, QuestType, QuestRepeatType } from "@/types/quests";
+import { Quest, QuestStep, QuestType, QuestRepeatInterval, StatReward } from "@/types/quests";
 import { StatName } from "@/types/character";
 import { DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -72,12 +72,12 @@ export const QuestForm = ({
     repeatType: initialData?.repeatType || "none",
     customResetDays: initialData?.customResetDays || [],
     statRewards: {
-      strength: initialData?.statRewards?.strength || 0,
-      dexterity: initialData?.statRewards?.dexterity || 0,
-      constitution: initialData?.statRewards?.constitution || 0,
-      intelligence: initialData?.statRewards?.intelligence || 0,
-      wisdom: initialData?.statRewards?.wisdom || 0,
-      charisma: initialData?.statRewards?.charisma || 0
+      strength: initialData?.statRewards?.find(sr => sr.stat === "strength")?.value || 0,
+      dexterity: initialData?.statRewards?.find(sr => sr.stat === "dexterity")?.value || 0,
+      constitution: initialData?.statRewards?.find(sr => sr.stat === "constitution")?.value || 0,
+      intelligence: initialData?.statRewards?.find(sr => sr.stat === "intelligence")?.value || 0,
+      wisdom: initialData?.statRewards?.find(sr => sr.stat === "wisdom")?.value || 0,
+      charisma: initialData?.statRewards?.find(sr => sr.stat === "charisma")?.value || 0
     }
   };
 
@@ -110,10 +110,13 @@ export const QuestForm = ({
       tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
       repeatType: data.repeatType,
       customResetDays: data.repeatType === "custom" ? data.customResetDays : undefined,
-      // Filter out zero-value stat rewards
-      statRewards: Object.fromEntries(
-        Object.entries(data.statRewards || {}).filter(([_, value]) => value > 0)
-      )
+      // Transform the statRewards object to array of StatReward
+      statRewards: Object.entries(data.statRewards || {})
+        .filter(([_, value]) => value && value > 0)
+        .map(([stat, value]) => ({
+          stat: stat as StatName,
+          value: value as number
+        }))
     };
 
     onSubmit(questData);
