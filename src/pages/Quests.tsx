@@ -1,17 +1,15 @@
-import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { PlusCircle, Search } from "lucide-react";
+
+import { useState } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { Quest } from "@/types/quests";
-import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
-// Import the refactored components
-import { QuestForm } from "@/features/quests/components/QuestForm";
-import { QuestList } from "@/features/quests/components/QuestList";
+// Import refactored components
+import { QuestHeader } from "@/features/quests/components/QuestHeader";
+import { QuestSearch } from "@/features/quests/components/QuestSearch";
+import { QuestTabs } from "@/features/quests/components/QuestTabs";
+import { EditQuestDialog } from "@/features/quests/components/EditQuestDialog";
+import { useQuestFiltering } from "@/features/quests/hooks/useQuestFiltering";
 
 const Quests = () => {
   const { 
@@ -28,68 +26,16 @@ const Quests = () => {
   const [activeTab, setActiveTab] = useState("active");
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Filter quests based on status
-  const baseActiveQuests = quests.filter(quest => quest.status === "active");
-  const baseCompletedQuests = quests.filter(quest => quest.status === "completed");
-  
-  // Filter quests based on search query
-  const filteredActiveQuests = useMemo(() => {
-    if (!searchQuery.trim()) return baseActiveQuests;
-    
-    const query = searchQuery.toLowerCase();
-    return baseActiveQuests.filter(quest => {
-      // Search in title
-      if (quest.title.toLowerCase().includes(query)) return true;
-      
-      // Search in description
-      if (quest.description.toLowerCase().includes(query)) return true;
-      
-      // Search in tags
-      if (quest.tags?.some(tag => {
-        // If query is a tag (starts with #), match exactly
-        if (query.startsWith('#')) {
-          return tag.toLowerCase() === query;
-        }
-        // Otherwise search within tag
-        return tag.toLowerCase().includes(query);
-      })) return true;
-      
-      return false;
-    });
-  }, [baseActiveQuests, searchQuery]);
-  
-  const filteredCompletedQuests = useMemo(() => {
-    if (!searchQuery.trim()) return baseCompletedQuests;
-    
-    const query = searchQuery.toLowerCase();
-    return baseCompletedQuests.filter(quest => {
-      // Search in title
-      if (quest.title.toLowerCase().includes(query)) return true;
-      
-      // Search in description
-      if (quest.description.toLowerCase().includes(query)) return true;
-      
-      // Search in tags
-      if (quest.tags?.some(tag => {
-        // If query is a tag (starts with #), match exactly
-        if (query.startsWith('#')) {
-          return tag.toLowerCase() === query;
-        }
-        // Otherwise search within tag
-        return tag.toLowerCase().includes(query);
-      })) return true;
-      
-      return false;
-    });
-  }, [baseCompletedQuests, searchQuery]);
+  // Use the custom hook for filtering quests
+  const { filteredActiveQuests, filteredCompletedQuests } = useQuestFiltering(quests, searchQuery);
   
   const handleAddQuest = (newQuest: Omit<Quest, "id" | "status">) => {
     addQuest({
       ...newQuest,
-      status: "active"
+      status: "active",
+      difficulty: newQuest.difficulty || "medium" // Ensure difficulty is set
     });
     setShowAddDialog(false);
-    toast.success("Quest added successfully!");
   };
   
   const handleEditQuest = (updatedQuest: Omit<Quest, "id" | "status">) => {
@@ -100,12 +46,6 @@ const Quests = () => {
       ...updatedQuest,
     });
     setEditingQuest(null);
-    toast.success("Quest updated successfully!");
-  };
-  
-  const handleDeleteQuest = (questId: string) => {
-    deleteQuest(questId);
-    toast.success("Quest deleted successfully!");
   };
   
   const handleStepToggle = (questId: string, stepId: string) => {
@@ -129,107 +69,32 @@ const Quests = () => {
     }
   };
   
-  const handleCompleteQuest = (questId: string) => {
-    completeQuest(questId);
-    toast.success("Quest completed! Rewards added to your character.");
-  };
-  
   return (
     <div className="container mx-auto animate-fade-in">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-pixel text-rpg-brown">Quests</h1>
-        
-        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-          <DialogTrigger asChild>
-            <Button className="pixel-button">
-              <PlusCircle size={16} className="mr-2" />
-              New Quest
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md parchment border-none max-h-[85vh]">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-pixel text-rpg-brown">Create New Quest</DialogTitle>
-            </DialogHeader>
-            <QuestForm 
-              onSubmit={handleAddQuest} 
-              onCancel={() => setShowAddDialog(false)}
-            />
-          </DialogContent>
-        </Dialog>
-        
-        <Dialog 
-          open={!!editingQuest} 
-          onOpenChange={(open) => !open && setEditingQuest(null)}
-        >
-          <DialogContent className="max-w-md parchment border-none max-h-[85vh]">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-pixel text-rpg-brown">Edit Quest</DialogTitle>
-            </DialogHeader>
-            {editingQuest && (
-              <QuestForm 
-                initialData={editingQuest}
-                onSubmit={handleEditQuest} 
-                onCancel={() => setEditingQuest(null)}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
-      </div>
+      <QuestHeader onAddQuest={handleAddQuest} />
       
-      {/* Search Bar */}
-      <div className="relative mb-6">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-muted-foreground" />
-        </div>
-        <Input
-          type="search"
-          placeholder="Search quests or tags (e.g. #work)"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 py-6 rounded-lg border-rpg-brown/30"
-        />
-      </div>
+      <EditQuestDialog 
+        editingQuest={editingQuest}
+        setEditingQuest={setEditingQuest}
+        onUpdateQuest={handleEditQuest}
+      />
       
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full mb-6 font-pixel bg-rpg-tan text-rpg-brown border-2 border-rpg-brown">
-          <TabsTrigger 
-            value="active" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
-          >
-            Active Quests ({filteredActiveQuests.length})
-          </TabsTrigger>
-          <TabsTrigger 
-            value="completed" 
-            className="flex-1 data-[state=active]:bg-rpg-brown data-[state=active]:text-rpg-tan"
-          >
-            Completed ({filteredCompletedQuests.length})
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="active" className="animate-fade-in">
-          <QuestList
-            quests={filteredActiveQuests}
-            isCompletedTab={false}
-            onEdit={setEditingQuest}
-            onDelete={handleDeleteQuest}
-            onStepToggle={handleStepToggle}
-            onComplete={handleCompleteQuest}
-            onCreateQuest={() => setShowAddDialog(true)}
-          />
-        </TabsContent>
-        
-        <TabsContent value="completed" className="animate-fade-in">
-          <QuestList
-            quests={filteredCompletedQuests}
-            isCompletedTab={true}
-            onEdit={() => {}}
-            onDelete={handleDeleteQuest}
-            onStepToggle={() => {}}
-            onComplete={() => {}}
-            onCreateQuest={() => setShowAddDialog(true)}
-          />
-        </TabsContent>
-      </Tabs>
+      <QuestSearch 
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
+      
+      <QuestTabs 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        activeQuests={filteredActiveQuests}
+        completedQuests={filteredCompletedQuests}
+        onEdit={setEditingQuest}
+        onDelete={deleteQuest}
+        onStepToggle={handleStepToggle}
+        onComplete={completeQuest}
+        onCreateQuest={() => setShowAddDialog(true)}
+      />
     </div>
   );
 };
