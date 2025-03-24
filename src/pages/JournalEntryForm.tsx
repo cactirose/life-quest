@@ -41,12 +41,19 @@ const JournalEntryForm = () => {
   const onSubmit = async (values: JournalFormValues) => {
     setIsSubmitting(true);
     try {
+      // Get user session to include user_id
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+      
       const { error } = await supabase.from("journal_entries").insert({
         title: values.title,
         content: values.content,
         mood: values.mood || null,
         is_private: values.is_private,
         is_favorite: values.is_favorite,
+        user_id: session.user.id, // Add the user_id from the session
       });
 
       if (error) throw error;

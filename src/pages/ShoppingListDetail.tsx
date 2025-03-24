@@ -78,7 +78,11 @@ const ShoppingListDetail = () => {
 
       if (itemsError) throw itemsError;
 
-      setList(listData);
+      // Initialize the list with items array to fix TypeScript error
+      setList({
+        ...listData,
+        items: itemsData || []
+      });
       setItems(itemsData || []);
     } catch (error) {
       console.error("Error fetching shopping list:", error);

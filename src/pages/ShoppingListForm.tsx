@@ -34,11 +34,18 @@ const ShoppingListForm = () => {
   const onSubmit = async (values: ShoppingListFormValues) => {
     setIsSubmitting(true);
     try {
+      // Get user session to include user_id
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+      
       const { data, error } = await supabase
         .from("shopping_lists")
         .insert({
           name: values.name,
           description: values.description || null,
+          user_id: session.user.id, // Add the user_id from the session
         })
         .select('id')
         .single();
