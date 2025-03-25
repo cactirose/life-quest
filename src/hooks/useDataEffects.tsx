@@ -56,12 +56,12 @@ export const useDataEffects = (
 
   // Check achievements when challenges or character changes
   useEffect(() => {
-    if (characterContext.character && challengeContext.challenges.length > 0) {
+    if (characterContext.character && challengeContext.challenges && challengeContext.challenges.length > 0 && Array.isArray(achievements)) {
       // Check for completed achievements based on character progress
       try {
         achievements.forEach(achievement => {
           // Basic checks for common achievement types
-          if (!achievement.unlocked) {
+          if (achievement && !achievement.unlocked) {
             // Check level-based achievements
             if ('requiredLevel' in achievement && characterContext.character.level >= achievement.requiredLevel) {
               checkAndUnlockAchievement(achievement.id);
