@@ -24,12 +24,13 @@ export const useAuthCheck = (navigate: (path: string) => void) => {
         }
 
         // If we're not authenticated, check if we can refresh the session
-        const wasRefreshed = await refreshSession();
-
-        if (isAuthenticated) {
-          navigate("/dashboard");
-          if (isMounted) setAuthCheckDone(true);
-        } else if (isMounted) {
+        await refreshSession();
+        
+        // After refresh, check authentication again
+        if (isMounted) {
+          if (isAuthenticated) {
+            navigate("/dashboard");
+          }
           setAuthCheckDone(true);  // Make sure we always set this to avoid hanging
         }
       } catch (error) {

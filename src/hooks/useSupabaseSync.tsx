@@ -5,7 +5,7 @@ import { useDataSync } from "./useDataSync";
 import { useConnectionStatus } from "./sync/useConnectionStatus";
 
 export function useSupabaseSync() {
-  // Always initialize all hooks at the top level, regardless of conditions
+  // Always initialize all hooks at the top level
   const gameContext = useGameData();
   const { setGameData } = gameContext;
 
@@ -29,5 +29,7 @@ export function useSupabaseSync() {
     dataStatus,
     isOnline,
     supabaseConnected,
+    hasLoadedData,
+    syncFromSupabase,
   };
 }

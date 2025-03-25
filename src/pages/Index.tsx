@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
@@ -26,13 +27,17 @@ const Index = () => {
     checkAuth();
   }, []);
 
-  const hasValidCharacter = Boolean(character && 
+  // Determine if character is valid without conditional rendering
+  const hasValidCharacter = Boolean(
+    character && 
     typeof character === 'object' && 
     typeof character.level === 'number' &&
     typeof character.xp === 'number' &&
-    typeof character.coins === 'number');
+    typeof character.coins === 'number'
+  );
 
-  const formatDate = (dateString) => {
+  // Define formatDate function outside JSX to avoid conditional rendering
+  const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "No recent login";
     const date = new Date(dateString);
     return date.toLocaleDateString();

@@ -17,29 +17,28 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useGameData } from "@/contexts/DataContext";
 
 export function TutorialSection() {
-  // Always initialize state regardless of visibility conditions
+  // Always initialize state
   const [isVisible, setIsVisible] = useState(true);
   const { character } = useGameData();
   
-  // If game data is not loaded yet or character is undefined, show the tutorial by default
-  if (!character || typeof character !== 'object') {
-    return renderTutorialContent(true);
-  }
-  
-  // If the character is above level 3, don't show the tutorial by default
-  // Default to true if level is undefined to ensure the tutorial shows
-  const characterLevel = typeof character.level === 'number' ? character.level : 0;
-  const isNewUser = characterLevel <= 3;
-  
-  // Update visibility state based on user level
-  // Use a useEffect instead of directly setting state to avoid render issues
+  // Use useEffect to determine visibility after render
   useEffect(() => {
+    // If game data is not loaded yet or character is undefined, show the tutorial by default
+    if (!character || typeof character !== 'object') {
+      setIsVisible(true);
+      return;
+    }
+    
+    // If the character is above level 3, don't show the tutorial by default
+    const characterLevel = typeof character.level === 'number' ? character.level : 0;
+    const isNewUser = characterLevel <= 3;
     setIsVisible(isNewUser);
-  }, [isNewUser]);
+  }, [character]);
   
+  // Render null if not visible, but don't conditionally call hooks
   if (!isVisible) return null;
   
-  return renderTutorialContent(isVisible, () => setIsVisible(false));
+  return renderTutorialContent(true, () => setIsVisible(false));
 }
 
 // Extracted the tutorial content to a separate function to avoid duplication
