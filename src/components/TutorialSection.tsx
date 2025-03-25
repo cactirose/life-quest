@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
   Scroll, 
@@ -17,11 +17,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useGameData } from "@/contexts/DataContext";
 
 export function TutorialSection() {
-  const [showTutorial, setShowTutorial] = useState(true);
+  // Always initialize state regardless of visibility conditions
+  const [isVisible, setIsVisible] = useState(true);
   const { character } = useGameData();
   
   // If game data is not loaded yet or character is undefined, show the tutorial by default
-  // with no ability to close it (it will be replaced when data loads)
   if (!character || typeof character !== 'object') {
     return renderTutorialContent(true);
   }
@@ -31,8 +31,11 @@ export function TutorialSection() {
   const characterLevel = typeof character.level === 'number' ? character.level : 0;
   const isNewUser = characterLevel <= 3;
   
-  // Control visibility with local state
-  const [isVisible, setIsVisible] = useState(isNewUser);
+  // Update visibility state based on user level
+  // Use a useEffect instead of directly setting state to avoid render issues
+  useEffect(() => {
+    setIsVisible(isNewUser);
+  }, [isNewUser]);
   
   if (!isVisible) return null;
   
@@ -125,4 +128,3 @@ function renderTutorialContent(isVisible: boolean, onClose?: () => void) {
     </div>
   );
 }
-

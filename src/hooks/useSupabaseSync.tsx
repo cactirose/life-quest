@@ -1,11 +1,11 @@
+
 import { useRef } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { useDataSync } from "./useDataSync";
 import { useConnectionStatus } from "./sync/useConnectionStatus";
-import { useDataLoader } from "./sync/useDataLoader";
-import { useAuthStateHandler } from "./sync/useAuthStateHandler";
 
 export function useSupabaseSync() {
+  // Always initialize all hooks at the top level, regardless of conditions
   const gameContext = useGameData();
   const { setGameData } = gameContext;
 
@@ -15,7 +15,6 @@ export function useSupabaseSync() {
     isSyncing,
     dataStatus,
     syncFromSupabase,
-    // loadLocalData,
     abortControllerRef,
   } = useDataSync();
 
@@ -23,28 +22,12 @@ export function useSupabaseSync() {
 
   const { isOnline, supabaseConnected } = useConnectionStatus();
 
-  // const {
-  //   // loadUserData,
-  //   retryDataLoad,
-  // } = useDataLoader(
-  //   isLoading,
-  //   setIsLoading,
-  //   setGameData,
-  //   syncFromSupabase,
-  //   () => {},
-  //   hasLoadedData,
-  //   abortControllerRef
-  // );
-
-  // Set up auth state change listener
-  // useAuthStateHandler(loadUserData, setGameData);
-
+  // Return all properties consistently
   return {
     isLoading,
     isSyncing,
     dataStatus,
     isOnline,
     supabaseConnected,
-    // retryDataLoad,
   };
 }

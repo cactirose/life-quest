@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export const useAuthCheck = (navigate: (path: string) => void) => {
+  // Initialize all state hooks at the top level
   const { session, isAuthenticated, refreshSession } = useAuth();
   const [authCheckDone, setAuthCheckDone] = useState(false);
   const [authCheckFailed, setAuthCheckFailed] = useState(false);
@@ -18,6 +19,7 @@ export const useAuthCheck = (navigate: (path: string) => void) => {
         // Use the AuthContext to check if we're authenticated
         if (isAuthenticated && session) {
           navigate("/dashboard");
+          if (isMounted) setAuthCheckDone(true);
           return;
         }
 
@@ -26,7 +28,9 @@ export const useAuthCheck = (navigate: (path: string) => void) => {
 
         if (isAuthenticated) {
           navigate("/dashboard");
-          setAuthCheckDone(true);
+          if (isMounted) setAuthCheckDone(true);
+        } else if (isMounted) {
+          setAuthCheckDone(true);  // Make sure we always set this to avoid hanging
         }
       } catch (error) {
         console.error("Session check error:", error);
@@ -52,7 +56,7 @@ export const useAuthCheck = (navigate: (path: string) => void) => {
       isMounted = false;
       clearTimeout(timeoutId);
     };
-  }, [navigate, isMobile, session, isAuthenticated, refreshSession]);
+  }, [navigate, isMobile, session, isAuthenticated, refreshSession, authCheckDone]);
 
   return { authCheckDone, authCheckFailed };
 };

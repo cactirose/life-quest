@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
@@ -27,13 +26,12 @@ const Index = () => {
     checkAuth();
   }, []);
 
-  const hasValidCharacter = character && 
+  const hasValidCharacter = Boolean(character && 
     typeof character === 'object' && 
     typeof character.level === 'number' &&
     typeof character.xp === 'number' &&
-    typeof character.coins === 'number';
+    typeof character.coins === 'number');
 
-  // Helper function to format date
   const formatDate = (dateString) => {
     if (!dateString) return "No recent login";
     const date = new Date(dateString);
@@ -136,33 +134,32 @@ const Index = () => {
           </div>
         </div>
 
-        {isLoggedIn && hasValidCharacter && (
+        {hasValidCharacter && (
           <div className="wood-texture p-6 text-center">
             <h2 className="text-2xl font-pixel text-rpg-brown mb-4">
-              {character.name ? character.name : "Adventurer"}'s Journey
+              {character?.name ? character.name : "Adventurer"}'s Journey
             </h2>
             <div className="flex flex-wrap justify-center gap-4 text-rpg-brown font-pixel">
               <div className="flex flex-col items-center">
                 <span className="text-3xl">📊</span>
-                <span>Level {character.level}</span>
+                <span>Level {character?.level}</span>
               </div>
               <div className="flex flex-col items-center">
                 <span className="text-3xl">✨</span>
-                <span>{character.xp} XP</span>
+                <span>{character?.xp} XP</span>
               </div>
               <div className="flex flex-col items-center">
                 <span className="text-3xl">🪙</span>
-                <span>{character.coins} Coins</span>
+                <span>{character?.coins} Coins</span>
               </div>
               
-              {/* Login Streak Section */}
               <div className="flex flex-col items-center">
                 <span className="text-3xl">🔥</span>
-                <span>{character.loginStreak} Day Streak</span>
+                <span>{character?.loginStreak || 0} Day Streak</span>
               </div>
             </div>
             
-            {character.lastLoginDate && (
+            {character?.lastLoginDate && (
               <div className="mt-4 flex justify-center items-center gap-2">
                 <Calendar size={16} className="text-rpg-brown" />
                 <span className="text-sm text-rpg-brown">Last Login: {formatDate(character.lastLoginDate)}</span>
