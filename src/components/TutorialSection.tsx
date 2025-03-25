@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useGameData } from "@/contexts/DataContext";
 
 export function TutorialSection() {
-  // Always initialize state
+  // Always initialize state at the top level
   const [isVisible, setIsVisible] = useState(true);
   const { character } = useGameData();
   
