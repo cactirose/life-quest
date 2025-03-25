@@ -8,16 +8,22 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { character, quests, inventory, skillTree } = useGameData();
   
+  // Make sure we have valid data or use defaults
+  const safeCharacter = character || { stats: {}, level: 1, xp: 0, nextLevelXp: 100, coins: 0 };
+  const safeQuests = Array.isArray(quests) ? quests : [];
+  const safeInventory = Array.isArray(inventory) ? inventory : [];
+  const safeSkillTree = Array.isArray(skillTree) ? skillTree : [];
+  
   // Filter active quests
-  const activeQuests = quests.filter(quest => quest.status === "active");
-  const completedQuests = quests.filter(quest => quest.status === "completed");
+  const activeQuests = safeQuests.filter(quest => quest.status === "active");
+  const completedQuests = safeQuests.filter(quest => quest.status === "completed");
   
   // Get equipped items
-  const equippedItems = inventory.filter(item => item.equipped);
+  const equippedItems = safeInventory.filter(item => item.equipped);
   
   // Count unlocked skills
-  const unlockedSkills = skillTree.filter(node => node.unlocked).length;
-  const totalSkills = skillTree.length;
+  const unlockedSkills = safeSkillTree.filter(node => node.unlocked).length;
+  const totalSkills = safeSkillTree.length;
 
   return (
     <div className="container mx-auto animate-fade-in">
@@ -45,8 +51,8 @@ const Dashboard = () => {
               <div className="space-y-4">
                 {activeQuests.slice(0, 3).map(quest => {
                   // Calculate progress
-                  const totalSteps = quest.steps.length;
-                  const completedSteps = quest.steps.filter(step => step.completed).length;
+                  const totalSteps = quest.steps ? quest.steps.length : 0;
+                  const completedSteps = quest.steps ? quest.steps.filter(step => step.completed).length : 0;
                   const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
                   
                   return (
@@ -54,7 +60,7 @@ const Dashboard = () => {
                       <div className="flex justify-between mb-2">
                         <h3 className="font-pixel text-lg text-rpg-brown">{quest.title}</h3>
                         <span className="text-xs px-2 py-1 bg-rpg-brown text-rpg-tan rounded-full">
-                          {(typeof quest.type === 'string') ? quest.type === "main" ? "Main" : "Side" : "Side"}
+                          {typeof quest.type === 'string' ? (quest.type === "main" ? "Main" : "Side") : "Side"}
                         </span>
                       </div>
                       
@@ -72,8 +78,8 @@ const Dashboard = () => {
                       <div className="flex justify-between text-sm mt-2 text-rpg-brown">
                         <span>{completedSteps}/{totalSteps} steps</span>
                         <div className="flex items-center gap-2">
-                          <span>+{quest.xpReward} XP</span>
-                          <span>+{quest.coinReward} 🪙</span>
+                          <span>+{quest.xpReward || 0} XP</span>
+                          <span>+{quest.coinReward || 0} 🪙</span>
                         </div>
                       </div>
                     </div>
@@ -108,8 +114,8 @@ const Dashboard = () => {
                     <div className="flex-grow">
                       <h4 className="font-pixel text-rpg-brown">{quest.title}</h4>
                       <div className="flex gap-2 text-sm">
-                        <span>+{quest.xpReward} XP</span>
-                        <span>+{quest.coinReward} 🪙</span>
+                        <span>+{quest.xpReward || 0} XP</span>
+                        <span>+{quest.coinReward || 0} 🪙</span>
                       </div>
                     </div>
                   </div>
@@ -127,7 +133,7 @@ const Dashboard = () => {
             <div className="flex flex-col gap-3 mb-6">
               <div className="flex items-center gap-2">
                 <Sparkle className="text-rpg-brown" size={20} />
-                <span className="font-pixel text-rpg-brown">Level {character.level}</span>
+                <span className="font-pixel text-rpg-brown">Level {safeCharacter.level}</span>
               </div>
               
               <div>
@@ -135,23 +141,23 @@ const Dashboard = () => {
                 <div className="pixel-progress-bar mt-1">
                   <div 
                     className="pixel-progress-bar-fill"
-                    style={{ width: `${(character.xp / character.nextLevelXp) * 100}%` }} 
+                    style={{ width: `${(safeCharacter.xp / safeCharacter.nextLevelXp) * 100}%` }} 
                   />
                 </div>
                 <div className="flex justify-between text-xs mt-1">
-                  <span>{character.xp} XP</span>
-                  <span>{character.nextLevelXp} XP</span>
+                  <span>{safeCharacter.xp} XP</span>
+                  <span>{safeCharacter.nextLevelXp} XP</span>
                 </div>
               </div>
               
               <div className="flex items-center gap-2">
                 <span className="text-xl">🪙</span>
-                <span className="font-pixel text-rpg-brown">{character.coins} Coins</span>
+                <span className="font-pixel text-rpg-brown">{safeCharacter.coins} Coins</span>
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-3">
-              {character && character.stats && Object.entries(character.stats).map(([stat, value]) => (
+              {safeCharacter.stats && Object.entries(safeCharacter.stats).map(([stat, value]) => (
                 <div key={stat} className="wood-texture p-2">
                   <div className="text-sm capitalize text-rpg-brown">{stat}</div>
                   <div className="font-pixel text-lg text-rpg-brown">{value}</div>
@@ -183,7 +189,7 @@ const Dashboard = () => {
                 <div className="text-sm text-rpg-brown mb-1">Equipment</div>
                 <div className="flex justify-between">
                   <span className="font-pixel text-rpg-brown">{equippedItems.length} Equipped</span>
-                  <span className="font-pixel text-rpg-brown">{inventory.length} Total</span>
+                  <span className="font-pixel text-rpg-brown">{safeInventory.length} Total</span>
                 </div>
               </div>
               
