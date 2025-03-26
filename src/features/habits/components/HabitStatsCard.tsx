@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Habit } from '@/types/habits';
-import { Fire, TrendingUp, CheckCircle } from 'lucide-react';
+import { Flame, TrendingUp, CheckCircle } from 'lucide-react';
 
 type HabitStatsCardProps = {
   habits: Habit[];
@@ -35,7 +35,7 @@ export const HabitStatsCard = ({ habits = [] }: HabitStatsCardProps) => {
       
       <div className="parchment p-4 flex items-center">
         <div className="mr-4 bg-rpg-tan rounded-full p-3">
-          <Fire className="h-6 w-6 text-rpg-red" />
+          <Flame className="h-6 w-6 text-rpg-red" />
         </div>
         <div>
           <p className="text-sm text-rpg-brown">Longest Streak</p>
