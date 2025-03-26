@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Import our components
+// Import refactored components
 import { QuestBasicInfoSection } from "./form-sections/QuestBasicInfoSection";
 import { QuestStepsSection } from "./form-sections/QuestStepsSection";
 import { BasicRewardsSection } from "./form-sections/BasicRewardsSection";
@@ -51,14 +51,19 @@ type QuestFormProps = {
   onSubmit: (quest: Omit<Quest, "id" | "status">) => void;
   initialData?: Partial<Quest> | null;
   onCancel: () => void;
+  isSubmitting?: boolean;
+  submitButtonText?: string;
 };
 
 export const QuestForm = ({ 
   onSubmit, 
   initialData = null,
-  onCancel
+  onCancel,
+  isSubmitting = false,
+  submitButtonText = "Submit"
 }: QuestFormProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmittingInternal, setIsSubmittingInternal] = useState(false);
+  const isProcessing = isSubmitting || isSubmittingInternal;
   
   // Create initial values for the form
   const defaultValues: QuestFormValues = {
@@ -100,7 +105,7 @@ export const QuestForm = ({
 
   const handleFormSubmit = async (data: QuestFormValues) => {
     try {
-      setIsSubmitting(true);
+      setIsSubmittingInternal(true);
       
       // Transform the form data to match the expected Quest format
       const questData: Omit<Quest, "id" | "status"> = {
@@ -132,12 +137,12 @@ export const QuestForm = ({
       
       // Add a small delay to ensure UI is responsive
       setTimeout(() => {
-        setIsSubmitting(false);
+        setIsSubmittingInternal(false);
       }, 100);
     } catch (error) {
       console.error("Error submitting quest:", error);
       toast.error("Failed to save quest. Please try again.");
-      setIsSubmitting(false);
+      setIsSubmittingInternal(false);
     }
   };
 
@@ -162,17 +167,17 @@ export const QuestForm = ({
               variant="outline" 
               onClick={onCancel} 
               type="button" 
-              disabled={isSubmitting}
+              disabled={isProcessing}
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
-              disabled={isSubmitting}
+              disabled={isProcessing}
             >
-              {isSubmitting 
+              {isProcessing 
                 ? initialData ? 'Updating...' : 'Creating...' 
-                : initialData ? 'Update Quest' : 'Create Quest'
+                : submitButtonText
               }
             </Button>
           </DialogFooter>

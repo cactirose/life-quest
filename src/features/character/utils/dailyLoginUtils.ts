@@ -1,5 +1,4 @@
 
-// Ensure this file exists or create it if it doesn't
 import { format, differenceInCalendarDays, startOfDay } from "date-fns";
 import { GearItem, GearRarity } from "@/types/inventory";
 import { generateId } from "@/utils/idGenerator";
@@ -66,9 +65,9 @@ export const createStreakTrophy = (streak: number): GearItem => {
     name = "Half-Year Commitment Trophy";
   } else if (streak >= 90) {
     rarity = "rare";
-    name = "Season-long Consistency Trophy";
+    name = "Monthly Dedication Trophy";
   } else if (streak >= 30) {
-    rarity = "uncommon";
+    rarity = "common"; // Changed from "uncommon" to "common"
     name = "Monthly Dedication Trophy";
   }
   
@@ -76,11 +75,12 @@ export const createStreakTrophy = (streak: number): GearItem => {
     id: generateId(),
     name,
     description,
-    type: "trophy",
+    type: "accessory", // Changed from "trophy" to "accessory"
     rarity,
     icon: "🏆",
     cost: 0,
     equipped: false,
+    levelRequired: 1, // Added levelRequired property
     statBonuses: {
       charisma: Math.min(5, Math.floor(streak / 30)), // Max +5 charisma
       wisdom: Math.min(3, Math.floor(streak / 60))    // Max +3 wisdom

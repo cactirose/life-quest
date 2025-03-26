@@ -11,7 +11,10 @@ export const syncInventoryData = async (gameData: GameData, changedFields: Set<s
   
   for (const item of gameData.inventory) {
     const success = await retrySyncOperation(
-      async () => await upsertInventoryItem(item),
+      async () => {
+        await upsertInventoryItem(item);
+        // We don't need the return value, just care if it completed successfully
+      },
       `inventory-${item.id}`
     );
     
