@@ -23,25 +23,42 @@ export function useSupabaseSync() {
 
   const hasLoadedData = useRef(false);
   const lastSyncTime = useRef<Date | null>(null);
+  const syncErrorCount = useRef(0);
 
   const { isOnline, supabaseConnected } = useConnectionStatus();
 
   // Load data when component mounts or auth state changes
   useEffect(() => {
     // Only sync if authenticated and connected
-    if (isAuthenticated && isOnline && supabaseConnected && !hasLoadedData.current) {
-      console.log("Initial data sync triggered");
+    if (isAuthenticated && isOnline && supabaseConnected) {
+      console.log("Auth state changed, triggering data sync");
       
       // Set a small delay to allow auth context to fully initialize
       const timer = setTimeout(() => {
         syncFromSupabase();
         hasLoadedData.current = true;
         lastSyncTime.current = new Date();
+        syncErrorCount.current = 0; // Reset error count on successful sync
       }, 300);
       
       return () => clearTimeout(timer);
     }
-  }, [isAuthenticated, isOnline, supabaseConnected]);
+  }, [isAuthenticated, isOnline, supabaseConnected, syncFromSupabase]);
+
+  // Check for network changes
+  useEffect(() => {
+    if (isAuthenticated && isOnline && supabaseConnected && hasLoadedData.current && lastSyncTime.current) {
+      // If we were offline and now we're back, resync
+      const timeSinceLastSync = new Date().getTime() - lastSyncTime.current.getTime();
+      const ONE_MINUTE = 60 * 1000;
+      
+      if (timeSinceLastSync > ONE_MINUTE) {
+        console.log("Network reconnected after period of disconnection, resyncing data");
+        syncFromSupabase();
+        lastSyncTime.current = new Date();
+      }
+    }
+  }, [isOnline, supabaseConnected, isAuthenticated, syncFromSupabase]);
 
   // Implement a throttled auto-refresh function
   const refreshData = useCallback(() => {
@@ -59,7 +76,7 @@ export function useSupabaseSync() {
     
     // Throttle refresh rate to prevent excessive API calls
     const now = new Date();
-    const minTimeBetweenSyncs = 30000; // 30 seconds
+    const minTimeBetweenSyncs = 10000; // 10 seconds - reduced from 30 seconds
     
     if (lastSyncTime.current && (now.getTime() - lastSyncTime.current.getTime() < minTimeBetweenSyncs)) {
       toast.info("Data was recently synced. Please try again in a moment.");

@@ -34,42 +34,55 @@ const Quests = () => {
     try {
       setIsProcessing(true);
       
-      // Add the quest
-      await addQuest({
-        ...newQuest,
-        status: "active",
-        difficulty: newQuest.difficulty || "medium" // Ensure difficulty is set
+      // Add the quest (explicitly await)
+      await new Promise<void>((resolve) => {
+        addQuest({
+          ...newQuest,
+          status: "active",
+          difficulty: newQuest.difficulty || "medium" // Ensure difficulty is set
+        });
+        // Short delay to ensure state updates properly
+        setTimeout(resolve, 100);
       });
       
-      // Close the dialog and show success message
-      setShowAddDialog(false);
+      // Success message
       toast.success("Quest created successfully!");
+      return Promise.resolve();
     } catch (error) {
       console.error("Failed to add quest:", error);
       toast.error("Failed to create quest. Please try again.");
+      return Promise.reject(error);
     } finally {
       setIsProcessing(false);
     }
   }, [addQuest]);
   
   const handleEditQuest = useCallback(async (updatedQuest: Omit<Quest, "id" | "status">) => {
-    if (!editingQuest) return;
+    if (!editingQuest) return Promise.reject(new Error("No quest selected for editing"));
     
     try {
       setIsProcessing(true);
       
-      // Update the quest
-      await updateQuest({
-        ...editingQuest,
-        ...updatedQuest,
+      // Update the quest (explicitly await)
+      await new Promise<void>((resolve) => {
+        updateQuest({
+          ...editingQuest,
+          ...updatedQuest,
+        });
+        // Short delay to ensure state updates properly
+        setTimeout(resolve, 100);
       });
       
-      // Close the dialog and show success message
+      // Clear editing state
       setEditingQuest(null);
+      
+      // Success message
       toast.success("Quest updated successfully!");
+      return Promise.resolve();
     } catch (error) {
       console.error("Failed to update quest:", error);
       toast.error("Failed to update quest. Please try again.");
+      return Promise.reject(error);
     } finally {
       setIsProcessing(false);
     }
@@ -153,9 +166,9 @@ const Quests = () => {
         activeQuests={filteredActiveQuests}
         completedQuests={filteredCompletedQuests}
         onEdit={setEditingQuest}
-        onDelete={handleDeleteQuest}
-        onStepToggle={handleStepToggle}
-        onComplete={handleCompleteQuest}
+        onDelete={deleteQuest}
+        onStepToggle={completeQuestStep}
+        onComplete={completeQuest}
         onCreateQuest={() => setShowAddDialog(true)}
       />
     </div>

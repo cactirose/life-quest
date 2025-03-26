@@ -1,9 +1,9 @@
-
 import { createContext, useContext } from "react";
 import { Quest, QuestStatus, QuestRepeatInterval, StatReward } from "../types/quests";
 import { generateId } from "../utils/idGenerator";
 import { StatName } from "../types/character";
 import { addDays, addMonths, addWeeks, format } from "date-fns";
+import { useQuestManager } from "@/features/quests/hooks/useQuestManager";
 
 interface QuestContextType {
   quests: Quest[];
@@ -22,6 +22,8 @@ export const createQuestContextValue = (
   quests: Quest[],
   setGameData: React.Dispatch<React.SetStateAction<any>>
 ): QuestContextType => {
+  const { deleteQuest } = useQuestManager(quests, setGameData);
+
   const addQuest = (quest: Omit<Quest, "id">) => {
     const newQuest = {
       ...quest,
@@ -47,13 +49,6 @@ export const createQuestContextValue = (
     }));
   };
 
-  const deleteQuest = (questId: string) => {
-    setGameData(prevData => ({
-      ...prevData,
-      quests: prevData.quests.filter(q => q.id !== questId)
-    }));
-  };
-
   const completeQuestStep = (questId: string, stepId: string) => {
     setGameData(prevData => {
       const updatedQuests = prevData.quests.map(quest => {
@@ -75,7 +70,6 @@ export const createQuestContextValue = (
       const quest = prevData.quests.find(q => q.id === questId);
       if (!quest || quest.status === "completed") return prevData;
 
-      // Apply rewards
       const updatedCharacter = {
         ...prevData.character,
         xp: prevData.character.xp + quest.xpReward,
@@ -93,12 +87,10 @@ export const createQuestContextValue = (
         q.id === questId ? { ...q, status: "completed" as QuestStatus } : q
       );
 
-      // If quest is repeatable, create a new instance
       if (quest.repeatType && quest.repeatType !== "none") {
         const now = new Date();
         let nextResetDate: Date;
         
-        // Calculate the next reset date based on repeatType
         switch (quest.repeatType) {
           case "daily":
             nextResetDate = addDays(now, 1);
@@ -110,22 +102,19 @@ export const createQuestContextValue = (
             nextResetDate = addMonths(now, 1);
             break;
           case "custom":
-            // For custom, we'd need more complex logic
-            // This is a simple example that resets in 3 days
             nextResetDate = addDays(now, 3);
             break;
           default:
             nextResetDate = addDays(now, 1);
         }
         
-        // Create new quest instance with reset steps
         const newQuestInstance: Quest = {
           ...quest,
-          id: generateId(), // New ID for the new instance
-          status: "active", // Reset status to active
+          id: generateId(),
+          status: "active",
           steps: quest.steps.map(step => ({
             ...step,
-            completed: false, // Reset completion status
+            completed: false
           })),
           repeat: {
             interval: quest.repeatType,
@@ -133,7 +122,6 @@ export const createQuestContextValue = (
           }
         };
         
-        // Add the new quest instance to the list
         updatedQuests = [...updatedQuests, newQuestInstance];
       }
 

@@ -12,6 +12,9 @@ const EquipmentSlots = ({
   equippedItems, 
   onUnequip 
 }: EquipmentSlotsProps) => {
+  // Make sure equippedItems is defined
+  const safeEquippedItems = equippedItems || {};
+  
   const slots = [
     { type: "weapon" as GearType, icon: <Sword size={24} />, label: "Weapon" },
     { type: "armor" as GearType, icon: <Shield size={24} />, label: "Armor" },
@@ -21,7 +24,7 @@ const EquipmentSlots = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {slots.map(slot => {
-        const item = equippedItems[slot.type];
+        const item = safeEquippedItems[slot.type] || null;
         
         return (
           <div 
@@ -52,7 +55,7 @@ const EquipmentSlots = ({
                 </span>
                 
                 <div className="flex flex-wrap justify-center gap-1 mb-3">
-                  {Object.entries(item.statBonuses).map(([stat, value]) => (
+                  {Object.entries(item.statBonuses || {}).map(([stat, value]) => (
                     value > 0 && (
                       <span key={stat} className="text-xs px-1.5 py-0.5 bg-rpg-brown text-white rounded">
                         +{value} {stat}
@@ -62,10 +65,11 @@ const EquipmentSlots = ({
                 </div>
                 
                 <Button 
-                  onClick={() => onUnequip(item.id)}
+                  onClick={() => item.id && onUnequip(item.id)}
                   variant="outline"
                   size="sm"
                   className="border-rpg-brown text-rpg-brown hover:bg-rpg-brown hover:text-white"
+                  disabled={!item.id}
                 >
                   <X size={14} className="mr-1" /> Unequip
                 </Button>
