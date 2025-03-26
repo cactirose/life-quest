@@ -11,8 +11,9 @@ export const useServerTime = () => {
       // Define the return type for the RPC call to avoid type error
       type ServerTimeResponse = { data: string | null; error: any };
       
-      // Call the RPC function with empty parameters and correct type assertion
-      const { data, error } = await supabase.rpc('get_server_time', {}) as ServerTimeResponse;
+      // Use a more explicit approach to handle typing with Supabase RPC
+      const response = await supabase.rpc('get_server_time');
+      const { data, error } = response as ServerTimeResponse;
       
       if (error) throw error;
       
