@@ -1,6 +1,4 @@
 
-// We can't see the file content but we'll add a defensive check to ensure
-// habits is always treated as an array, even if undefined
 import React from 'react';
 import { Habit } from '@/types/habits';
 import { EmptyHabitState } from './EmptyHabitState';
@@ -27,7 +25,7 @@ export const HabitList = ({
   const safeHabits = Array.isArray(habits) ? habits : [];
   
   if (safeHabits.length === 0) {
-    return <EmptyHabitState onAddHabit={onAddHabit} />;
+    return <EmptyHabitState onCreateHabit={onAddHabit} />;
   }
 
   return (

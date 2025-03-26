@@ -1,9 +1,7 @@
 
-// We can't see the file content but we'll add a defensive check to ensure
-// habits is always treated as an array, even if undefined
 import React from 'react';
 import { Habit } from '@/types/habits';
-import { FireIcon, TrendingUpIcon, CheckCircleIcon } from 'lucide-react';
+import { Fire, TrendingUp, CheckCircle } from 'lucide-react';
 
 type HabitStatsCardProps = {
   habits: Habit[];
@@ -27,7 +25,7 @@ export const HabitStatsCard = ({ habits = [] }: HabitStatsCardProps) => {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div className="parchment p-4 flex items-center">
         <div className="mr-4 bg-rpg-tan rounded-full p-3">
-          <CheckCircleIcon className="h-6 w-6 text-rpg-green" />
+          <CheckCircle className="h-6 w-6 text-rpg-green" />
         </div>
         <div>
           <p className="text-sm text-rpg-brown">Completed Today</p>
@@ -37,7 +35,7 @@ export const HabitStatsCard = ({ habits = [] }: HabitStatsCardProps) => {
       
       <div className="parchment p-4 flex items-center">
         <div className="mr-4 bg-rpg-tan rounded-full p-3">
-          <FireIcon className="h-6 w-6 text-rpg-red" />
+          <Fire className="h-6 w-6 text-rpg-red" />
         </div>
         <div>
           <p className="text-sm text-rpg-brown">Longest Streak</p>
@@ -47,7 +45,7 @@ export const HabitStatsCard = ({ habits = [] }: HabitStatsCardProps) => {
       
       <div className="parchment p-4 flex items-center">
         <div className="mr-4 bg-rpg-tan rounded-full p-3">
-          <TrendingUpIcon className="h-6 w-6 text-rpg-blue" />
+          <TrendingUp className="h-6 w-6 text-rpg-blue" />
         </div>
         <div>
           <p className="text-sm text-rpg-brown">Total Habits</p>
