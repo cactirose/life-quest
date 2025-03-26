@@ -9,10 +9,10 @@ export const useServerTime = () => {
   const fetchServerTime = useCallback(async () => {
     try {
       // Define the return type for the RPC call to avoid type error
-      const { data, error } = await supabase.rpc('get_server_time', {}) as { 
-        data: string | null; 
-        error: any;
-      };
+      type ServerTimeResponse = { data: string | null; error: any };
+      
+      // Call the RPC function with empty parameters and correct type assertion
+      const { data, error } = await supabase.rpc('get_server_time', {}) as ServerTimeResponse;
       
       if (error) throw error;
       
