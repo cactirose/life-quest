@@ -11,10 +11,9 @@ export const useServerTime = () => {
       // Define the return type for the RPC call to avoid type error
       type ServerTimeResponse = { data: string | null; error: any };
       
-      // Use the correct type for the function parameters
-      // The issue is that TypeScript infers an empty object {} as type '{}'
-      // We need to explicitly tell TypeScript this is a Record with string keys and never values
-      const { data, error } = await supabase.rpc('get_server_time') as ServerTimeResponse;
+      // Fix the RPC call by providing the correct typing
+      // Pass an empty object for params and use type assertion
+      const { data, error } = await supabase.rpc('get_server_time', {} as Record<string, any>) as ServerTimeResponse;
       
       if (error) throw error;
       
