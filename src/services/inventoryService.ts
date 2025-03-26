@@ -37,12 +37,17 @@ export const fetchInventory = async (): Promise<GearItem[]> => {
   }
 };
 
-export const upsertInventoryItem = async (item: GearItem): Promise<void> => {
+export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | null> => {
   try {
     const user = await supabase.auth.getUser();
     if (!user.data.user) throw new Error("No authenticated user");
 
-    const { error } = await supabase
+    // If item is being equipped, unequip other items of the same type first
+    if (item.equipped) {
+      await unequipOtherItemsOfType(user.data.user.id, item.type, item.id);
+    }
+
+    const { data, error } = await supabase
       .from("inventory_items")
       .upsert({
         id: item.id,
@@ -56,15 +61,51 @@ export const upsertInventoryItem = async (item: GearItem): Promise<void> => {
         stat_bonuses: item.statBonuses as any,
         equipped: item.equipped,
         level_required: item.levelRequired
-      });
+      })
+      .select()
+      .single();
 
     if (error) {
       console.error("Error upserting inventory item:", error);
       toast.error("Failed to save inventory item");
+      return null;
     }
+    
+    return {
+      id: data.id,
+      name: data.name,
+      description: data.description || "",
+      type: data.type,
+      rarity: data.rarity,
+      icon: data.icon || "",
+      cost: data.cost,
+      statBonuses: data.stat_bonuses as any,
+      equipped: data.equipped,
+      levelRequired: data.level_required || 1
+    } as GearItem;
   } catch (error) {
     console.error("Error in upsertInventoryItem:", error);
     toast.error("Failed to save inventory item");
+    return null;
+  }
+};
+
+// Helper function to unequip other items of the same type
+const unequipOtherItemsOfType = async (userId: string, itemType: string, excludeItemId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from("inventory_items")
+      .update({ equipped: false })
+      .eq("user_id", userId)
+      .eq("type", itemType)
+      .eq("equipped", true)
+      .neq("id", excludeItemId);
+
+    if (error) {
+      console.error("Error unequipping other items:", error);
+    }
+  } catch (error) {
+    console.error("Error in unequipOtherItemsOfType:", error);
   }
 };
 
@@ -82,6 +123,23 @@ export const deleteInventoryItem = async (itemId: string): Promise<void> => {
   } catch (error) {
     console.error("Error in deleteInventoryItem:", error);
     toast.error("Failed to delete inventory item");
+  }
+};
+
+export const toggleItemEquipped = async (item: GearItem): Promise<GearItem | null> => {
+  try {
+    // Toggle the equipped status
+    const updatedItem = {
+      ...item,
+      equipped: !item.equipped
+    };
+    
+    // Use the upsertInventoryItem function to handle the update and unequipping logic
+    return await upsertInventoryItem(updatedItem);
+  } catch (error) {
+    console.error("Error toggling item equipped status:", error);
+    toast.error("Failed to update equipment status");
+    return null;
   }
 };
 

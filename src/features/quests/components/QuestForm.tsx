@@ -58,6 +58,8 @@ export const QuestForm = ({
   initialData = null,
   onCancel
 }: QuestFormProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   // Create initial values for the form
   const defaultValues: QuestFormValues = {
     title: initialData?.title || "",
@@ -96,33 +98,47 @@ export const QuestForm = ({
     "intelligence", "wisdom", "charisma"
   ];
 
-  const handleFormSubmit = (data: QuestFormValues) => {
-    // Transform the form data to match the expected Quest format
-    const questData: Omit<Quest, "id" | "status"> = {
-      title: data.title,
-      description: data.description || "",
-      type: data.type,
-      difficulty: data.difficulty,
-      steps: data.steps.map(step => ({ 
-        id: step.id || Date.now().toString(), // Ensure id is always present
-        description: step.description,
-        completed: false 
-      })),
-      xpReward: data.xpReward,
-      coinReward: data.coinReward,
-      tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
-      repeatType: data.repeatType,
-      customResetDays: data.repeatType === "custom" ? data.customResetDays : undefined,
-      // Transform the statRewards object to array of StatReward
-      statRewards: Object.entries(data.statRewards || {})
-        .filter(([_, value]) => value && value > 0)
-        .map(([stat, value]) => ({
-          stat: stat as StatName,
-          value: value as number
-        }))
-    };
+  const handleFormSubmit = async (data: QuestFormValues) => {
+    try {
+      setIsSubmitting(true);
+      
+      // Transform the form data to match the expected Quest format
+      const questData: Omit<Quest, "id" | "status"> = {
+        title: data.title,
+        description: data.description || "",
+        type: data.type,
+        difficulty: data.difficulty,
+        steps: data.steps.map(step => ({ 
+          id: step.id || Date.now().toString(), // Ensure id is always present
+          description: step.description,
+          completed: false 
+        })),
+        xpReward: data.xpReward,
+        coinReward: data.coinReward,
+        tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
+        repeatType: data.repeatType,
+        customResetDays: data.repeatType === "custom" ? data.customResetDays : undefined,
+        // Transform the statRewards object to array of StatReward
+        statRewards: Object.entries(data.statRewards || {})
+          .filter(([_, value]) => value && value > 0)
+          .map(([stat, value]) => ({
+            stat: stat as StatName,
+            value: value as number
+          }))
+      };
 
-    onSubmit(questData);
+      // Submit the quest data
+      onSubmit(questData);
+      
+      // Add a small delay to ensure UI is responsive
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 100);
+    } catch (error) {
+      console.error("Error submitting quest:", error);
+      toast.error("Failed to save quest. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -142,11 +158,22 @@ export const QuestForm = ({
           <StatRewardsSection statNames={statNames} />
 
           <DialogFooter className="flex justify-between">
-            <Button variant="outline" onClick={onCancel} type="button">
+            <Button 
+              variant="outline" 
+              onClick={onCancel} 
+              type="button" 
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit">
-              {initialData ? 'Update Quest' : 'Create Quest'}
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting 
+                ? initialData ? 'Updating...' : 'Creating...' 
+                : initialData ? 'Update Quest' : 'Create Quest'
+              }
             </Button>
           </DialogFooter>
         </form>

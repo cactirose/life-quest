@@ -1,7 +1,8 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { Quest } from "@/types/quests";
+import { toast } from "sonner";
 
 // Import refactored components
 import { QuestHeader } from "@/features/quests/components/QuestHeader";
@@ -24,58 +25,121 @@ const Quests = () => {
   const [editingQuest, setEditingQuest] = useState<Quest | null>(null);
   const [activeTab, setActiveTab] = useState("active");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   
   // Use the custom hook for filtering quests
   const { filteredActiveQuests, filteredCompletedQuests } = useQuestFiltering(quests, searchQuery);
   
-  const handleAddQuest = (newQuest: Omit<Quest, "id" | "status">) => {
-    addQuest({
-      ...newQuest,
-      status: "active",
-      difficulty: newQuest.difficulty || "medium" // Ensure difficulty is set
-    });
-    setShowAddDialog(false);
-  };
+  const handleAddQuest = useCallback(async (newQuest: Omit<Quest, "id" | "status">) => {
+    try {
+      setIsProcessing(true);
+      
+      // Add the quest
+      await addQuest({
+        ...newQuest,
+        status: "active",
+        difficulty: newQuest.difficulty || "medium" // Ensure difficulty is set
+      });
+      
+      // Close the dialog and show success message
+      setShowAddDialog(false);
+      toast.success("Quest created successfully!");
+    } catch (error) {
+      console.error("Failed to add quest:", error);
+      toast.error("Failed to create quest. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [addQuest]);
   
-  const handleEditQuest = (updatedQuest: Omit<Quest, "id" | "status">) => {
+  const handleEditQuest = useCallback(async (updatedQuest: Omit<Quest, "id" | "status">) => {
     if (!editingQuest) return;
     
-    updateQuest({
-      ...editingQuest,
-      ...updatedQuest,
-    });
-    setEditingQuest(null);
-  };
+    try {
+      setIsProcessing(true);
+      
+      // Update the quest
+      await updateQuest({
+        ...editingQuest,
+        ...updatedQuest,
+      });
+      
+      // Close the dialog and show success message
+      setEditingQuest(null);
+      toast.success("Quest updated successfully!");
+    } catch (error) {
+      console.error("Failed to update quest:", error);
+      toast.error("Failed to update quest. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [editingQuest, updateQuest]);
   
-  const handleStepToggle = (questId: string, stepId: string) => {
+  const handleStepToggle = useCallback(async (questId: string, stepId: string) => {
     const quest = quests.find(q => q.id === questId);
     if (!quest) return;
     
     const step = quest.steps.find(s => s.id === stepId);
     if (!step) return;
     
-    if (!step.completed) {
-      completeQuestStep(questId, stepId);
-    } else {
-      const updatedSteps = quest.steps.map(s => 
-        s.id === stepId ? { ...s, completed: false } : s
-      );
-      
-      updateQuest({
-        ...quest,
-        steps: updatedSteps
-      });
+    try {
+      if (!step.completed) {
+        await completeQuestStep(questId, stepId);
+        toast.success("Step completed!");
+      } else {
+        const updatedSteps = quest.steps.map(s => 
+          s.id === stepId ? { ...s, completed: false } : s
+        );
+        
+        await updateQuest({
+          ...quest,
+          steps: updatedSteps
+        });
+        toast.info("Step marked as incomplete");
+      }
+    } catch (error) {
+      console.error("Failed to toggle step completion:", error);
+      toast.error("Failed to update step. Please try again.");
     }
-  };
+  }, [quests, completeQuestStep, updateQuest]);
+  
+  const handleDeleteQuest = useCallback(async (questId: string) => {
+    try {
+      await deleteQuest(questId);
+      toast.success("Quest deleted successfully!");
+    } catch (error) {
+      console.error("Failed to delete quest:", error);
+      toast.error("Failed to delete quest. Please try again.");
+    }
+  }, [deleteQuest]);
+  
+  const handleCompleteQuest = useCallback(async (questId: string) => {
+    try {
+      await completeQuest(questId);
+      toast.success("Quest completed! Rewards have been added to your character.");
+    } catch (error) {
+      console.error("Failed to complete quest:", error);
+      toast.error("Failed to complete quest. Please try again.");
+    }
+  }, [completeQuest]);
   
   return (
     <div className="container mx-auto animate-fade-in">
-      <QuestHeader onAddQuest={handleAddQuest} />
+      <QuestHeader onAddQuest={() => setShowAddDialog(true)} />
+      
+      <EditQuestDialog 
+        isOpen={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        onAddQuest={handleAddQuest}
+        isProcessing={isProcessing}
+      />
       
       <EditQuestDialog 
         editingQuest={editingQuest}
-        setEditingQuest={setEditingQuest}
+        isOpen={!!editingQuest}
+        onOpenChange={(open) => !open && setEditingQuest(null)}
         onUpdateQuest={handleEditQuest}
+        isProcessing={isProcessing}
       />
       
       <QuestSearch 
@@ -89,9 +153,9 @@ const Quests = () => {
         activeQuests={filteredActiveQuests}
         completedQuests={filteredCompletedQuests}
         onEdit={setEditingQuest}
-        onDelete={deleteQuest}
+        onDelete={handleDeleteQuest}
         onStepToggle={handleStepToggle}
-        onComplete={completeQuest}
+        onComplete={handleCompleteQuest}
         onCreateQuest={() => setShowAddDialog(true)}
       />
     </div>

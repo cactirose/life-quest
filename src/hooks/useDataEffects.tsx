@@ -56,7 +56,13 @@ export const useDataEffects = (
 
   // Check achievements when challenges or character changes
   useEffect(() => {
-    if (characterContext.character && challengeContext.challenges && challengeContext.challenges.length > 0 && Array.isArray(achievements)) {
+    if (characterContext.character && 
+        challengeContext.challenges && 
+        Array.isArray(challengeContext.challenges) && 
+        challengeContext.challenges.length > 0 && 
+        achievements && 
+        Array.isArray(achievements)) {
+      
       // Check for completed achievements based on character progress
       try {
         achievements.forEach(achievement => {

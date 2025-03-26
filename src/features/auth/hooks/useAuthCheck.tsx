@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
 
 export const useAuthCheck = (navigate: (path: string) => void) => {
   // Initialize all state hooks at the top level
@@ -24,12 +25,15 @@ export const useAuthCheck = (navigate: (path: string) => void) => {
         }
 
         // If we're not authenticated, check if we can refresh the session
-        await refreshSession();
+        const refreshed = await refreshSession();
         
         // After refresh, check authentication again
         if (isMounted) {
-          if (isAuthenticated) {
-            navigate("/dashboard");
+          if (refreshed) {
+            // Small delay to ensure context is updated
+            setTimeout(() => {
+              navigate("/dashboard");
+            }, 50);
           }
           setAuthCheckDone(true);  // Make sure we always set this to avoid hanging
         }
@@ -37,7 +41,8 @@ export const useAuthCheck = (navigate: (path: string) => void) => {
         console.error("Session check error:", error);
         if (isMounted) {
           setAuthCheckDone(true);
-          setAuthCheckFailed(true); // Don't show error on login page
+          setAuthCheckFailed(true);
+          toast.error("Authentication check failed. Please try logging in again.");
         }
       }
     };

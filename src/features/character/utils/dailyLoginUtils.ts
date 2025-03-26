@@ -1,73 +1,89 @@
 
-import { Character } from "@/types/character";
-import { GearItem } from "@/types/inventory";
+// Ensure this file exists or create it if it doesn't
+import { format, differenceInCalendarDays, startOfDay } from "date-fns";
+import { GearItem, GearRarity } from "@/types/inventory";
 import { generateId } from "@/utils/idGenerator";
-import { upsertInventoryItem } from "@/services/inventoryService";
 
-/**
- * Checks if today is consecutive to the last login date
- */
-export const checkConsecutiveLogin = (lastLoginDate: string | null): {
-  isConsecutive: boolean;
-  isFirstLogin: boolean;
-  isSameDay: boolean;
-} => {
-  const today = new Date().toISOString().split('T')[0];
-  
-  // First login ever
+export const checkConsecutiveLogin = (lastLoginDate: string | undefined | null) => {
+  // If no last login, this is the first login
   if (!lastLoginDate) {
-    return { isConsecutive: false, isFirstLogin: true, isSameDay: false };
+    return {
+      isFirstLogin: true,
+      isConsecutive: false,
+      isSameDay: false
+    };
   }
-  
-  // Parse dates for comparison
-  const lastLogin = new Date(lastLoginDate);
-  const lastLoginDay = lastLogin.toISOString().split('T')[0];
-  const currentDate = new Date(today);
-  
-  // Same day login
-  if (lastLoginDay === today) {
-    return { isConsecutive: false, isFirstLogin: false, isSameDay: true };
-  }
-  
-  // Check if consecutive day
-  const timeDiff = currentDate.getTime() - lastLogin.getTime();
-  const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-  
-  return { 
-    isConsecutive: dayDiff === 1, 
-    isFirstLogin: false, 
-    isSameDay: false 
-  };
-};
 
-/**
- * Creates a streak trophy item
- */
-export const createStreakTrophy = (streak: number): GearItem => {
+  const now = startOfDay(new Date());
+  const lastLogin = startOfDay(new Date(lastLoginDate));
+  
+  // Calculate days between last login and today
+  const daysBetween = differenceInCalendarDays(now, lastLogin);
+  
   return {
-    id: generateId(),
-    name: `${streak}-Day Streak Trophy`,
-    description: `Awarded for logging in ${streak} days in a row!`,
-    type: "accessory",
-    rarity: streak >= 28 ? "legendary" : streak >= 14 ? "epic" : streak >= 7 ? "rare" : "common",
-    icon: "🏆",
-    cost: 100,
-    statBonuses: { charisma: Math.floor(streak / 7) },
-    equipped: false,
-    levelRequired: 1
+    isFirstLogin: false,
+    isConsecutive: daysBetween === 1, // Exactly 1 day since last login
+    isSameDay: daysBetween === 0      // Same day login
   };
 };
 
-/**
- * Calculates bonus amounts based on streak
- */
-export const calculateDailyBonus = (streak: number): { xpBonus: number; coinBonus: number } => {
-  let xpBonus = 10 * streak;
-  let coinBonus = 5 * streak;
+export const calculateDailyBonus = (streak: number) => {
+  // Base rewards
+  let xpBonus = 20;
+  let coinBonus = 10;
   
-  // Cap at reasonable values
-  xpBonus = Math.min(xpBonus, 100);
-  coinBonus = Math.min(coinBonus, 50);
+  // Additional rewards based on streak
+  if (streak >= 7) {
+    // Weekly bonus
+    xpBonus += 50;
+    coinBonus += 25;
+  }
+  
+  if (streak >= 30) {
+    // Monthly bonus
+    xpBonus += 200;
+    coinBonus += 100;
+  }
+  
+  // Small incremental bonus for each day
+  xpBonus += (streak - 1) * 2;
+  coinBonus += Math.floor((streak - 1) / 2);
   
   return { xpBonus, coinBonus };
+};
+
+export const createStreakTrophy = (streak: number): GearItem => {
+  let rarity: GearRarity = "common";
+  let name = "Login Streak Trophy";
+  let description = `A trophy for maintaining a ${streak}-day login streak.`;
+  
+  // Determine rarity based on streak length
+  if (streak >= 365) {
+    rarity = "legendary";
+    name = "Year-long Dedication Trophy";
+  } else if (streak >= 180) {
+    rarity = "epic";
+    name = "Half-Year Commitment Trophy";
+  } else if (streak >= 90) {
+    rarity = "rare";
+    name = "Season-long Consistency Trophy";
+  } else if (streak >= 30) {
+    rarity = "uncommon";
+    name = "Monthly Dedication Trophy";
+  }
+  
+  return {
+    id: generateId(),
+    name,
+    description,
+    type: "trophy",
+    rarity,
+    icon: "🏆",
+    cost: 0,
+    equipped: false,
+    statBonuses: {
+      charisma: Math.min(5, Math.floor(streak / 30)), // Max +5 charisma
+      wisdom: Math.min(3, Math.floor(streak / 60))    // Max +3 wisdom
+    }
+  };
 };

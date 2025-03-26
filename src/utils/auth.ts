@@ -75,11 +75,16 @@ export const isAuthenticatedSync = (): boolean => {
   }
 };
 
-// Log user out through Supabase
+// Log user out through Supabase and clear local data
 export const logout = async (): Promise<void> => {
   try {
-    await supabase.auth.signOut();
+    // Clear local state first to ensure UI responsiveness
     localStorage.removeItem("isAuthenticated");
+    
+    // Then sign out from Supabase
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    
     console.log("User logged out successfully");
   } catch (error) {
     console.error("Error during logout:", error);
