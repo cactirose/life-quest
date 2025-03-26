@@ -2,7 +2,7 @@
 import { createContext, useContext } from "react";
 import { GearItem, GearType } from "../types/inventory";
 import { generateId } from "../utils/idGenerator";
-import { toggleItemEquipped } from "@/services/inventoryService";
+import { toggleItemEquipped, upsertInventoryItem } from "@/services/inventoryService";
 import { toast } from "sonner";
 
 interface InventoryContextType {
@@ -51,9 +51,9 @@ export const createInventoryContextValue = (
         return;
       }
 
-      // Optimistically update the UI first
+      // Optimistically update the UI first for better user experience
       setGameData(prevData => {
-        // Update the inventory with the equipped item and unequip any other items of the same type
+        // First unequip any items of the same type
         const updatedInventory = prevData.inventory.map(item => {
           if (item.type === itemToEquip.type) {
             return { ...item, equipped: item.id === itemId };
@@ -68,7 +68,7 @@ export const createInventoryContextValue = (
       const updatedItem = { ...itemToEquip, equipped: true };
       
       // Update the item in the database
-      const result = await toggleItemEquipped(updatedItem);
+      const result = await upsertInventoryItem(updatedItem);
       if (!result) {
         throw new Error("Failed to update item equipped status in database");
       }
@@ -108,7 +108,7 @@ export const createInventoryContextValue = (
       const updatedItem = { ...itemToUnequip, equipped: false };
       
       // Update the item in the database
-      const result = await toggleItemEquipped(updatedItem);
+      const result = await upsertInventoryItem(updatedItem);
       if (!result) {
         throw new Error("Failed to update item equipped status in database");
       }
