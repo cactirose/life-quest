@@ -421,7 +421,7 @@ const ChallengeForm = ({
 
 const Challenges = () => {
   const { 
-    challenges, 
+    challenges = [],
     addChallenge, 
     updateChallenge, 
     deleteChallenge, 
@@ -434,8 +434,13 @@ const Challenges = () => {
   const [editingChallenge, setEditingChallenge] = useState<Challenge | null>(null);
   const [activeTab, setActiveTab] = useState("active");
   
-  const activeChallenges = challenges.filter(c => c.status === "active");
-  const completedChallenges = challenges.filter(c => c.status === "completed");
+  const activeChallenges = Array.isArray(challenges) 
+    ? challenges.filter(c => c.status === "active")
+    : [];
+    
+  const completedChallenges = Array.isArray(challenges) 
+    ? challenges.filter(c => c.status === "completed")
+    : [];
   
   const dailyChallenges = activeChallenges.filter(c => c.frequency === "daily");
   const weeklyChallenges = activeChallenges.filter(c => c.frequency === "weekly");

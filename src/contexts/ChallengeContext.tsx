@@ -14,12 +14,20 @@ interface ChallengeContextType {
   completeChallenge: (challengeId: string) => void;
 }
 
-export const ChallengeContext = createContext<ChallengeContextType>({} as ChallengeContextType);
+export const ChallengeContext = createContext<ChallengeContextType>({
+  challenges: [],
+  addChallenge: () => {},
+  updateChallenge: () => {},
+  deleteChallenge: () => {},
+  incrementChallengeProgress: () => {},
+  resetChallenges: () => {},
+  completeChallenge: () => {}
+});
 
 export const useChallenges = () => useContext(ChallengeContext);
 
 export const createChallengeContextValue = (
-  challenges: Challenge[],
+  challenges: Challenge[] = [],
   setGameData: React.Dispatch<React.SetStateAction<any>>
 ): ChallengeContextType => {
   const addChallenge = (challenge: Omit<Challenge, "id">) => {
@@ -30,14 +38,14 @@ export const createChallengeContextValue = (
 
     setGameData(prevData => ({
       ...prevData,
-      challenges: [...prevData.challenges, newChallenge]
+      challenges: [...(prevData.challenges || []), newChallenge]
     }));
   };
 
   const updateChallenge = (challenge: Challenge) => {
     setGameData(prevData => ({
       ...prevData,
-      challenges: prevData.challenges.map(c => 
+      challenges: (prevData.challenges || []).map(c => 
         c.id === challenge.id ? challenge : c
       )
     }));
@@ -46,13 +54,13 @@ export const createChallengeContextValue = (
   const deleteChallenge = (challengeId: string) => {
     setGameData(prevData => ({
       ...prevData,
-      challenges: prevData.challenges.filter(c => c.id !== challengeId)
+      challenges: (prevData.challenges || []).filter(c => c.id !== challengeId)
     }));
   };
 
   const incrementChallengeProgress = (challengeId: string) => {
     setGameData(prevData => {
-      const updatedChallenges = prevData.challenges.map(challenge => {
+      const updatedChallenges = (prevData.challenges || []).map(challenge => {
         if (challenge.id !== challengeId || challenge.status === "completed") return challenge;
         
         const newCount = challenge.currentCount + 1;
@@ -71,7 +79,7 @@ export const createChallengeContextValue = (
     const today = new Date();
     
     setGameData(prevData => {
-      const updatedChallenges = prevData.challenges.map(challenge => {
+      const updatedChallenges = (prevData.challenges || []).map(challenge => {
         const resetDate = new Date(challenge.resetDate);
         
         // If this challenge needs to be reset
@@ -115,7 +123,7 @@ export const createChallengeContextValue = (
   
   const completeChallenge = (challengeId: string) => {
     setGameData(prevData => {
-      const challenge = prevData.challenges.find(c => c.id === challengeId);
+      const challenge = (prevData.challenges || []).find(c => c.id === challengeId);
       if (!challenge || challenge.status === "completed") return prevData;
       
       // Apply rewards
@@ -125,7 +133,7 @@ export const createChallengeContextValue = (
         coins: prevData.character.coins + challenge.coinReward,
         stats: {
           ...prevData.character.stats,
-          ...Object.entries(challenge.statRewards).reduce((acc, [stat, value]) => ({
+          ...Object.entries(challenge.statRewards || {}).reduce((acc, [stat, value]) => ({
             ...acc,
             [stat]: prevData.character.stats[stat as StatName] + (value || 0)
           }), {} as Record<StatName, number>)
@@ -133,7 +141,7 @@ export const createChallengeContextValue = (
       };
       
       // Add special reward to inventory if provided
-      let updatedInventory = [...prevData.inventory];
+      let updatedInventory = [...(prevData.inventory || [])];
       if (challenge.specialReward) {
         updatedInventory = [...updatedInventory, {
           ...challenge.specialReward,
@@ -142,7 +150,7 @@ export const createChallengeContextValue = (
       }
       
       // Update challenge status
-      const updatedChallenges = prevData.challenges.map(c => 
+      const updatedChallenges = (prevData.challenges || []).map(c => 
         c.id === challengeId ? { ...c, status: "completed" as ChallengeStatus } : c
       );
       
@@ -156,7 +164,7 @@ export const createChallengeContextValue = (
   };
 
   return {
-    challenges,
+    challenges: challenges || [],
     addChallenge,
     updateChallenge,
     deleteChallenge,

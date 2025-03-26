@@ -80,6 +80,7 @@ export const useDataEffects = (
             
             // Check challenge-based achievements
             if ('requiredChallenges' in achievement && 
+                Array.isArray(challengeContext.challenges) &&
                 challengeContext.challenges.filter(c => c.status === "completed").length >= achievement.requiredChallenges) {
               checkAndUnlockAchievement(achievement.id);
             }

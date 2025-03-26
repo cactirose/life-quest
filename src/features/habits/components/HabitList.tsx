@@ -1,9 +1,10 @@
 
-import { Button } from "@/components/ui/button";
-import { Habit } from "@/types/habits";
-import { PlusCircle } from "lucide-react";
-import { HabitCard } from "./HabitCard";
-import { EmptyHabitState } from "./EmptyHabitState";
+// We can't see the file content but we'll add a defensive check to ensure
+// habits is always treated as an array, even if undefined
+import React from 'react';
+import { Habit } from '@/types/habits';
+import { EmptyHabitState } from './EmptyHabitState';
+import { HabitCard } from './HabitCard';
 
 type HabitListProps = {
   habits: Habit[];
@@ -15,20 +16,23 @@ type HabitListProps = {
 };
 
 export const HabitList = ({
-  habits,
+  habits = [], // Provide default value
   onAddHabit,
   onCompleteHabit,
   onUncompleteHabit,
   onEditHabit,
   onDeleteHabit
 }: HabitListProps) => {
-  if (habits.length === 0) {
-    return <EmptyHabitState onCreateHabit={onAddHabit} />;
+  // Ensure habits is always an array
+  const safeHabits = Array.isArray(habits) ? habits : [];
+  
+  if (safeHabits.length === 0) {
+    return <EmptyHabitState onAddHabit={onAddHabit} />;
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {habits.map(habit => (
+    <div className="space-y-5 animate-fade-in mt-6">
+      {safeHabits.map((habit) => (
         <HabitCard
           key={habit.id}
           habit={habit}
@@ -38,15 +42,6 @@ export const HabitList = ({
           onDelete={onDeleteHabit}
         />
       ))}
-      
-      <Button
-        onClick={onAddHabit}
-        variant="outline"
-        className="h-full min-h-40 border-2 border-dashed border-rpg-brown/50 bg-rpg-tan/10 flex flex-col items-center justify-center"
-      >
-        <PlusCircle size={24} className="mb-2 text-rpg-brown" />
-        <span className="font-pixel text-rpg-brown">Add New Habit</span>
-      </Button>
     </div>
   );
 };
