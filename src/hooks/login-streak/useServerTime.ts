@@ -12,7 +12,8 @@ export const useServerTime = () => {
       type ServerTimeResponse = { data: string | null; error: any };
       
       // Use a more explicit approach to handle typing with Supabase RPC
-      const response = await supabase.rpc('get_server_time');
+      // Pass an empty object as the params argument (required by TypeScript)
+      const response = await supabase.rpc('get_server_time', {});
       const { data, error } = response as ServerTimeResponse;
       
       if (error) throw error;
