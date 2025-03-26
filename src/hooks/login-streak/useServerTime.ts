@@ -8,7 +8,12 @@ export const useServerTime = () => {
   // Fetch server time from Supabase
   const fetchServerTime = useCallback(async () => {
     try {
-      const { data, error } = await supabase.rpc('get_server_time');
+      // Define the return type for the RPC call to avoid type error
+      const { data, error } = await supabase.rpc('get_server_time') as { 
+        data: string | null; 
+        error: any;
+      };
+      
       if (error) throw error;
       
       // Data should be a timestamp string like '2023-08-01T12:00:00Z'
