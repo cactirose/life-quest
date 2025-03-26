@@ -37,6 +37,11 @@ const InventoryItemCard = ({
     item.type === "real-life" ? <Gift className="text-rpg-brown" size={16} /> :
     <Gem className="text-rpg-brown" size={16} />;
 
+  const handleEquipAction = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    item.equipped ? onUnequip() : onEquip();
+  };
+
   return (
     <>
       <div 
@@ -84,11 +89,8 @@ const InventoryItemCard = ({
         </div>
         
         <Button 
-          onClick={(e) => {
-            e.stopPropagation();
-            item.equipped ? onUnequip() : onEquip();
-          }}
-          className="w-full pixel-button"
+          onClick={handleEquipAction}
+          className={`w-full ${item.equipped ? 'bg-rpg-tan text-rpg-brown hover:bg-rpg-tan/80' : 'pixel-button'}`}
         >
           {item.equipped ? 'Unequip' : 'Equip'}
         </Button>
@@ -135,7 +137,7 @@ const InventoryItemCard = ({
                 item.equipped ? onUnequip() : onEquip();
                 setShowDetails(false);
               }}
-              className="w-full pixel-button"
+              className={`w-full ${item.equipped ? 'bg-rpg-tan text-rpg-brown hover:bg-rpg-tan/80' : 'pixel-button'}`}
             >
               {item.equipped ? 'Unequip' : 'Equip'}
             </Button>

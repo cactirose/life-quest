@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGameData, GearItem, GearType } from "@/contexts/DataContext";
 import { toast } from "sonner";
 import { Package } from "lucide-react";
@@ -14,18 +14,24 @@ const Inventory = () => {
   const [searchText, setSearchText] = useState("");
   const [filterType, setFilterType] = useState<GearType | "all">("all");
   const [currentTab, setCurrentTab] = useState<string>("all");
+  const [equippedItems, setEquippedItems] = useState<Partial<Record<GearType, GearItem | null>>>({});
   
-  const equippedItemsByType = inventory
-    .filter(item => item.equipped)
-    .reduce((acc, item) => {
-      acc[item.type] = item;
-      return acc;
-    }, {} as Partial<Record<GearType, GearItem | null>>);
+  // Update equipped items whenever inventory changes
+  useEffect(() => {
+    const equipped = inventory
+      .filter(item => item.equipped)
+      .reduce((acc, item) => {
+        acc[item.type] = item;
+        return acc;
+      }, {} as Partial<Record<GearType, GearItem | null>>);
+      
+    setEquippedItems(equipped);
+  }, [inventory]);
     
   const equipmentSlots: Partial<Record<GearType, GearItem | null>> = {
-    weapon: equippedItemsByType.weapon || null,
-    armor: equippedItemsByType.armor || null,
-    accessory: equippedItemsByType.accessory || null,
+    weapon: equippedItems.weapon || null,
+    armor: equippedItems.armor || null,
+    accessory: equippedItems.accessory || null,
   };
   
   const filteredItems = inventory.filter(item => {
@@ -48,12 +54,10 @@ const Inventory = () => {
   
   const handleEquip = (itemId: string) => {
     equipItem(itemId);
-    toast.success("Item equipped!");
   };
   
   const handleUnequip = (itemId: string) => {
     unequipItem(itemId);
-    toast.success("Item unequipped");
   };
   
   return (

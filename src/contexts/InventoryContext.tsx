@@ -1,6 +1,9 @@
+
 import { createContext, useContext } from "react";
 import { GearItem, GearType } from "../types/inventory";
 import { generateId } from "../utils/idGenerator";
+import { toggleItemEquipped } from "@/services/inventoryService";
+import { toast } from "sonner";
 
 interface InventoryContextType {
   inventory: GearItem[];
@@ -39,30 +42,89 @@ export const createInventoryContextValue = (
     }));
   };
 
-  const equipItem = (itemId: string) => {
-    setGameData(prevData => {
-      const itemToEquip = prevData.inventory.find(item => item.id === itemId);
-      if (!itemToEquip) return prevData;
+  const equipItem = async (itemId: string) => {
+    try {
+      // Find the item to equip
+      const itemToEquip = inventory.find(item => item.id === itemId);
+      if (!itemToEquip) {
+        console.error(`Item with ID ${itemId} not found in inventory`);
+        return;
+      }
 
-      // Unequip any other items of the same type
-      const updatedInventory = prevData.inventory.map(item => {
-        if (item.type === itemToEquip.type) {
-          return { ...item, equipped: item.id === itemId };
-        }
-        return item;
+      // Optimistically update the UI first
+      setGameData(prevData => {
+        // Update the inventory with the equipped item and unequip any other items of the same type
+        const updatedInventory = prevData.inventory.map(item => {
+          if (item.type === itemToEquip.type) {
+            return { ...item, equipped: item.id === itemId };
+          }
+          return item;
+        });
+
+        return { ...prevData, inventory: updatedInventory };
       });
 
-      return { ...prevData, inventory: updatedInventory };
-    });
+      // Create the updated item object
+      const updatedItem = { ...itemToEquip, equipped: true };
+      
+      // Update the item in the database
+      const result = await toggleItemEquipped(updatedItem);
+      if (!result) {
+        throw new Error("Failed to update item equipped status in database");
+      }
+      
+      // Success notification
+      toast.success(`${itemToEquip.name} equipped!`);
+    } catch (error) {
+      console.error("Error equipping item:", error);
+      toast.error("Failed to equip item. Please try again.");
+      
+      // Revert the optimistic update on error
+      setGameData(prevData => ({
+        ...prevData,
+        inventory: inventory // Revert to original inventory state
+      }));
+    }
   };
 
-  const unequipItem = (itemId: string) => {
-    setGameData(prevData => ({
-      ...prevData,
-      inventory: prevData.inventory.map(item => 
-        item.id === itemId ? { ...item, equipped: false } : item
-      )
-    }));
+  const unequipItem = async (itemId: string) => {
+    try {
+      // Find the item to unequip
+      const itemToUnequip = inventory.find(item => item.id === itemId);
+      if (!itemToUnequip) {
+        console.error(`Item with ID ${itemId} not found in inventory`);
+        return;
+      }
+
+      // Optimistically update the UI first
+      setGameData(prevData => ({
+        ...prevData,
+        inventory: prevData.inventory.map(item => 
+          item.id === itemId ? { ...item, equipped: false } : item
+        )
+      }));
+
+      // Create the updated item object
+      const updatedItem = { ...itemToUnequip, equipped: false };
+      
+      // Update the item in the database
+      const result = await toggleItemEquipped(updatedItem);
+      if (!result) {
+        throw new Error("Failed to update item equipped status in database");
+      }
+      
+      // Success notification
+      toast.success(`${itemToUnequip.name} unequipped`);
+    } catch (error) {
+      console.error("Error unequipping item:", error);
+      toast.error("Failed to unequip item. Please try again.");
+      
+      // Revert the optimistic update on error
+      setGameData(prevData => ({
+        ...prevData,
+        inventory: inventory // Revert to original inventory state
+      }));
+    }
   };
 
   const purchaseItem = (itemId: string): boolean => {

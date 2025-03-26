@@ -1,22 +1,29 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { toast } from "sonner";
-import { isSameDay, differenceInDays, startOfDay } from "date-fns";
+import { isSameDay, differenceInDays, startOfDay, addDays } from "date-fns";
 import { upsertCharacter } from "@/services/characterService";
 
 export const useLoginStreak = () => {
   const { character, setCharacter } = useGameData();
+  const [lastCheckedDay, setLastCheckedDay] = useState<string | null>(null);
 
   const checkLoginStreak = useCallback(() => {
     if (!character) return;
 
+    // Get current date (server time)
     const now = new Date();
     const today = startOfDay(now);
+    const todayString = today.toISOString();
+    
+    // Get last login date
     const lastLoginDate = character.lastLoginDate ? new Date(character.lastLoginDate) : null;
     const lastLoginDay = lastLoginDate ? startOfDay(lastLoginDate) : null;
     
-    // If this is the first login or the last login was more than 2 days ago, reset streak
-    if (!lastLoginDate || differenceInDays(today, lastLoginDay!) > 1) {
+    console.log(`Checking login streak - Today: ${todayString}, Last login: ${lastLoginDate?.toISOString()}`);
+    
+    // If this is the first login ever
+    if (!lastLoginDate) {
       setCharacter({
         ...character,
         lastLoginDate: now.toISOString(),
@@ -24,50 +31,71 @@ export const useLoginStreak = () => {
         dailyBonusClaimed: false
       });
       
-      // Store the last successful reset time to prevent issues with timezone differences
-      localStorage.setItem('lastStreakReset', today.toISOString());
+      // Store the current day as the last checked day
+      localStorage.setItem('lastStreakReset', todayString);
+      setLastCheckedDay(todayString);
       
-      console.log("Login streak reset to 1");
+      console.log("First login ever. Set streak to 1");
+      return;
+    }
+
+    // Get the stored last reset time to prevent issues with timezone differences
+    const lastResetTimeString = localStorage.getItem('lastStreakReset');
+    const lastResetTime = lastResetTimeString ? new Date(lastResetTimeString) : null;
+    const lastResetDay = lastResetTime ? startOfDay(lastResetTime) : null;
+    
+    // Already checked today
+    if (lastResetDay && isSameDay(today, lastResetDay) && character.lastLoginDate) {
+      console.log("Already checked login streak today");
+      return;
+    }
+    
+    // If the last login was more than 2 days ago, reset streak
+    if (lastLoginDay && differenceInDays(today, lastLoginDay) > 1) {
+      setCharacter({
+        ...character,
+        lastLoginDate: now.toISOString(),
+        loginStreak: 1,
+        dailyBonusClaimed: false
+      });
+      
+      localStorage.setItem('lastStreakReset', todayString);
+      setLastCheckedDay(todayString);
+      
+      console.log("Login streak reset to 1 - too many days since last login");
       return;
     }
 
     // If the last login was yesterday, increment the streak
-    if (differenceInDays(today, lastLoginDay!) === 1) {
+    if (lastLoginDay && differenceInDays(today, lastLoginDay) === 1) {
       setCharacter({
         ...character,
         lastLoginDate: now.toISOString(),
         loginStreak: character.loginStreak + 1,
         dailyBonusClaimed: false
       });
-      console.log("Login streak incremented to", character.loginStreak + 1);
+      
+      localStorage.setItem('lastStreakReset', todayString);
+      setLastCheckedDay(todayString);
+      
+      console.log(`Login streak incremented to ${character.loginStreak + 1}`);
       return;
     }
 
-    // If the last login was today but we haven't checked if it's a new day at midnight
-    if (isSameDay(today, lastLoginDay!)) {
-      // Check if we've crossed midnight since the last check
-      const lastResetTime = localStorage.getItem('lastStreakReset');
+    // If it's the same day as the last login but after midnight since the last reset
+    if (lastLoginDay && isSameDay(today, lastLoginDay) && 
+        (!lastResetDay || !isSameDay(today, lastResetDay))) {
+      // Keep the streak but reset the daily bonus claim status
+      setCharacter({
+        ...character,
+        lastLoginDate: now.toISOString(),
+        dailyBonusClaimed: false
+      });
       
-      if (lastResetTime) {
-        const resetDate = startOfDay(new Date(lastResetTime));
-        
-        // If the last reset was before today, it's a new day
-        if (differenceInDays(today, resetDate) >= 1) {
-          // Update the last login date but keep the same streak
-          setCharacter({
-            ...character,
-            lastLoginDate: now.toISOString(),
-            dailyBonusClaimed: false
-          });
-          
-          // Update the last reset time
-          localStorage.setItem('lastStreakReset', today.toISOString());
-          console.log("New day detected, reset daily bonus claim status");
-        }
-      } else {
-        // If we don't have a last reset time, set it now
-        localStorage.setItem('lastStreakReset', today.toISOString());
-      }
+      localStorage.setItem('lastStreakReset', todayString);
+      setLastCheckedDay(todayString);
+      
+      console.log("Same day login but after midnight reset. Reset daily bonus claim status");
     }
   }, [character, setCharacter]);
 
@@ -94,15 +122,32 @@ export const useLoginStreak = () => {
     });
   }, [character, setCharacter]);
 
+  // Function to force a reset for testing purposes
+  const forceReset = useCallback(() => {
+    if (!character) return;
+    
+    const now = new Date();
+    setCharacter({
+      ...character,
+      lastLoginDate: now.toISOString(),
+      dailyBonusClaimed: false
+    });
+    
+    localStorage.setItem('lastStreakReset', startOfDay(now).toISOString());
+    setLastCheckedDay(startOfDay(now).toISOString());
+    
+    console.log("Forced reset of daily login status");
+  }, [character, setCharacter]);
+
   // Check login streak when component mounts
   useEffect(() => {
     checkLoginStreak();
     
-    // Set up a timer to check for day changes
+    // Set up a timer to check for day changes (check every minute)
     const midnightCheck = setInterval(() => {
       const now = new Date();
-      // Check for the next midnight
-      if (now.getHours() === 0 && now.getMinutes() === 0) {
+      // Check if it's around midnight (between 12:00 AM and 12:05 AM)
+      if (now.getHours() === 0 && now.getMinutes() < 5) {
         console.log("Midnight detected, checking login streak");
         checkLoginStreak();
       }
@@ -111,5 +156,14 @@ export const useLoginStreak = () => {
     return () => clearInterval(midnightCheck);
   }, [checkLoginStreak]);
 
-  return { claimDailyBonus };
+  // Force recheck at specific times
+  useEffect(() => {
+    // Only check once per day to prevent excessive checks
+    const today = startOfDay(new Date()).toISOString();
+    if (lastCheckedDay !== today) {
+      checkLoginStreak();
+    }
+  }, [lastCheckedDay, checkLoginStreak]);
+
+  return { claimDailyBonus, forceReset };
 };
