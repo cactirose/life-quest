@@ -11,9 +11,9 @@ export const useServerTime = () => {
       // Define the return type for the RPC call to avoid type error
       type ServerTimeResponse = { data: string | null; error: any };
       
-      // Call the RPC function with explicit parameter typing to avoid type errors
-      // The second generic parameter is needed to define the return type
-      const { data, error } = await supabase.rpc<string, {}>('get_server_time', {}) as ServerTimeResponse;
+      // Call the RPC function with proper typing
+      // We're using type assertion instead of generics to avoid constraint issues
+      const { data, error } = await supabase.rpc('get_server_time') as ServerTimeResponse;
       
       if (error) throw error;
       
