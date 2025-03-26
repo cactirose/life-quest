@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { upsertCharacter } from "@/services/characterService";
 import { upsertInventoryItem } from "@/services/inventoryService";
 import { createStreakTrophy, calculateDailyBonus } from "@/features/character/utils/dailyLoginUtils";
+import { startOfDay } from "date-fns"; // Added missing import
 
 interface UseDailyBonusProps {
   character: Character | null;
