@@ -34,7 +34,7 @@ export const QuestList = ({
           quest={quest}
           onEdit={isCompletedTab ? () => {} : onEdit}
           onDelete={onDelete}
-          onStepToggle={isCompletedTab ? () => {} : onStepToggle}
+          onToggleStep={isCompletedTab ? () => {} : onStepToggle}
           onComplete={isCompletedTab ? () => {} : onComplete}
         />
       ))}
