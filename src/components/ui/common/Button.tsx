@@ -1,3 +1,6 @@
+
+import { cn } from "@/lib/utils";
+
 export const Button = ({ variant = 'primary', ...props }) => {
   const variants = {
     primary: 'bg-[var(--rpg-tan)] text-[var(--rpg-brown)]',

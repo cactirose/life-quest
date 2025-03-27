@@ -57,6 +57,7 @@ export const QuestCard = ({
   
   const isCompleted = quest.status === "completed";
   const areAllStepsCompleted = totalSteps > 0 && completedSteps === totalSteps;
+  const hasNoSteps = totalSteps === 0;
   
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -173,6 +174,19 @@ export const QuestCard = ({
             <span>{completedSteps}/{totalSteps} steps</span>
             <span>{progress}% complete</span>
           </div>
+          
+          {/* Add Complete Quest button for quests with no steps */}
+          {!isCompleted && hasNoSteps && (
+            <div className="mt-4">
+              <Button 
+                onClick={handleComplete}
+                className="w-full bg-rpg-green hover:bg-rpg-green/80 text-white"
+              >
+                <Trophy className="mr-2 h-4 w-4" />
+                Complete Quest
+              </Button>
+            </div>
+          )}
         </div>
       </div>
       
@@ -186,19 +200,27 @@ export const QuestCard = ({
             className="px-4 pb-4 border-t border-rpg-tan"
           >
             <div className="pt-3">
-              <h4 className="font-pixel text-rpg-brown mb-2">Steps:</h4>
-              
-              <ul className="space-y-2 mb-4">
-                {quest.steps.map((step) => (
-                  <StepItem 
-                    key={step.id} 
-                    step={step} 
-                    questId={quest.id}
-                    isQuestCompleted={isCompleted}
-                    onToggle={() => onToggleStep(quest.id, step.id)} 
-                  />
-                ))}
-              </ul>
+              {totalSteps > 0 ? (
+                <>
+                  <h4 className="font-pixel text-rpg-brown mb-2">Steps:</h4>
+                  
+                  <ul className="space-y-2 mb-4">
+                    {quest.steps.map((step) => (
+                      <StepItem 
+                        key={step.id} 
+                        step={step} 
+                        questId={quest.id}
+                        isQuestCompleted={isCompleted}
+                        onToggle={() => onToggleStep(quest.id, step.id)} 
+                      />
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <div className="text-center py-2 text-rpg-brown mb-4">
+                  No steps for this quest
+                </div>
+              )}
               
               <div className="mt-4">
                 <h4 className="font-pixel text-rpg-brown mb-2">Rewards:</h4>
@@ -224,7 +246,7 @@ export const QuestCard = ({
                 {statRewardDisplay}
               </div>
               
-              {!isCompleted && areAllStepsCompleted && (
+              {!isCompleted && (areAllStepsCompleted && totalSteps > 0) && (
                 <div className="mt-4">
                   <Button 
                     onClick={handleComplete}
