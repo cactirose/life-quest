@@ -21,7 +21,7 @@ import Mood from "./pages/Mood";
 import Achievements from "./pages/Achievements";
 import { ThemeSettings } from "./components/ThemeSettings";
 import { initializeTheme } from "./utils/theme";
-import Login from "./pages/Login";
+import Login from "@/pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -46,8 +46,7 @@ initializeTheme();
 
 // Layout component that includes the navbar
 const Layout = ({ children }: { children: ReactNode }) => {
-  // Initialize Supabase sync (will load data on auth change)
-  const { isLoading } = useGameDataManager();
+  const { isLoading, loadingProgress } = useGameDataManager();
 
   if (isLoading) {
     return (
@@ -56,7 +55,13 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <main className="flex-grow px-4 pb-16 pt-20 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin text-3xl mb-4">⌛</div>
-            <p className="text-lg font-medium">Loading your data...</p>
+            <p className="text-lg font-medium">Loading your quest data...</p>
+            <div className="w-64 h-2 bg-gray-200 rounded-full mt-4">
+              <div 
+                className="h-full bg-rpg-brown rounded-full transition-all duration-300"
+                style={{ width: `${loadingProgress}%` }}
+              />
+            </div>
           </div>
         </main>
       </div>

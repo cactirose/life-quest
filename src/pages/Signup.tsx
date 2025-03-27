@@ -4,10 +4,11 @@ import { User, KeyRound, Mail, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, AuthCard } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { storeSession } from "@/utils/auth";
+
 const Signup = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -27,6 +28,7 @@ const Signup = () => {
     };
     checkSession();
   }, [navigate]);
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -74,61 +76,88 @@ const Signup = () => {
       setIsLoading(false);
     }
   };
-  return <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
-      <Card className="w-full max-w-md shadow-lg bg-orange-100">
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-transparent">
+      <AuthCard className="w-full max-w-md border-[var(--rpg-brown)]">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-3xl font-pixel text-primary">Sign Up</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-3xl font-pixel text-[var(--rpg-brown)]">
+            Sign Up
+          </CardTitle>
+          <CardDescription className="text-[var(--rpg-brown)] opacity-80">
             Create your account to begin your journey
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Character Name</Label>
+              <Label htmlFor="username" className="auth-label">Character Name</Label>
               <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="username" placeholder="BraveHero" value={username} onChange={e => setUsername(e.target.value)} className="pl-10" required />
+                <User className="auth-icon" />
+                <Input 
+                  id="username" 
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="BraveHero"
+                  className="auth-input"
+                  required 
+                />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="auth-label">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="email" type="email" placeholder="hero@example.com" value={email} onChange={e => setEmail(e.target.value)} className="pl-10" required />
+                <Mail className="auth-icon" />
+                <Input 
+                  id="email" 
+                  type="email"
+                  placeholder="hero@example.com"
+                  className="auth-input"
+                  required 
+                />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="auth-label">Password</Label>
               <div className="relative">
-                <KeyRound className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="pl-10" required />
+                <KeyRound className="auth-icon" />
+                <Input 
+                  id="password" 
+                  type="password"
+                  className="auth-input"
+                  required 
+                />
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="auth-description text-xs">
                 Password must be at least 6 characters
               </p>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? <span className="flex items-center gap-2">
-                  <span className="animate-spin">⌛</span> Creating account...
-                </span> : <span className="flex items-center gap-2">
-                  <UserPlus className="h-4 w-4" /> Sign Up
-                </span>}
+            <Button 
+              className="auth-button" 
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin">⌛</span> Creating Account...
+                </span>
+              ) : (
+                "Sign Up"
+              )}
             </Button>
           </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-2">
-          <div className="text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary underline-offset-4 hover:underline">
-              Login
-            </Link>
+          <div className="mt-4 text-center">
+            <p className="auth-description">
+              Already have an account?{" "}
+              <Link to="/login" className="underline hover:opacity-80">
+                Login
+              </Link>
+            </p>
           </div>
-          <Button variant="ghost" className="w-full" onClick={() => navigate("/")}>
-            Continue as Guest
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>;
+        </CardContent>
+      </AuthCard>
+    </div>
+  );
 };
+
 export default Signup;

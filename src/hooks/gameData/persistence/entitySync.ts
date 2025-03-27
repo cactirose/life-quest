@@ -1,4 +1,3 @@
-
 // Re-export all sync functions from their respective modules
 export { syncCharacterData } from './syncCharacter';
 export { syncQuestsData } from './syncQuests';
@@ -12,3 +11,24 @@ export { syncJournalEntriesData } from './syncJournalEntries';
 export { syncShoppingListsData } from './syncShoppingLists';
 export { validateEntity } from './syncUtils';
 export { retrySyncOperation } from './syncUtils';
+
+export const loadCharacterData = async () => {
+  const { data, error } = await supabase
+    .from('characters')
+    .select('id, username, level, experience, stats, login_streak')  // Only select needed fields
+    .single();
+    
+  if (error) throw error;
+  return data;
+};
+
+export const loadQuestsData = async () => {
+  const { data, error } = await supabase
+    .from('quests')
+    .select('id, title, description, status, due_date, rewards')  // Only select needed fields
+    .order('due_date', { ascending: true })
+    .limit(10);  // Limit initial load to recent quests
+    
+  if (error) throw error;
+  return data;
+};

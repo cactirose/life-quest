@@ -1,4 +1,3 @@
-
 import { ThemeName, ThemeColors } from "./types";
 
 // Preset themes
@@ -8,8 +7,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     secondary: "#3f210e",   // Brown
     background: "#F5F5DC",   // Beige
     accent: "#3A1F0E",       // Dark brown
-    text: "#3A3124",         // Dark brown
-    parchment: "#FFF8DC",    // Cornsilk
+    text: "#3f210e",         // Dark text
+    parchment: "#FFF8DC",    // Light cream background
     positive: "#3A1F0E",     // Dark brown
     negative: "#B22222",     // Firebrick
     purple: "#8B5CF6",       // Purple for boss quests
@@ -17,15 +16,16 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     "nav-hover": "#3A1F0E",  // Hover color
     "nav-active": "#3A1F0E", // Active color
     "nav-hover-text": "#FFF8DC", // Same text color on hover as normal
-    "nav-active-text": "#FFF8DC"  // White text on dark active
+    "nav-active-text": "#FFF8DC", // White text on dark active
+    brown: "#3f210e",        // Dark brown for text and buttons
   },
   forest: {
     primary: "#8FBC8F",      // Dark sea green
     secondary: "#2E8B57",    // Sea green
     background: "#F0FFF0",   // Honeydew
     accent: "#556B2F",       // Dark olive green
-    text: "#2F4F4F",         // Dark slate gray
-    parchment: "#F0FFF0",    // Honeydew
+    text: "#2E4A2E",         // Dark forest text
+    parchment: "#F0FFF0",    // Light forest background
     positive: "#32CD32",     // Lime green
     negative: "#8B0000",     // Dark red
     purple: "#9C27B0",       // Purple for boss quests
@@ -33,7 +33,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     "nav-hover": "#1A5D38",  // Darker green for hover
     "nav-active": "#1A5D38", // Active state
     "nav-hover-text": "#F0FFF0", // Keep the same text color on hover
-    "nav-active-text": "#F0FFF0"  // Keep the same text color on active
+    "nav-active-text": "#F0FFF0", // Keep the same text color on active
+    brown: "#2E4A2E",        // Dark forest green for text and buttons
   },
   ocean: {
     primary: "#87CEEB",      // Sky blue

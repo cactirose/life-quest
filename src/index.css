@@ -56,12 +56,12 @@
     /* RPG Theme Custom Variables */
     --rpg-tan: #D2B48C;
     --rpg-brown: #3F210E;
-    --rpg-background: #F5F5DC;
+    --rpg-background: #FFF8DC;
     --rpg-green: #3A1F0E;
     --rpg-red: #B22222;
     --rpg-parchment: #FFF8DC;
     --rpg-accent: #3A1F0E;
-    --rpg-text: #3A3124;
+    --rpg-text: #3F210E;
     --rpg-light-green: #6B4D38;
     --rpg-blue: #2196F3;
     --rpg-purple: #9C27B0;
@@ -315,6 +315,77 @@
     .calendar-container .rdp-caption {
       @apply w-full justify-center;
     }
+  }
+
+  /* Update existing auth classes */
+  .auth-container {
+    @apply min-h-screen flex items-center justify-center px-4 py-12;
+    background-color: var(--rpg-parchment);
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='currentColor' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .auth-card {
+    @apply w-full max-w-md shadow-lg;
+    background-color: white;
+    border: 2px solid var(--rpg-brown);
+  }
+
+  .auth-input {
+    @apply w-full px-3 py-2 rounded-md border relative pl-10;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-color: var(--rpg-brown);
+    color: var(--rpg-brown);
+  }
+
+  .auth-input::placeholder {
+    color: var(--rpg-brown);
+    opacity: 0.6;
+  }
+
+  .auth-label {
+    @apply block text-sm font-medium;
+    color: var(--rpg-brown);
+  }
+
+  .auth-icon {
+    @apply absolute left-3 top-3 h-4 w-4;
+    color: var(--rpg-brown);
+  }
+
+  .auth-title {
+    @apply text-3xl font-pixel;
+    color: var(--rpg-brown);
+  }
+
+  .auth-description {
+    @apply text-sm;
+    color: var(--rpg-brown);
+    opacity: 0.85;
+  }
+
+  .auth-button {
+    @apply w-full py-2 px-4 rounded-md font-medium transition-all duration-200;
+    background-color: var(--rpg-brown);
+    color: var(--rpg-parchment);
+    border: 2px solid var(--rpg-brown);
+  }
+
+  .auth-button:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .auth-button:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  .auth-link {
+    @apply underline transition-opacity;
+    color: var(--rpg-brown);
+  }
+
+  .auth-link:hover {
+    opacity: 0.8;
   }
 }
 

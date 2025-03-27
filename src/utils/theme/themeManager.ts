@@ -68,6 +68,17 @@ export function applyTheme(theme: ThemeColors): void {
   document.documentElement.style.setProperty('--sidebar-border', convertToHSL(lightenColor(theme.secondary, 10)));
   document.documentElement.style.setProperty('--sidebar-ring', convertToHSL(theme.accent));
 
+  // Ensure proper contrast for auth components
+  const parchmentColor = theme.parchment || "#FFF8DC";
+  const brownColor = theme.secondary || "#3f210e";
+  
+  document.documentElement.style.setProperty('--rpg-parchment', parchmentColor);
+  document.documentElement.style.setProperty('--rpg-brown', brownColor);
+  
+  // Calculate and set hover/active states
+  const darkerBrown = shadeColor(brownColor, -15);
+  document.documentElement.style.setProperty('--rpg-brown-dark', darkerBrown);
+
   if (process.env.NODE_ENV === 'development') {
     console.log('Applying theme:', {
       theme,

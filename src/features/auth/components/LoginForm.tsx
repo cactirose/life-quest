@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { KeyRound, Mail, LogIn } from "lucide-react";
@@ -20,12 +19,10 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      // Simple validation
       if (!email || !password) {
         throw new Error("Please fill in all fields");
       }
       
-      // Sign in with Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -33,37 +30,22 @@ const LoginForm = () => {
       
       if (error) throw error;
       
-      // Store session for sync auth checks and token persistence
       if (data.session) {
-        storeSession(data.session);
+        await storeSession(data.session);
         
-        // Wait a moment to make sure session is stored
+        // Wait for session to be stored
         await new Promise(resolve => setTimeout(resolve, 300));
         
         toast.success("Login successful! Welcome back to Life Quest!");
         
-        // Navigate to dashboard immediately - data loading will happen in background
-        navigate("/dashboard");
+        // Use replace instead of push to prevent back button issues
+        navigate("/dashboard", { replace: true });
       } else {
         throw new Error("No session returned from login");
       }
     } catch (error) {
-      console.error("Login error:", error);
-      
-      // Provide user-friendly error messages
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Please check your credentials and try again.";
-        
-      // Handle known error messages more gracefully
-      let userMessage = errorMessage;
-      if (errorMessage.includes("Invalid login")) {
-        userMessage = "Invalid email or password. Please try again.";
-      } else if (errorMessage.includes("network")) {
-        userMessage = "Network error. Please check your internet connection.";
-      }
-      
-      toast.error(userMessage);
+      console.error("Login failed:", error);
+      toast.error(error instanceof Error ? error.message : "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }

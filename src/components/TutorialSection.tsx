@@ -46,11 +46,11 @@ function renderTutorialContent(isVisible: boolean, onClose?: () => void) {
   
   return (
     <div className="mb-12 animate-fade-in">
-      <Card className="bg-transparent border-2 border-rpg-tan shadow-lg">
+      <div className="parchment border-2 border-rpg-tan shadow-lg rounded-lg">
         <CardHeader className="pb-2">
           <CardTitle className="text-2xl font-pixel text-rpg-brown flex items-center gap-2">
             <Sparkle className="text-rpg-brown" size={24} />
-            Welcome to Your Quest Journal
+            Adventurer's Guide
           </CardTitle>
           <CardDescription className="text-rpg-brown">
             Here's a quick guide to help you get started on your productivity adventure!
@@ -122,7 +122,7 @@ function renderTutorialContent(isVisible: boolean, onClose?: () => void) {
             </Button>
           )}
         </CardFooter>
-      </Card>
+      </div>
     </div>
   );
 }

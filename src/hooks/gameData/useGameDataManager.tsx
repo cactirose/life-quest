@@ -29,6 +29,7 @@ export function useGameDataManager() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Set up data persistence (local storage and Supabase)
   useDataPersistence(gameData);
@@ -49,24 +50,21 @@ export function useGameDataManager() {
         const authenticated = await isAuthenticated();
 
         if (authenticated) {
-          console.log("User is authenticated, fetching data from Supabase");
+          setLoadingProgress(10);
+          
+          // Load all game data at once
           const serverData = await loadAllGameData();
-
+          
           if (isMounted && Object.keys(serverData).length > 0) {
-            console.log("Supabase data loaded:", serverData);
-            setGameData((prevData) => ({
+            setLoadingProgress(90);
+            setGameData(prevData => ({
               ...prevData,
               ...serverData,
             }));
             setLastSyncTime(new Date());
-            toast.success("Your game data has been synced", {
+            setLoadingProgress(100);
+            toast.success("Your game data has been loaded", {
               id: "data-sync-success",
-            });
-          } else {
-            console.log("No Supabase data found or request failed");
-            // Keep using the initial data if no server data
-            toast.info("Using locally saved data", {
-              id: "using-local-data",
             });
           }
         } else {
@@ -88,10 +86,10 @@ export function useGameDataManager() {
           // }
         }
       } catch (error) {
-        console.error("Error loading game data:", error);
-        toast.error("Error loading data. Using cached data instead.", {
-          id: "data-load-error",
-        });
+        console.error("Error loading data:", error);
+        toast.error("Some data failed to load. Retrying...");
+        // Retry loading after a short delay
+        setTimeout(loadData, 3000);
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -165,6 +163,7 @@ export function useGameDataManager() {
     gameData,
     setGameData,
     isLoading,
+    loadingProgress,
     lastSyncTime,
     refreshData,
   };

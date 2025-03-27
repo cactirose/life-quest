@@ -1,10 +1,10 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { logout } from "@/utils/auth";
 import { toast } from "sonner";
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const LogoutButton = () => {
   const navigate = useNavigate();
@@ -13,21 +13,27 @@ const LogoutButton = () => {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      await logout();
+      
+      // First clear the session from Supabase
+      await supabase.auth.signOut();
       
       // Clear any local app state
       localStorage.removeItem("rpgProductivityData");
       
-      // Navigate first, then show toast to avoid UI freeze
+      // Clear the session
+      await logout();
+      
+      // Use replace to prevent back button issues
       navigate("/", { replace: true });
       
-      // Show success message after a short delay to ensure navigation happens
+      // Show success message after navigation
       setTimeout(() => {
         toast.success("Logged out successfully");
       }, 100);
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("An error occurred while logging out. Please try again.");
+    } finally {
       setIsLoggingOut(false);
     }
   };
