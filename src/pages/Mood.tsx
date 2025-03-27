@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useGameData, MoodEntry, MoodType } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
@@ -166,6 +167,7 @@ const MoodCalendar = ({ entries }: { entries: MoodEntry[] }) => {
 };
 
 const MoodStats = ({ entries }: { entries: MoodEntry[] }) => {
+  // Calculate mood counts
   const moodCounts = (Object.keys(moodNames) as MoodType[]).reduce(
     (acc, mood) => {
       acc[mood] = entries.filter(entry => entry.mood === mood).length;
@@ -174,6 +176,7 @@ const MoodStats = ({ entries }: { entries: MoodEntry[] }) => {
     {} as Record<MoodType, number>
   );
   
+  // Calculate total entries
   const totalEntries = entries.length;
   
   return (
@@ -338,14 +341,17 @@ const Mood = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingEntry, setEditingEntry] = useState<MoodEntry | null>(null);
   
+  // Sort entries by date (newest first)
   const sortedEntries = [...moods].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
   
+  // Get today's entry if it exists
   const today = new Date().toISOString().split("T")[0];
   const todayEntry = sortedEntries.find(entry => entry.date.startsWith(today));
   
   const handleAddEntry = (entry: Omit<MoodEntry, "id">) => {
+    // Check if there's already an entry for this date
     const existingEntryForDate = moods.find(
       e => new Date(e.date).toDateString() === new Date(entry.date).toDateString()
     );

@@ -2,18 +2,16 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
-import { ScrollText, Sparkle, Target, Flag, Calendar, Info, CalendarClock } from "lucide-react";
+import { ScrollText, Sparkle, Target, Flag, Calendar } from "lucide-react";
 import { TutorialSection } from "@/components/TutorialSection";
 import { useEffect, useState } from "react";
 import { isAuthenticated } from "@/utils/auth";
 import { Badge } from "@/components/ui/badge";
-import { useLoginStreak } from "@/hooks/useLoginStreak";
 
 const Index = () => {
   const navigate = useNavigate();
   const { character } = useGameData();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const { claimDailyBonus } = useLoginStreak();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -28,12 +26,6 @@ const Index = () => {
     
     checkAuth();
   }, []);
-
-  const handleClaimDailyBonus = () => {
-    if (claimDailyBonus) {
-      claimDailyBonus();
-    }
-  };
 
   // Determine if character is valid without conditional rendering
   const hasValidCharacter = Boolean(
@@ -86,32 +78,6 @@ const Index = () => {
             )}
           </div>
         </div>
-
-        {isLoggedIn && (
-          <div className="parchment p-4 mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <Info size={20} className="text-rpg-brown" />
-              <h2 className="text-lg font-pixel text-rpg-brown">Daily Login Streak</h2>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center justify-between">
-              <div className="flex flex-col items-center sm:items-start mb-4 sm:mb-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <CalendarClock className="text-rpg-brown" size={18} />
-                  <span className="font-pixel text-rpg-brown">Day {character.loginStreak}</span>
-                </div>
-                <p className="text-sm text-rpg-brown">Keep logging in daily to earn increasing rewards!</p>
-              </div>
-              
-              <Button
-                disabled={character.dailyBonusClaimed}
-                className={`pixel-button ${character.dailyBonusClaimed ? "opacity-50 cursor-not-allowed" : ""}`}
-                onClick={handleClaimDailyBonus}
-              >
-                {character.dailyBonusClaimed ? "Already Claimed" : "Claim Daily Bonus"}
-              </Button>
-            </div>
-          </div>
-        )}
 
         <TutorialSection />
 
