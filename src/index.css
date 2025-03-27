@@ -55,7 +55,7 @@
     
     /* RPG Theme Custom Variables */
     --rpg-tan: #D2B48C;
-    --rpg-brown: #3f210e;
+    --rpg-brown: #3F210E;
     --rpg-background: #F5F5DC;
     --rpg-green: #3A1F0E;
     --rpg-red: #B22222;
@@ -315,25 +315,6 @@
     .calendar-container .rdp-caption {
       @apply w-full justify-center;
     }
-  }
-
-  /* Add these new styles */
-  .auth-input {
-    @apply w-full px-3 py-2 bg-white/90 border rounded-md;
-    border-color: #3f210e;
-    color: #3f210e;
-  }
-
-  .auth-button {
-    @apply w-full py-2 rounded-md font-medium transition-colors duration-200 border;
-    background-color: #D2B48C;
-    color: #3f210e;
-    border-color: #3f210e;
-  }
-
-  .auth-button:hover {
-    background-color: #3f210e;
-    color: #D2B48C;
   }
 }
 

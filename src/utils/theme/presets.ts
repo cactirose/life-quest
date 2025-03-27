@@ -1,3 +1,4 @@
+
 import { ThemeName, ThemeColors } from "./types";
 
 // Preset themes
@@ -7,8 +8,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     secondary: "#3f210e",   // Brown
     background: "#F5F5DC",   // Beige
     accent: "#3A1F0E",       // Dark brown
-    text: "#3A1F0E",         // Dark brown for text
-    parchment: "#FFF8DC",    // Light cream color for better readability
+    text: "#3A3124",         // Dark brown
+    parchment: "#FFF8DC",    // Cornsilk
     positive: "#3A1F0E",     // Dark brown
     negative: "#B22222",     // Firebrick
     purple: "#8B5CF6",       // Purple for boss quests
