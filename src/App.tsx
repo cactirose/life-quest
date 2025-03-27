@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -38,6 +37,7 @@ import Journal from "./pages/Journal";
 import JournalEntryForm from "./pages/JournalEntryForm";
 import JournalEntryDetail from "./pages/JournalEntryDetail";
 import JournalEntryEdit from "./pages/JournalEntryEdit";
+import { validateThemeImplementation } from '@/utils/theme/themeValidator';
 
 const queryClient = new QueryClient();
 
@@ -79,223 +79,231 @@ const PublicLayout = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <DataProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Public Routes */}
-              <Route
-                path="/"
-                element={
-                  <PublicLayout>
-                    <Index />
-                  </PublicLayout>
-                }
-              />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/update-password" element={<UpdatePassword />} />
+const App = () => {
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      validateThemeImplementation();
+    }
+  }, []);
 
-              {/* Protected Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/quests"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Quests />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/character"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Character />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/skills"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <SkillTree />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/shop"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Shop />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/inventory"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Inventory />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/challenges"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Challenges />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/habits"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Habits />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/mood"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Mood />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/achievements"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Achievements />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              
-              {/* Shopping List Routes */}
-              <Route
-                path="/shopping-list"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <ShoppingList />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/shopping-list/new"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <ShoppingListForm />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/shopping-list/:id"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <ShoppingListDetail />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/shopping-list/:id/edit"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <ShoppingListEdit />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              
-              {/* Journal Routes */}
-              <Route
-                path="/journal"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Journal />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/journal/new"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <JournalEntryForm />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/journal/:id"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <JournalEntryDetail />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/journal/:id/edit"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <JournalEntryEdit />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <DataProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                {/* Public Routes */}
+                <Route
+                  path="/"
+                  element={
+                    <PublicLayout>
+                      <Index />
+                    </PublicLayout>
+                  }
+                />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/update-password" element={<UpdatePassword />} />
 
-              {/* Not Found Route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </DataProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+                {/* Protected Routes */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Dashboard />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/quests"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Quests />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/character"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Character />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/skills"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <SkillTree />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/shop"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Shop />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/inventory"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Inventory />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/challenges"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Challenges />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/habits"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Habits />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/mood"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Mood />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/achievements"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Achievements />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Shopping List Routes */}
+                <Route
+                  path="/shopping-list"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ShoppingList />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/shopping-list/new"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ShoppingListForm />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/shopping-list/:id"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ShoppingListDetail />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/shopping-list/:id/edit"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ShoppingListEdit />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Journal Routes */}
+                <Route
+                  path="/journal"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Journal />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/journal/new"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <JournalEntryForm />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/journal/:id"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <JournalEntryDetail />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/journal/:id/edit"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <JournalEntryEdit />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Not Found Route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </DataProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

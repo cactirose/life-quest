@@ -67,6 +67,17 @@ export function applyTheme(theme: ThemeColors): void {
   document.documentElement.style.setProperty('--sidebar-accent-foreground', convertToHSL(contrastColor(theme.accent)));
   document.documentElement.style.setProperty('--sidebar-border', convertToHSL(lightenColor(theme.secondary, 10)));
   document.documentElement.style.setProperty('--sidebar-ring', convertToHSL(theme.accent));
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Applying theme:', {
+      theme,
+      computedStyles: {
+        brown: getComputedStyle(document.documentElement)
+          .getPropertyValue('--rpg-brown'),
+        // ... other colors
+      }
+    });
+  }
 }
 
 // Get current theme from localStorage or use default

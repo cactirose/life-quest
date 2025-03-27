@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,20 +62,19 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// RPG theme colors with updated chocolate brown
 				rpg: {
-					brown: '#4A2511', // Updated to more chocolate brown color
-					tan: '#D2B48C',
-					green: '#2E8B57',
-					'light-green': '#6B8E23',
-					blue: '#4682B4',
-					purple: '#483D8B',
-					yellow: '#DAA520',
-					red: '#A52A2A',
-					'dark-wood': '#3B1F0E', // Darker chocolate brown
-					'light-wood': '#A1887F',
-					parchment: '#F5F5DC',
-					'pixel-black': '#130F1C',
+					brown: 'var(--rpg-brown)',
+					tan: 'var(--rpg-tan)',
+					green: 'var(--rpg-green)',
+					'light-green': 'var(--rpg-light-green)',
+					blue: 'var(--rpg-blue)',
+					purple: 'var(--rpg-purple)',
+					yellow: 'var(--rpg-yellow)',
+					red: 'var(--rpg-red)',
+					'dark-wood': 'var(--rpg-dark-wood)',
+					'light-wood': 'var(--rpg-light-wood)',
+					parchment: 'var(--rpg-parchment)',
+					'pixel-black': 'var(--rpg-pixel-black)',
 				}
 			},
 			borderRadius: {
