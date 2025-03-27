@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGameData } from "@/contexts/DataContext";
@@ -7,25 +6,24 @@ import LoginFooter from "@/features/auth/components/LoginFooter";
 import AuthLoader from "@/features/auth/components/AuthLoader";
 import { useAuthCheck } from "@/features/auth/hooks/useAuthCheck";
 import { useIsMobile } from "@/hooks/use-mobile";
-
 const Login = () => {
   const navigate = useNavigate();
-  const { setGameData } = useGameData();
-  const { authCheckDone } = useAuthCheck(navigate);
+  const {
+    setGameData
+  } = useGameData();
+  const {
+    authCheckDone
+  } = useAuthCheck(navigate);
   const isMobile = useIsMobile();
 
   // Show loading state while checking auth
   if (!authCheckDone) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
+    return <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
         <AuthLoader message={isMobile ? "Getting your adventure ready..." : "Checking authentication status..."} />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
-      <Card className="w-full max-w-md shadow-lg">
+  return <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/50">
+      <Card className="w-full max-w-md shadow-lg bg-orange-100">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-3xl font-pixel text-primary">Login</CardTitle>
           <CardDescription>
@@ -37,8 +35,6 @@ const Login = () => {
         </CardContent>
         <LoginFooter />
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default Login;
