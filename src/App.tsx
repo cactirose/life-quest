@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,7 +16,6 @@ import SkillTree from "./pages/SkillTree";
 import Shop from "./pages/Shop";
 import Inventory from "./pages/Inventory";
 import NotFound from "./pages/NotFound";
-import Challenges from "./pages/Challenges";
 import Habits from "./pages/Habits";
 import Mood from "./pages/Mood";
 import Achievements from "./pages/Achievements";
@@ -166,16 +166,6 @@ const App = () => {
                     <ProtectedRoute>
                       <Layout>
                         <Inventory />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/challenges"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Challenges />
                       </Layout>
                     </ProtectedRoute>
                   }
