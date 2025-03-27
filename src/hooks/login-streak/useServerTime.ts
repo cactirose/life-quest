@@ -1,6 +1,7 @@
-
 import { useState, useCallback, useEffect } from "react";
+import { ServerTimeResponse } from '@/types/supabase';
 import { supabase } from "@/integrations/supabase/client";
+import { typedRPC } from '@/lib/supabase/rpc';
 
 export const useServerTime = () => {
   const [serverTime, setServerTime] = useState<Date | null>(null);
@@ -8,9 +9,8 @@ export const useServerTime = () => {
   // Fetch server time from Supabase
   const fetchServerTime = useCallback(async () => {
     try {
-      // For RPC calls with no params, omit the parameters entirely
-      // and let TypeScript infer the return type
-      const { data, error } = await supabase.rpc('get_server_time');
+      // Add explicit type parameter to rpc call
+      const { data, error } = await typedRPC.get_server_time();
       
       if (error) throw error;
       
