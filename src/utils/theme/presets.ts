@@ -5,7 +5,7 @@ import { ThemeName, ThemeColors } from "./types";
 export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
   default: {
     primary: "#D2B48C",      // Tan
-    secondary: "#8B4513",    // Brown
+    secondary: "#3f210e",   // Brown
     background: "#F5F5DC",   // Beige
     accent: "#3A1F0E",       // Dark brown
     text: "#3A3124",         // Dark brown
@@ -56,7 +56,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     secondary: "#CD5C5C",    // Indian red
     background: "#FFF0F5",   // Lavender blush
     accent: "#FF6347",       // Tomato
-    text: "#8B4513",         // Saddle brown
+    text: "#3F210E",         // Saddle brown
     parchment: "#FFEFD5",    // Papaya whip
     positive: "#32CD32",     // Lime green
     negative: "#8B0000",     // Dark red
@@ -85,7 +85,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
   },
   custom: {
     primary: "#D2B48C",      // Default values that will be overridden
-    secondary: "#8B4513",
+    secondary: "#3F210E",
     background: "#F5F5DC",
     accent: "#3A1F0E",
     text: "#3A3124",
@@ -93,7 +93,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     positive: "#3A1F0E",
     negative: "#B22222",
     purple: "#8B5CF6",
-    navbar: "#8B4513",
+    navbar: "#3F210E",
     "nav-hover": "#3A1F0E",
     "nav-active": "#3A1F0E",
     "nav-hover-text": "#F5F5DC", // Light text for custom theme hover

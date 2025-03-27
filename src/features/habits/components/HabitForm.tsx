@@ -27,7 +27,7 @@ const COLOR_OPTIONS = [
   "#4682B4", // blue
   "#2E8B57", // green
   "#DAA520", // goldenrod
-  "#8B4513", // saddle brown
+  "#3F210E", // saddle brown
   "#483D8B", // dark slate blue
   "#A52A2A", // brown
   "#696969", // dim gray
