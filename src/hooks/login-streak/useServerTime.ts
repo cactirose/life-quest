@@ -8,14 +8,9 @@ export const useServerTime = () => {
   // Fetch server time from Supabase
   const fetchServerTime = useCallback(async () => {
     try {
-      // Define the return type for the RPC call to avoid type error
-      interface ServerTimeResponse {
-        data: string | null;
-        error: any;
-      }
-      
-      // Call the RPC function with proper typing using explicit type parameters
-      const { data, error } = await supabase.rpc<string>('get_server_time') as ServerTimeResponse;
+      // The correct type annotation for Supabase RPC calls
+      // First type parameter is the return type, second is the params type
+      const { data, error } = await supabase.rpc<string, {}>('get_server_time');
       
       if (error) throw error;
       
