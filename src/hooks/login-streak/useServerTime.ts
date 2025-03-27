@@ -8,15 +8,14 @@ export const useServerTime = () => {
   // Fetch server time from Supabase
   const fetchServerTime = useCallback(async () => {
     try {
-      // The correct type annotation for Supabase RPC calls
-      // First type parameter is the return type, second is the params type
-      const { data, error } = await supabase.rpc<string, {}>('get_server_time');
+      // Call the RPC function without type parameters
+      const { data, error } = await supabase.rpc('get_server_time');
       
       if (error) throw error;
       
       // Data should be a timestamp string like '2023-08-01T12:00:00Z'
       if (data) {
-        const serverDate = new Date(data);
+        const serverDate = new Date(data as string);
         console.log("Server time:", serverDate.toISOString());
         setServerTime(serverDate);
         return serverDate;
