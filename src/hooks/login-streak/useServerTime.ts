@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { ServerTimeResponse } from '@/types/supabase';
 import { supabase } from "@/integrations/supabase/client";
@@ -9,14 +10,14 @@ export const useServerTime = () => {
   // Fetch server time from Supabase
   const fetchServerTime = useCallback(async () => {
     try {
-      // Add explicit type parameter to rpc call
+      // Use rpc call without type parameters
       const { data, error } = await typedRPC.get_server_time();
       
       if (error) throw error;
       
       // Data should be a timestamp string like '2023-08-01T12:00:00Z'
       if (data) {
-        // Type assertions are safe here since we know the data structure
+        // Use a type assertion to handle the data safely
         const serverDate = new Date(data as string);
         console.log("Server time:", serverDate.toISOString());
         setServerTime(serverDate);
