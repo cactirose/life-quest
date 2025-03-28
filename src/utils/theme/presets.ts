@@ -20,8 +20,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     brown: "#3f210e",        // Dark brown for text and buttons
   },
   forest: {
-    primary: "#8FBC8F",      // Dark sea green
-    secondary: "#2E8B57",    // Sea green
+    primary: "#BEEAD1",      // Dark sea green
+    secondary: "#194D30",    // Sea green
     background: "#F0FFF0",   // Honeydew
     accent: "#556B2F",       // Dark olive green
     text: "#2E4A2E",         // Dark forest text
@@ -29,7 +29,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     positive: "#32CD32",     // Lime green
     negative: "#8B0000",     // Dark red
     purple: "#9C27B0",       // Purple for boss quests
-    navbar: "#2E8B57",       // Navbar green
+    navbar: "#194D30",       // Navbar green
     "nav-hover": "#1A5D38",  // Darker green for hover
     "nav-active": "#1A5D38", // Active state
     "nav-hover-text": "#F0FFF0", // Keep the same text color on hover
@@ -37,8 +37,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     brown: "#2E4A2E",        // Dark forest green for text and buttons
   },
   ocean: {
-    primary: "#87CEEB",      // Sky blue
-    secondary: "#4682B4",    // Steel blue
+    primary: "#C7E9FF",      // Sky blue
+    secondary: "#00578D",    // Steel blue
     background: "#F0F8FF",   // Alice blue
     accent: "#1E90FF",       // Dodger blue
     text: "#191970",         // Midnight blue
@@ -46,25 +46,25 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     positive: "#40E0D0",     // Turquoise
     negative: "#FF4500",     // Orange red
     purple: "#673AB7",       // Purple for boss quests
-    navbar: "#4682B4",       // Navbar blue
+    navbar: "#00578D",       // Navbar blue
     "nav-hover": "#2B5D8C",  // Darker blue for hover
     "nav-active": "#2B5D8C", // Active state
     "nav-hover-text": "#F0F8FF", // Keep the same text color on hover
     "nav-active-text": "#F0F8FF"  // Keep the same text color on active
   },
-  sunset: {
-    primary: "#FFA07A",      // Light salmon
-    secondary: "#CD5C5C",    // Indian red
-    background: "#FFF0F5",   // Lavender blush
-    accent: "#FF6347",       // Tomato
-    text: "#3F210E",         // Saddle brown
-    parchment: "#FFEFD5",    // Papaya whip
-    positive: "#32CD32",     // Lime green
-    negative: "#8B0000",     // Dark red
+  barbie: {
+    primary: "#FFDBEA",      // Light pink
+    secondary: "#FA4C93",    // Darker pink
+    background: "#FFDBEA",   // Lavender blush
+    accent: "#FA4C93",       // Tomato
+    text: "#FA4C93",         // Saddle brown
+    parchment: "#FFF0F6",    // Papaya whip
+    positive: "#FA4C93",     // Lime green
+    negative: "#FFDBEA",     // Dark red
     purple: "#9C27B0",       // Purple for boss quests
-    navbar: "#CD5C5C",       // Navbar red
-    "nav-hover": "#B13E3E",  // Darker red for hover
-    "nav-active": "#B13E3E", // Active state
+    navbar: "#FC88B6",       // Navbar red
+    "nav-hover": "#FA478F",  // Darker red for hover
+    "nav-active": "#FA478F", // Active state
     "nav-hover-text": "#FFF0F5", // Keep the same text color on hover
     "nav-active-text": "#FFF0F5"  // Keep the same text color on active
   },
