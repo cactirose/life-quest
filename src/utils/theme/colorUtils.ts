@@ -1,3 +1,4 @@
+
 // Helper function to shade color (darken)
 export function shadeColor(color: string, percent: number): string {
   let R = parseInt(color.substring(1, 3), 16);
@@ -21,7 +22,6 @@ export function lightenColor(color: string, percent: number): string {
 }
 
 // Function to determine contrasting text color
-// Enhanced to ensure better contrast especially for dark greens
 export function contrastColor(hex: string): string {
   // Remove the # from the hex color
   hex = hex.replace('#', '');
@@ -31,11 +31,11 @@ export function contrastColor(hex: string): string {
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
   
-  // Calculate relative luminance using improved formula for better contrast with forest colors
+  // Calculate relative luminance
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   
-  // Using a lower threshold (0.45 instead of 0.5) to ensure dark green backgrounds always get light text
-  return luminance > 0.45 ? '#0A2E1A' : '#F1F8F3';
+  // Return white or black based on luminance
+  return luminance > 0.5 ? '#3A1F0E' : '#FFF8DC';
 }
 
 // Helper function to convert hex to HSL string for Tailwind CSS variables
