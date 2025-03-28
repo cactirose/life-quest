@@ -20,5 +20,4 @@ export interface ThemeColors {
   "nav-active"?: string; // Navbar active state
   "nav-hover-text"?: string; // Text color for navbar hover state
   "nav-active-text"?: string; // Text color for navbar active state
-  brown?: string;        // Additional brown color
 }

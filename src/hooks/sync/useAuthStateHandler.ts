@@ -1,11 +1,10 @@
-
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { storeSession, clearSession } from "@/utils/auth";
 
 export const useAuthStateHandler = (
-  loadUserData: () => Promise<any>,
+  loadUserData: () => void,
   setGameData: React.Dispatch<React.SetStateAction<any>>
 ) => {
   useEffect(() => {
