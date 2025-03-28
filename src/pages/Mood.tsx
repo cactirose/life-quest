@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { 
@@ -125,26 +126,30 @@ const MoodCalendar = ({ entries }: { entries: MoodEntry[] }) => {
         <h2 className="text-xl font-pixel text-rpg-brown">Monthly Mood Overview</h2>
       </div>
       
-      <Calendar
-        mode="single"
-        className="rounded-md"
-        modifiers={{
-          happy: (date) => getMoodForDate(date) === "happy",
-          motivated: (date) => getMoodForDate(date) === "motivated",
-          neutral: (date) => getMoodForDate(date) === "neutral",
-          tired: (date) => getMoodForDate(date) === "tired",
-          stressed: (date) => getMoodForDate(date) === "stressed",
-          sad: (date) => getMoodForDate(date) === "sad"
-        }}
-        modifiersStyles={{
-          happy: { backgroundColor: `${moodColors.happy}30` },
-          motivated: { backgroundColor: `${moodColors.motivated}30` },
-          neutral: { backgroundColor: `${moodColors.neutral}30` },
-          tired: { backgroundColor: `${moodColors.tired}30` },
-          stressed: { backgroundColor: `${moodColors.stressed}30` },
-          sad: { backgroundColor: `${moodColors.sad}30` }
-        }}
-      />
+      <div className="flex justify-end">
+        <ScrollArea hideScrollbar className="w-full">
+          <Calendar
+            mode="single"
+            className="rounded-md scale-110 transform origin-right"
+            modifiers={{
+              happy: (date) => getMoodForDate(date) === "happy",
+              motivated: (date) => getMoodForDate(date) === "motivated",
+              neutral: (date) => getMoodForDate(date) === "neutral",
+              tired: (date) => getMoodForDate(date) === "tired",
+              stressed: (date) => getMoodForDate(date) === "stressed",
+              sad: (date) => getMoodForDate(date) === "sad"
+            }}
+            modifiersStyles={{
+              happy: { backgroundColor: `${moodColors.happy}30` },
+              motivated: { backgroundColor: `${moodColors.motivated}30` },
+              neutral: { backgroundColor: `${moodColors.neutral}30` },
+              tired: { backgroundColor: `${moodColors.tired}30` },
+              stressed: { backgroundColor: `${moodColors.stressed}30` },
+              sad: { backgroundColor: `${moodColors.sad}30` }
+            }}
+          />
+        </ScrollArea>
+      </div>
       
       <div className="mt-4 grid grid-cols-3 gap-2">
         {(Object.keys(moodNames) as MoodType[]).map(mood => (
