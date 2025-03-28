@@ -51,7 +51,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     "nav-active-text": "#F0F8FF",  // Keep the same text color on active
   },
   barbie: {
-    primary: "#FFDBEA",      // Light pink
+    primary: "#FFD1E4",      // Light pink
     secondary: "#FA4C93",    // Darker pink
     background: "#FFF5F9",   // Lavender blush
     accent: "#FA4C93",       // Tomato
