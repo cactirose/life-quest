@@ -2,7 +2,7 @@
 import { StatName } from "../../types/character";
 
 // Define available themes
-export type ThemeName = "default" | "forest" | "ocean" | "barbie" | "royal" | "custom";
+export type ThemeName = "default" | "forest" | "ocean" | "sunset" | "royal" | "custom";
 
 // Base colors that can be customized
 export interface ThemeColors {
