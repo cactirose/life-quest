@@ -1,3 +1,4 @@
+
 import { ThemeName, ThemeColors } from "./types";
 
 // Preset themes
@@ -20,21 +21,21 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     brown: "#3f210e",        // Dark brown for text and buttons
   },
   forest: {
-    primary: "#8FBC8F",      // Dark sea green
-    secondary: "#2E8B57",    // Sea green
-    background: "#F0FFF0",   // Honeydew
-    accent: "#556B2F",       // Dark olive green
-    text: "#2E4A2E",         // Dark forest text
-    parchment: "#F0FFF0",    // Light forest background
-    positive: "#32CD32",     // Lime green
-    negative: "#8B0000",     // Dark red
-    purple: "#9C27B0",       // Purple for boss quests
-    navbar: "#2E8B57",       // Navbar green
-    "nav-hover": "#1A5D38",  // Darker green for hover
-    "nav-active": "#1A5D38", // Active state
-    "nav-hover-text": "#F0FFF0", // Keep the same text color on hover
-    "nav-active-text": "#F0FFF0", // Keep the same text color on active
-    brown: "#2E4A2E",        // Dark forest green for text and buttons
+    primary: "#194D30",      // Dark forest green (new primary color)
+    secondary: "#0C3A22",    // Darker forest green for contrast
+    background: "#E9F5EE",   // Light mint background
+    accent: "#2D7F50",       // Medium forest green for accents
+    text: "#0A2E1A",         // Very dark green for text
+    parchment: "#F1F8F3",    // Light parchment with green tint
+    positive: "#2D7F50",     // Medium green for positive indicators
+    negative: "#A83232",     // Deep red for negative indicators
+    purple: "#5D4A72",       // Forest-compatible purple for boss quests
+    navbar: "#0C3A22",       // Dark green for navbar
+    "nav-hover": "#1C5D3A",  // Slightly lighter green for hover
+    "nav-active": "#1C5D3A", // Same color for active state
+    "nav-hover-text": "#F1F8F3", // Light text on hover
+    "nav-active-text": "#F1F8F3", // Light text on active
+    brown: "#0A2E1A",        // Very dark green instead of brown
   },
   ocean: {
     primary: "#87CEEB",      // Sky blue
