@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCharacter } from "./characterService";
 import { fetchQuests } from "./questService";
