@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,8 +29,19 @@ const ShoppingListDetail = () => {
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddItem, setShowAddItem] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   const form = useForm<ItemFormValues>({
+    resolver: zodResolver(itemFormSchema),
+    defaultValues: {
+      name: "",
+      quantity: "",
+      category: "",
+      notes: "",
+    },
+  });
+
+  const editForm = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema),
     defaultValues: {
       name: "",
@@ -201,6 +211,58 @@ const ShoppingListDetail = () => {
     }
   };
 
+  const startEditing = (item: ShoppingItem) => {
+    setEditingItemId(item.id);
+    editForm.reset({
+      name: item.name,
+      quantity: item.quantity || "",
+      category: item.category || "",
+      notes: item.notes || "",
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingItemId(null);
+    editForm.reset();
+  };
+
+  const updateItem = async (values: ItemFormValues) => {
+    if (!editingItemId) return;
+    
+    try {
+      const updatedItem = {
+        name: values.name,
+        quantity: values.quantity || null,
+        category: values.category || null,
+        notes: values.notes || null,
+      };
+
+      console.log("Updating item:", updatedItem);
+      const { data, error } = await supabase
+        .from('shopping_items')
+        .update(updatedItem)
+        .eq('id', editingItemId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating item:", error);
+        throw error;
+      }
+
+      console.log("Item updated successfully:", data);
+      setItems(items.map(item => 
+        item.id === editingItemId ? data : item
+      ));
+      setEditingItemId(null);
+      editForm.reset();
+      toast.success("Item updated successfully");
+    } catch (error) {
+      console.error("Error updating item:", error);
+      toast.error("Failed to update item");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-8">
@@ -366,35 +428,143 @@ const ShoppingListDetail = () => {
                   item.purchased ? 'bg-green-50/30' : 'bg-white/30'
                 }`}
               >
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className={`mr-2 ${item.purchased ? 'text-green-600' : ''}`}
-                  onClick={() => togglePurchased(item.id, item.purchased)}
-                >
-                  {item.purchased ? <Check size={18} /> : <div className="w-5 h-5 border-2 border-gray-400 rounded-md" />}
-                </Button>
-                
-                <div className="flex-grow">
-                  <div className={`text-rpg-brown text-sm font-medium ${item.purchased ? 'line-through text-opacity-70' : ''}`}>
-                    {item.name}
-                    {item.quantity && <span className="ml-2 text-xs text-rpg-brown/70">({item.quantity})</span>}
-                  </div>
-                  
-                  <div className="flex text-xs text-rpg-brown/70">
-                    {item.category && <span className="mr-2">{item.category}</span>}
-                    {item.notes && <span>{item.notes}</span>}
-                  </div>
-                </div>
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => deleteItem(item.id)}
-                  className="text-red-500 hover:bg-red-50"
-                >
-                  <Trash size={16} />
-                </Button>
+                {editingItemId === item.id ? (
+                  <Form {...editForm}>
+                    <form onSubmit={editForm.handleSubmit(updateItem)} className="w-full">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <FormField
+                          control={editForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input 
+                                  placeholder="Item name" 
+                                  className="bg-white/70" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={editForm.control}
+                          name="quantity"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input 
+                                  placeholder="Quantity" 
+                                  className="bg-white/70" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <FormField
+                          control={editForm.control}
+                          name="category"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <select 
+                                  className="bg-white/70 w-full h-10 rounded-md border border-input px-3 py-2 text-sm"
+                                  {...field}
+                                >
+                                  <option value="">Select Category</option>
+                                  {DEFAULT_CATEGORIES.map(category => (
+                                    <option key={category} value={category}>{category}</option>
+                                  ))}
+                                </select>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={editForm.control}
+                          name="notes"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input 
+                                  placeholder="Notes" 
+                                  className="bg-white/70" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          type="button" 
+                          variant="ghost"
+                          onClick={cancelEditing}
+                          size="sm"
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          type="submit" 
+                          className="pixel-button"
+                          size="sm"
+                        >
+                          Save Changes
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                ) : (
+                  <>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className={`mr-2 ${item.purchased ? 'text-green-600' : ''}`}
+                      onClick={() => togglePurchased(item.id, item.purchased)}
+                    >
+                      {item.purchased ? <Check size={18} /> : <div className="w-5 h-5 border-2 border-gray-400 rounded-md" />}
+                    </Button>
+                    
+                    <div className="flex-grow">
+                      <div className={`text-rpg-brown text-sm font-medium ${item.purchased ? 'line-through text-opacity-70' : ''}`}>
+                        {item.name}
+                        {item.quantity && <span className="ml-2 text-xs text-rpg-brown/70">({item.quantity})</span>}
+                      </div>
+                      
+                      <div className="flex text-xs text-rpg-brown/70">
+                        {item.category && <span className="mr-2">{item.category}</span>}
+                        {item.notes && <span>{item.notes}</span>}
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => startEditing(item)}
+                        className="text-blue-500 hover:bg-blue-50"
+                      >
+                        <Edit size={16} />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => deleteItem(item.id)}
+                        className="text-red-500 hover:bg-red-50"
+                      >
+                        <Trash size={16} />
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
