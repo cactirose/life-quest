@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCharacter } from "./characterService";
 import { fetchQuests } from "./questService";
@@ -34,13 +35,13 @@ export const loadAllGameData = async () => {
     const hasValidSession = await ensureValidSession();
     if (!hasValidSession) {
       console.log("No valid session for loadAllGameData");
-      return {};
+      return { quests: [] }; // Always initialize quests as empty array
     }
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.log("No authenticated user for loadAllGameData");
-      return {};
+      return { quests: [] }; // Always initialize quests as empty array
     }
     
     console.log("Loading all game data for user:", user.id);
@@ -104,10 +105,11 @@ export const loadAllGameData = async () => {
       clearTimeout(timeoutId);
       
       // Filter out any empty results and construct the data object
-      const result: any = {};
+      const result: any = {
+        quests: quests || [] // Always ensure quests is an array
+      };
       
       if (character) result.character = character;
-      if (quests && quests.length > 0) result.quests = quests;
       if (inventory && inventory.length > 0) result.inventory = inventory;
       if (shopItems && shopItems.length > 0) result.shopItems = shopItems;
       if (skillTree && skillTree.length > 0) result.skillTree = skillTree;
@@ -128,7 +130,7 @@ export const loadAllGameData = async () => {
     }
   } catch (error) {
     console.error("Error in loadAllGameData:", error);
-    return {};
+    return { quests: [] }; // Always initialize quests as empty array
   }
 };
 
