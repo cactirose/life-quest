@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { DataProvider } from "./contexts/DataContext";
 import { AuthProvider } from "./features/auth/context/AuthContext";
 import Navbar from "./components/Navbar";
@@ -47,28 +47,6 @@ initializeTheme();
 // Layout component that includes the navbar
 const Layout = ({ children }: { children: ReactNode }) => {
   const { isLoading, loadingProgress } = useGameDataManager();
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
-  
-  // Add timeout detection
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    
-    if (isLoading) {
-      setLoadingTimeout(false);
-      timeoutId = setTimeout(() => {
-        setLoadingTimeout(true);
-      }, 15000); // Show retry button after 15 seconds
-    }
-    
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [isLoading]);
-
-  const handleRetry = () => {
-    // Force reload the page
-    window.location.reload();
-  };
 
   if (isLoading) {
     return (
@@ -84,18 +62,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
                 style={{ width: `${loadingProgress}%` }}
               />
             </div>
-            
-            {loadingTimeout && (
-              <div className="mt-8">
-                <p className="text-red-500 mb-2">Loading is taking longer than expected.</p>
-                <button 
-                  onClick={handleRetry}
-                  className="bg-primary text-secondary font-pixel py-2 px-4 rounded-md border-2 border-secondary"
-                >
-                  Retry
-                </button>
-              </div>
-            )}
           </div>
         </main>
       </div>

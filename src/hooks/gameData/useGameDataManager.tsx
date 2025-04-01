@@ -52,20 +52,8 @@ export function useGameDataManager() {
         if (authenticated) {
           setLoadingProgress(10);
           
-          // Add a timeout to prevent infinite loading
-          const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Loading timeout')), 15000);
-          });
-          
           // Load all game data at once
-          const dataPromise = loadAllGameData();
-          
-          // Race between data loading and timeout
-          const serverData = await Promise.race([dataPromise, timeoutPromise])
-            .catch(error => {
-              console.error("Data loading failed or timed out:", error);
-              return {};
-            });
+          const serverData = await loadAllGameData();
           
           if (isMounted && Object.keys(serverData).length > 0) {
             setLoadingProgress(90);
@@ -78,9 +66,6 @@ export function useGameDataManager() {
             toast.success("Your game data has been loaded", {
               id: "data-sync-success",
             });
-          } else {
-            // If we got no data, show error message
-            toast.error("Unable to load your game data. Please try again.");
           }
         } else {
           console.log("User is not authenticated, using local data");
