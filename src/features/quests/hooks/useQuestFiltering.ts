@@ -2,18 +2,11 @@
 import { useState, useEffect } from "react";
 import { Quest } from "@/types/quests";
 
-export const useQuestFiltering = (quests: Quest[] | undefined, searchQuery: string) => {
+export const useQuestFiltering = (quests: Quest[], searchQuery: string) => {
   const [filteredActiveQuests, setFilteredActiveQuests] = useState<Quest[]>([]);
   const [filteredCompletedQuests, setFilteredCompletedQuests] = useState<Quest[]>([]);
   
   useEffect(() => {
-    // Handle the case when quests is undefined
-    if (!quests) {
-      setFilteredActiveQuests([]);
-      setFilteredCompletedQuests([]);
-      return;
-    }
-    
     const activeQuests = quests.filter(quest => quest.status === "active");
     const completedQuests = quests.filter(quest => quest.status === "completed");
     

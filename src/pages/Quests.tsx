@@ -13,7 +13,7 @@ import { useQuestFiltering } from "@/features/quests/hooks/useQuestFiltering";
 
 const Quests = () => {
   const { 
-    quests = [], // Provide empty array default if quests is undefined
+    quests, 
     addQuest, 
     updateQuest, 
     deleteQuest, 
@@ -27,7 +27,7 @@ const Quests = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Use the custom hook for filtering quests with proper guard against undefined
+  // Use the custom hook for filtering quests
   const { filteredActiveQuests, filteredCompletedQuests } = useQuestFiltering(quests, searchQuery);
   
   const handleAddQuest = useCallback(async (newQuest: Omit<Quest, "id" | "status">) => {
