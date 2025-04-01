@@ -1,22 +1,41 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
-import { CircleCheck, Clock, Plus, Sparkle, Target } from "lucide-react";
+import { Award, BadgeCheck, CircleCheck, Clock, Plus, Sparkle, Target, BookOpen, ListChecks, UserCircle, LayoutGrid, Sword } from "lucide-react";
+import { format } from "date-fns";
+
+// Category icon mapping
+const categoryIcons: Record<string, JSX.Element> = {
+  quests: <Sword size={14} />,
+  habits: <ListChecks size={14} />,
+  skills: <BookOpen size={14} />,
+  character: <UserCircle size={14} />,
+  general: <LayoutGrid size={14} />
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { character, quests, inventory, skillTree } = useGameData();
+  const { character, quests, inventory, skillTree, achievements } = useGameData();
   
   // Make sure we have valid data or use defaults
   const safeCharacter = character || { stats: {}, level: 1, xp: 0, nextLevelXp: 100, coins: 0 };
   const safeQuests = Array.isArray(quests) ? quests : [];
   const safeInventory = Array.isArray(inventory) ? inventory : [];
   const safeSkillTree = Array.isArray(skillTree) ? skillTree : [];
+  const safeAchievements = Array.isArray(achievements) ? achievements : [];
   
-  // Filter active quests
+  // Filter active quests and completed achievements
   const activeQuests = safeQuests.filter(quest => quest.status === "active");
   const completedQuests = safeQuests.filter(quest => quest.status === "completed");
+  const unlockedAchievements = safeAchievements.filter(achievement => achievement.unlocked)
+    .sort((a, b) => {
+      // Sort by dateUnlocked if available, newest first
+      if (a.dateUnlocked && b.dateUnlocked) {
+        return new Date(b.dateUnlocked).getTime() - new Date(a.dateUnlocked).getTime();
+      }
+      return 0;
+    });
+  const lockedAchievements = safeAchievements.filter(achievement => !achievement.unlocked);
   
   // Get equipped items
   const equippedItems = safeInventory.filter(item => item.equipped);
@@ -99,27 +118,75 @@ const Dashboard = () => {
           </div>
           
           <div className="parchment">
-            <h2 className="text-2xl font-pixel text-rpg-brown mb-4">Recent Achievements</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-pixel text-rpg-brown">Recent Achievements</h2>
+              <Button 
+                onClick={() => navigate("/achievements")} 
+                className="pixel-button flex items-center gap-1"
+              >
+                <Award size={16} />
+                <span>View All</span>
+              </Button>
+            </div>
             
-            {completedQuests.length === 0 ? (
+            {unlockedAchievements.length === 0 ? (
               <div className="text-center py-8 text-rpg-brown">
-                <Target size={32} className="mx-auto mb-2" />
-                <p>Complete quests to earn achievements!</p>
+                <Award size={32} className="mx-auto mb-2" />
+                {lockedAchievements.length > 0 ? (
+                  <>
+                    <p className="mb-4">You have {lockedAchievements.length} achievements to unlock!</p>
+                    <Button 
+                      onClick={() => navigate("/achievements")} 
+                      className="pixel-button"
+                    >
+                      <Award size={16} className="mr-2" />
+                      View Achievements
+                    </Button>
+                  </>
+                ) : (
+                  <p>No achievements unlocked yet. Complete quests, habits, and other tasks to earn achievements!</p>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
-                {completedQuests.slice(-3).reverse().map(quest => (
-                  <div key={quest.id} className="flex items-center gap-3 p-3 wood-texture">
-                    <CircleCheck className="text-rpg-green flex-shrink-0" size={24} />
+                {unlockedAchievements.slice(0, 3).map(achievement => (
+                  <div key={achievement.id} className="flex items-center gap-3 p-3 wood-texture">
+                    <BadgeCheck className="text-rpg-green flex-shrink-0" size={24} />
                     <div className="flex-grow">
-                      <h4 className="font-pixel text-rpg-brown">{quest.title}</h4>
-                      <div className="flex gap-2 text-sm">
-                        <span>+{quest.xpReward || 0} XP</span>
-                        <span>+{quest.coinReward || 0} 🪙</span>
+                      <h4 className="font-pixel text-rpg-brown">{achievement.title}</h4>
+                      <div className="flex items-center gap-1 text-xs text-rpg-brown mb-1">
+                        {categoryIcons[achievement.category] || <LayoutGrid size={14} />}
+                        <span className="capitalize">{achievement.category || 'general'}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <div className="flex gap-2">
+                          {(achievement.xpReward && achievement.xpReward > 0) && <span>+{achievement.xpReward} XP</span>}
+                          {(achievement.coinReward && achievement.coinReward > 0) && <span>+{achievement.coinReward} 🪙</span>}
+                        </div>
+                        {achievement.dateUnlocked && (
+                          <span className="text-xs text-rpg-brown/70">
+                            {(() => {
+                              try {
+                                return format(new Date(achievement.dateUnlocked), 'MMM d, yyyy');
+                              } catch (e) {
+                                return 'Recently';
+                              }
+                            })()}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
                 ))}
+                
+                {unlockedAchievements.length > 3 && (
+                  <Button 
+                    onClick={() => navigate("/achievements")} 
+                    className="w-full pixel-button"
+                  >
+                    View All Achievements
+                  </Button>
+                )}
               </div>
             )}
           </div>

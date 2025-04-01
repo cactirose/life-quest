@@ -61,8 +61,8 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     negative: "#D32F2F",     // Dark red
     purple: "#9C27B0",       // Purple for boss quests
     navbar: "#FB5F9D",       // Navbar pink
-    "nav-hover": "#FA2479",  // Darker pink for hover
-    "nav-active": "#E91E63", // Active state
+    "nav-hover": "#FC88B6",  // Darker pink for hover
+    "nav-active": "#FC88B6", // Active state
     "nav-hover-text": "#FFFFFF", // White text for better contrast on hover
     "nav-active-text": "#FFFFFF"  // White text for better contrast on active
   },
@@ -81,6 +81,22 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     "nav-active": "#4A2B82", // Active state
     "nav-hover-text": "#F3E5F5", // Keep the same text color on hover
     "nav-active-text": "#F3E5F5"  // Keep the same text color on active
+  },
+  dark: {
+    primary: "#0B0D13",      // Darker gray
+    secondary: "#8497B8",    // Lighter  gray
+    background: "#1A222E",   // Very dark gray
+    accent: "#8497B8",       // Medium gray
+    text: "8497B8",         // Light gray text
+    parchment: "#0B0D13",    // Dark gray parchment
+    positive: "#8497B8",     // Green
+    negative: "#F56565",     // Red
+    purple: "#9F7AEA",       // Purple for boss quests
+    navbar: "#0B0D13",       // Dark navbar
+    "nav-hover": "#1A222E",  // Slightly lighter on hover
+    "nav-active": "#0B0D13", // Active state
+    "nav-hover-text": "#A1B0C9", // Light text for contrast
+    "nav-active-text": "#A1B0C9"  // Light text for contrast
   },
   custom: {
     primary: "#D2B48C",      // Default values that will be overridden

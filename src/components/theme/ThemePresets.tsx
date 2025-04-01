@@ -1,4 +1,3 @@
-
 import { ThemeName, ThemeColors, THEME_PRESETS } from '@/utils/theme';
 import { Button } from "@/components/ui/button";
 
@@ -38,7 +37,7 @@ export function ThemePresets({ activeTheme, onSelectTheme }: ThemePresetsProps) 
             className="text-xs font-bold capitalize"
             style={{ 
               color: colors.text,
-              textShadow: '0px 0px 1px rgba(255, 255, 255, 0.5)'  
+              textShadow: name === 'dark' ? 'none' : '0px 0px 1px rgba(255, 255, 255, 0.5)'
             }}
           >
             {name}

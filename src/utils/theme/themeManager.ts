@@ -8,12 +8,24 @@ export function applyTheme(theme: ThemeColors, themeName: ThemeName = 'default')
   const navHover = theme["nav-hover"] || shadeColor(theme.navbar, -20);
   const navActive = theme["nav-active"] || shadeColor(theme.navbar, -30);
   
-  // Set default values for hover/active text colors if not provided
-  const navHoverText = theme["nav-hover-text"] || theme["nav-text"] || ensureReadableText(navHover, themeName);
-  const navActiveText = theme["nav-active-text"] || ensureReadableText(navActive, themeName);
+  // Handle text colors based on theme
+  let navText, navHoverText, navActiveText;
+  if (themeName === 'dark') {
+    navText = theme.text;
+    navHoverText = theme["nav-hover-text"] || theme.text;
+    navActiveText = theme["nav-active-text"] || theme.text;
+  } else {
+    navText = ensureReadableText(theme.navbar, themeName);
+    navHoverText = theme["nav-hover-text"] || theme["nav-text"] || ensureReadableText(navHover, themeName);
+    navActiveText = theme["nav-active-text"] || ensureReadableText(navActive, themeName);
+  }
 
-  // Force light text color for navbar text based on theme
-  const navText = ensureReadableText(theme.navbar, themeName);
+  // Handle dark theme class
+  if (themeName === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
 
   // Main RPG theme variables
   document.documentElement.style.setProperty('--rpg-tan', theme.primary);

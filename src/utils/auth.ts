@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -76,7 +75,7 @@ export const isAuthenticatedSync = (): boolean => {
 };
 
 // Log user out through Supabase and clear local data
-export const logout = async (): Promise<void> => {
+export const logout = async (navigate?: (path: string, options?: { replace: boolean }) => void): Promise<void> => {
   try {
     // Clear local state first to ensure UI responsiveness
     localStorage.removeItem("isAuthenticated");
@@ -86,6 +85,11 @@ export const logout = async (): Promise<void> => {
     if (error) throw error;
     
     console.log("User logged out successfully");
+    
+    // If navigate function was provided, redirect to index page
+    if (navigate) {
+      navigate("/", { replace: true });
+    }
   } catch (error) {
     console.error("Error during logout:", error);
     throw error;

@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,9 +9,9 @@ const NavActions = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await logout(navigate);
       toast.success("Logged out successfully");
-      navigate("/"); // Redirect to index page after logout
+      // Navigation is now handled by the logout function
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("An error occurred while logging out. Please try again.");

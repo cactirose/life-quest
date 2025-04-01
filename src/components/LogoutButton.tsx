@@ -14,17 +14,8 @@ const LogoutButton = () => {
     try {
       setIsLoggingOut(true);
       
-      // First clear the session from Supabase
-      await supabase.auth.signOut();
-      
-      // Clear any local app state
-      localStorage.removeItem("rpgProductivityData");
-      
-      // Clear the session
-      await logout();
-      
-      // Use replace to prevent back button issues
-      navigate("/", { replace: true });
+      // Use the standardized logout utility with navigation
+      await logout(navigate);
       
       // Show success message after navigation
       setTimeout(() => {

@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logout } from "@/utils/auth";
 
 export const AuthCheckFailed = () => {
   const handleRetry = () => {
@@ -10,10 +10,11 @@ export const AuthCheckFailed = () => {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
-      localStorage.removeItem("isAuthenticated");
+      await logout();
       toast.success("Successfully signed out");
-      window.location.href = "/login";
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 100);
     } catch (error) {
       console.error("Error during sign out:", error);
       toast.error("Failed to sign out properly");
