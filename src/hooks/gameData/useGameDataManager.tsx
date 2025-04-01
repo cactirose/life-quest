@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 // import { loadInitialData } from "@/utils/loadInitialData";
 import { GameData } from "@/types/gameData";
@@ -11,7 +12,7 @@ import { loadAllGameData } from "@/services";
 export function useGameDataManager() {
   const [gameData, setGameData] = useState<GameData>({
     character: {},
-    quests: [],
+    quests: [], // Initialize with empty array to prevent undefined
     inventory: [],
     shopItems: [],
     skillTree: [],
@@ -64,23 +65,34 @@ export function useGameDataManager() {
           const serverData = await Promise.race([dataPromise, timeoutPromise])
             .catch(error => {
               console.error("Data loading failed or timed out:", error);
-              return {};
+              return { quests: [] }; // Always provide default quests array
             });
           
-          if (isMounted && Object.keys(serverData).length > 0) {
+          if (isMounted) {
             setLoadingProgress(90);
+            
+            // Ensure quests is always an array
+            const updatedData = {
+              ...serverData,
+              quests: serverData.quests || [],
+            };
+            
             setGameData(prevData => ({
               ...prevData,
-              ...serverData,
+              ...updatedData,
             }));
+            
             setLastSyncTime(new Date());
             setLoadingProgress(100);
-            toast.success("Your game data has been loaded", {
-              id: "data-sync-success",
-            });
-          } else {
-            // If we got no data, show error message
-            toast.error("Unable to load your game data. Please try again.");
+            
+            if (Object.keys(serverData).length > 0) {
+              toast.success("Your game data has been loaded", {
+                id: "data-sync-success",
+              });
+            } else {
+              // If we got no data, show error message
+              toast.error("Unable to load your game data. Please try again.");
+            }
           }
         } else {
           console.log("User is not authenticated, using local data");
@@ -125,7 +137,10 @@ export function useGameDataManager() {
         } else if (event === "SIGNED_OUT") {
           // Reset to initial data when user signs out
           // const initialData = loadInitialData();
-          setGameData({} as GameData);
+          setGameData(prevData => ({
+            ...prevData,
+            quests: [], // Ensure quests is always an array
+          }));
           toast.info("Signed out - local data will be used", {
             id: "signed-out",
           });
@@ -160,6 +175,7 @@ export function useGameDataManager() {
         setGameData((prevData) => ({
           ...prevData,
           ...serverData,
+          quests: serverData.quests || [], // Ensure quests is always an array
         }));
         setLastSyncTime(new Date());
         toast.success("Your game data has been refreshed");
