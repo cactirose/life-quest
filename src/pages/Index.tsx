@@ -55,7 +55,7 @@ const Index = () => {
             {isLoggedIn ? (
               <Button 
                 onClick={() => navigate("/dashboard")} 
-                className="pixel-button text-lg text-parchment bg-primary"
+                className="pixel-button text-lg font-medium text-secondary bg-primary"
               >
                 Begin Your Journey
               </Button>
@@ -63,13 +63,13 @@ const Index = () => {
               <div className="flex flex-col md:flex-row gap-4">
                 <Button 
                   onClick={() => navigate("/login")} 
-                  className="pixel-button text-lg text-parchment bg-primary"
+                  className="pixel-button text-lg font-medium text-secondary bg-primary"
                 >
                   Login
                 </Button>
                 <Button 
                   onClick={() => navigate("/signup")} 
-                  className="pixel-button text-lg text-parchment bg-primary"
+                  className="pixel-button text-lg font-medium text-secondary bg-primary"
                 >
                   Sign Up
                 </Button>
@@ -83,13 +83,13 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           <div className="wood-texture p-6 animate-fade-in" style={{animationDelay: "0.2s"}}>
             <div className="flex items-center mb-4">
-              <ScrollText className="text-rpg-brown mr-2" size={24} />
-              <h2 className="text-2xl font-pixel text-rpg-brown">Your Quests</h2>
+              <ScrollText className="text-secondary mr-2" size={24} />
+              <h2 className="text-2xl font-pixel text-secondary">Your Quests</h2>
             </div>
-            <p className="mb-4">Track daily tasks, habits, and goals through engaging quests that reward you with XP, coins, and stat improvements.</p>
+            <p className="mb-4 text-secondary">Track daily tasks, habits, and goals through engaging quests that reward you with XP, coins, and stat improvements.</p>
             <Button 
               onClick={() => navigate(isLoggedIn ? "/quests" : "/login")} 
-              className="pixel-button"
+              className="pixel-button text-lg font-medium text-secondary bg-primary"
             >
               {isLoggedIn ? "View Quests" : "Login to View Quests"}
             </Button>
@@ -97,13 +97,13 @@ const Index = () => {
 
           <div className="wood-texture p-6 animate-fade-in" style={{animationDelay: "0.3s"}}>
             <div className="flex items-center mb-4">
-              <Sparkle className="text-rpg-brown mr-2" size={24} />
-              <h2 className="text-2xl font-pixel text-rpg-brown">Character Profile</h2>
+              <Sparkle className="text-secondary mr-2" size={24} />
+              <h2 className="text-2xl font-pixel text-secondary">Character Profile</h2>
             </div>
-            <p className="mb-4">Customize your character and watch your stats grow as you complete quests and equip new gear.</p>
+            <p className="mb-4 text-secondary">Customize your character and watch your stats grow as you complete quests and equip new gear.</p>
             <Button 
               onClick={() => navigate(isLoggedIn ? "/character" : "/login")} 
-              className="pixel-button"
+              className="pixel-button text-lg font-medium text-secondary bg-primary"
             >
               {isLoggedIn ? "View Profile" : "Login to View Profile"}
             </Button>
@@ -111,13 +111,13 @@ const Index = () => {
 
           <div className="wood-texture p-6 animate-fade-in" style={{animationDelay: "0.4s"}}>
             <div className="flex items-center mb-4">
-              <Target className="text-rpg-brown mr-2" size={24} />
-              <h2 className="text-2xl font-pixel text-rpg-brown">Skill Tree</h2>
+              <Target className="text-secondary mr-2" size={24} />
+              <h2 className="text-2xl font-pixel text-secondary">Skill Tree</h2>
             </div>
-            <p className="mb-4">Develop new skills and abilities through an interactive skill tree that visualizes your growth journey.</p>
+            <p className="mb-4 text-secondary">Develop new skills and abilities through an interactive skill tree that visualizes your growth journey.</p>
             <Button 
               onClick={() => navigate(isLoggedIn ? "/skills" : "/login")} 
-              className="pixel-button"
+              className="pixel-button text-lg font-medium text-secondary bg-primary"
             >
               {isLoggedIn ? "Explore Skills" : "Login to Explore Skills"}
             </Button>
@@ -125,13 +125,13 @@ const Index = () => {
 
           <div className="wood-texture p-6 animate-fade-in" style={{animationDelay: "0.5s"}}>
             <div className="flex items-center mb-4">
-              <Flag className="text-rpg-brown mr-2" size={24} />
-              <h2 className="text-2xl font-pixel text-rpg-brown">Shop & Inventory</h2>
+              <Flag className="text-secondary mr-2" size={24} />
+              <h2 className="text-2xl font-pixel text-secondary">Shop & Inventory</h2>
             </div>
-            <p className="mb-4">Purchase new equipment with coins earned from quests, and manage your inventory to boost your character stats.</p>
+            <p className="mb-4 text-secondary">Purchase new equipment with coins earned from quests, and manage your inventory to boost your character stats.</p>
             <Button 
               onClick={() => navigate(isLoggedIn ? "/shop" : "/login")} 
-              className="pixel-button"
+              className="pixel-button text-lg font-medium text-secondary bg-primary"
             >
               {isLoggedIn ? "Visit Shop" : "Login to Visit Shop"}
             </Button>

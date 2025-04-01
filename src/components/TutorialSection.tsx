@@ -60,53 +60,53 @@ function renderTutorialContent(isVisible: boolean, onClose?: () => void) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="wood-texture p-4 rounded-lg flex flex-col items-center text-center">
-              <Scroll className="text-rpg-brown mb-2" size={24} />
-              <h3 className="font-pixel text-rpg-brown text-lg mb-1">Quests</h3>
-              <p className="text-xs text-rpg-brown">Track daily tasks as epic quests with rewards</p>
+              <Scroll className="text-secondary mb-2" size={24} />
+              <h3 className="font-pixel text-secondary text-lg mb-1">Quests</h3>
+              <p className="text-xs text-secondary">Track daily tasks as epic quests with rewards</p>
             </div>
             
             <div className="wood-texture p-4 rounded-lg flex flex-col items-center text-center">
-              <ShieldCheck className="text-rpg-brown mb-2" size={24} />
-              <h3 className="font-pixel text-rpg-brown text-lg mb-1">Character</h3>
-              <p className="text-xs text-rpg-brown">Level up and improve your character's stats</p>
+              <ShieldCheck className="text-secondary mb-2" size={24} />
+              <h3 className="font-pixel text-secondary text-lg mb-1">Character</h3>
+              <p className="text-xs text-secondary">Level up and improve your character's stats</p>
             </div>
             
             <div className="wood-texture p-4 rounded-lg flex flex-col items-center text-center">
-              <Target className="text-rpg-brown mb-2" size={24} />
-              <h3 className="font-pixel text-rpg-brown text-lg mb-1">Skills</h3>
-              <p className="text-xs text-rpg-brown">Unlock new abilities in your skill tree</p>
+              <Target className="text-secondary mb-2" size={24} />
+              <h3 className="font-pixel text-secondary text-lg mb-1">Skills</h3>
+              <p className="text-xs text-secondary">Unlock new abilities in your skill tree</p>
             </div>
             
             <div className="wood-texture p-4 rounded-lg flex flex-col items-center text-center">
-              <ShoppingBag className="text-rpg-brown mb-2" size={24} />
-              <h3 className="font-pixel text-rpg-brown text-lg mb-1">Shop</h3>
-              <p className="text-xs text-rpg-brown">Spend coins on gear and real-life rewards</p>
+              <ShoppingBag className="text-secondary mb-2" size={24} />
+              <h3 className="font-pixel text-secondary text-lg mb-1">Shop</h3>
+              <p className="text-xs text-secondary">Spend coins on gear and real-life rewards</p>
             </div>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="wood-texture p-4 rounded-lg flex flex-col items-center text-center">
-              <ListChecks className="text-rpg-brown mb-2" size={24} />
-              <h3 className="font-pixel text-rpg-brown text-lg mb-1">Habits</h3>
-              <p className="text-xs text-rpg-brown">Build consistent habits with streak bonuses</p>
+              <ListChecks className="text-secondary mb-2" size={24} />
+              <h3 className="font-pixel text-secondary text-lg mb-1">Habits</h3>
+              <p className="text-xs text-secondary">Build consistent habits with streak bonuses</p>
             </div>
             
             <div className="wood-texture p-4 rounded-lg flex flex-col items-center text-center">
-              <Award className="text-rpg-brown mb-2" size={24} />
-              <h3 className="font-pixel text-rpg-brown text-lg mb-1">Achievements</h3>
-              <p className="text-xs text-rpg-brown">Complete special challenges to earn rewards</p>
+              <Award className="text-secondary mb-2" size={24} />
+              <h3 className="font-pixel text-secondary text-lg mb-1">Achievements</h3>
+              <p className="text-xs text-secondary">Complete special challenges to earn rewards</p>
             </div>
             
             <div className="wood-texture p-4 rounded-lg flex flex-col items-center text-center">
-              <Smile className="text-rpg-brown mb-2" size={24} />
-              <h3 className="font-pixel text-rpg-brown text-lg mb-1">Mood</h3>
-              <p className="text-xs text-rpg-brown">Track your daily mood and energy levels</p>
+              <Smile className="text-secondary mb-2" size={24} />
+              <h3 className="font-pixel text-secondary text-lg mb-1">Mood</h3>
+              <p className="text-xs text-secondary">Track your daily mood and energy levels</p>
             </div>
             
             <div className="wood-texture p-4 rounded-lg flex flex-col items-center text-center">
-              <Flag className="text-rpg-brown mb-2" size={24} />
-              <h3 className="font-pixel text-rpg-brown text-lg mb-1">Challenges</h3>
-              <p className="text-xs text-rpg-brown">Complete special tasks for bonus rewards</p>
+              <Flag className="text-secondary mb-2" size={24} />
+              <h3 className="font-pixel text-secondary text-lg mb-1">Challenges</h3>
+              <p className="text-xs text-secondary">Complete special tasks for bonus rewards</p>
             </div>
           </div>
         </CardContent>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -90,7 +89,7 @@ const InventoryItemCard = ({
         
         <Button 
           onClick={handleEquipAction}
-          className={`w-full ${item.equipped ? 'bg-rpg-tan text-rpg-brown hover:bg-rpg-tan/80' : 'pixel-button'}`}
+          className={`w-full ${item.equipped ? 'bg-muted text-secondary hover:bg-muted/80' : 'pixel-button'}`}
         >
           {item.equipped ? 'Unequip' : 'Equip'}
         </Button>
@@ -137,7 +136,7 @@ const InventoryItemCard = ({
                 item.equipped ? onUnequip() : onEquip();
                 setShowDetails(false);
               }}
-              className={`w-full ${item.equipped ? 'bg-rpg-tan text-rpg-brown hover:bg-rpg-tan/80' : 'pixel-button'}`}
+              className={`w-full ${item.equipped ? 'bg-muted text-secondary hover:bg-muted/80' : 'pixel-button'}`}
             >
               {item.equipped ? 'Unequip' : 'Equip'}
             </Button>

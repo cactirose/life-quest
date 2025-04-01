@@ -53,7 +53,7 @@
     --nav-active: 20 64% 20%;
     --nav-active-text: 38 92% 95%;
     
-    /* RPG Theme Custom Variables */
+    /* RPG Theme Custom Variables - Keep these for compatibility */
     --rpg-tan: #D2B48C;
     --rpg-brown: #3F210E;
     --rpg-background: #FFF8DC;
@@ -125,6 +125,29 @@
     @apply bg-background text-foreground font-pixel;
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.10'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
+  
+  /* Ensure all buttons have consistent theming with proper text colors */
+  button {
+    color: inherit;
+  }
+  
+  button.pixel-button {
+    background-color: var(--primary);
+    border-color: var(--secondary);
+    color: var(--secondary);
+  }
+  
+  button.pixel-button:hover {
+    background-color: var(--primary);
+    color: var(--secondary);
+    font-weight: 600;
+  }
+  
+  button.pixel-button:active {
+    background-color: var(--primary);
+    color: var(--secondary);
+    font-weight: 600;
+  }
 }
 
 /* RPG-specific styling */
@@ -140,14 +163,21 @@
     @apply font-pixel py-2 px-4 border-2 transition-colors duration-200
     shadow-[inset_-2px_-2px_0_rgba(0,0,0,0.3)]
     active:shadow-[inset_2px_2px_0_rgba(0,0,0,0.3)];
-    background-color: var(--rpg-tan);
-    border-color: var(--rpg-brown);
-    color: var(--rpg-brown);
+    background-color: var(--primary) !important;
+    border-color: var(--secondary) !important;
+    color: var(--secondary) !important;
   }
   
   .pixel-button:hover {
-    background-color: var(--rpg-brown);
-    color: #222222; /* Dark text for all button hover states */
+    background-color: var(--primary) !important;
+    color: var(--secondary) !important;
+    font-weight: 600 !important;
+  }
+  
+  .pixel-button:active {
+    background-color: var(--primary) !important;
+    color: var(--secondary) !important;
+    font-weight: 600 !important;
   }
 
   .parchment {
@@ -158,9 +188,7 @@
   }
 
   .wood-texture {
-    @apply rounded-md;
-    background-color: var(--rpg-tan);
-    border: 2px solid var(--rpg-brown);
+    @apply rounded-md bg-primary border-2 border-secondary;
     background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238b4513' fill-opacity='0.06'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 
