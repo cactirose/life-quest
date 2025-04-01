@@ -46,11 +46,18 @@ export const useSyncWithSupabase = () => {
     };
 
     try {
-      // Validate session before any sync
+      // Add detailed logging for session validation
+      console.log("Starting sync process, validating session...");
       const hasValidSession = await ensureValidSession();
       if (!hasValidSession) {
+        console.error("Session validation failed");
         throw new Error("Session expired");
       }
+      console.log("Session validated successfully");
+
+      // Log what fields are being synced
+      console.log("Fields to sync:", Array.from(changedFields));
+      console.log("Current game data state:", gameData);
 
       const syncResults: Record<string, boolean> = {};
       const failedOperations: Array<{ field: string; error: any }> = [];
@@ -76,12 +83,17 @@ export const useSyncWithSupabase = () => {
       // Process priority operations first
       for (const { field, operation } of priorityOperations) {
         try {
-          const success = await retryOperation(operation, field, 5); // More retries for critical data
+          console.log(`Starting sync for priority field: ${field}`);
+          const success = await retryOperation(operation, field, 5);
           syncResults[field] = success;
           if (!success) {
+            console.error(`Failed to sync ${field} after retries`);
             failedOperations.push({ field, error: 'Failed after retries' });
+          } else {
+            console.log(`Successfully synced ${field}`);
           }
         } catch (error) {
+          console.error(`Error syncing ${field}:`, error);
           failedOperations.push({ field, error });
           syncResults[field] = false;
         }
@@ -114,9 +126,10 @@ export const useSyncWithSupabase = () => {
         });
       }
 
-      // Handle failed operations
+      // Log final results
+      console.log("Sync results:", syncResults);
       if (failedOperations.length > 0) {
-        console.error('Failed operations:', failedOperations);
+        console.error("Failed operations:", failedOperations);
         syncErrorCount.current += 1;
         
         // Store failed operations for retry

@@ -13,15 +13,33 @@ export function useDataPersistence(gameData: GameData) {
   const changedFields = useRef<Set<string>>(new Set());
   const previousData = useRef<GameData | null>(null);
   const syncErrorCount = useRef<number>(0);
+  const isInitialSync = useRef<boolean>(true);
 
   // Different sync delays for mobile vs desktop
-  const syncDelay = isMobile ? 1500 : 1000;
+  const getSyncDelay = () => {
+    if (isInitialSync.current) {
+      return isMobile ? 3000 : 2000; // Longer delay for initial sync
+    }
+    return isMobile ? 1500 : 1000;
+  };
   
   const { syncWithSupabase } = useSyncWithSupabase();
   
   const debouncedSync = useDebounce(async () => {
-    await syncWithSupabase(gameData, changedFields.current, syncErrorCount);
-  }, syncDelay);
+    try {
+      // Ensure valid session before sync
+      const hasValidSession = await ensureValidSession();
+      if (!hasValidSession) {
+        console.log("No valid session, skipping sync");
+        return;
+      }
+
+      await syncWithSupabase(gameData, changedFields.current, syncErrorCount);
+      isInitialSync.current = false;
+    } catch (error) {
+      console.error("Sync error:", error);
+    }
+  }, getSyncDelay());
 
   // Add sync recovery
   useEffect(() => {
@@ -105,6 +123,31 @@ export function useDataPersistence(gameData: GameData) {
 
   // Modify the sync effect
   useEffect(() => {
+    const validateData = (data: any, field: string): boolean => {
+      if (!data) return false;
+      
+      switch(field) {
+        case 'character':
+          return data.id && data.name;
+        case 'moods':
+          return Array.isArray(data) && data.every(item => item.id && item.mood && item.date);
+        case 'achievements':
+          return Array.isArray(data) && data.every(item => item.id && item.category && item.title);
+        case 'habits':
+          return Array.isArray(data) && data.every(item => item.id && item.name && item.frequency);
+        case 'quests':
+          return Array.isArray(data) && data.every(item => item.id && item.title);
+        case 'inventory':
+          return Array.isArray(data) && data.every(item => item.id && item.name);
+        case 'skillTree':
+          return Array.isArray(data) && data.every(item => item.id && item.name);
+        case 'challenges':
+          return Array.isArray(data) && data.every(item => item.id && item.title);
+        default:
+          return true;
+      }
+    };
+
     try {
       if (!previousData.current) {
         previousData.current = JSON.parse(JSON.stringify(gameData));
@@ -112,44 +155,18 @@ export function useDataPersistence(gameData: GameData) {
       }
       
       const changes = detectChangedFields(previousData.current, gameData);
-      changes.forEach(field => changedFields.current.add(field));
+      
+      // Only sync fields that have valid data
+      const validChanges = changes.filter(field => validateData(gameData[field], field));
+      validChanges.forEach(field => changedFields.current.add(field));
       
       if (changedFields.current.size > 0) {
-        console.log("Changes detected:", Array.from(changedFields.current));
-        
-        // Validate data before sync
-        const invalidData = Array.from(changedFields.current).filter(field => {
-          const data = gameData[field];
-          if (!data) return true;
-          
-          // Add specific validation for each data type
-          switch(field) {
-            case 'moods':
-              return data.some(item => !item.id || !item.mood || !item.date);
-            case 'achievements':
-              return data.some(item => !item.id || !item.category || !item.title);
-            case 'habits':
-              return data.some(item => !item.id || !item.name || !item.frequency);
-            // Add cases for other entities...
-            default:
-              return Array.isArray(data) && data.some(item => !item.id);
-          }
-        });
-
-        if (invalidData.length > 0) {
-          console.error('Invalid data detected:', invalidData);
-          toast.error('Some changes could not be saved', {
-            description: 'Data validation failed'
-          });
-          return;
-        }
-
-        // Immediately try to sync with Supabase
+        console.log("Valid changes detected:", Array.from(changedFields.current));
         debouncedSync();
-        
-        // Only update previous data after successful sync
-        previousData.current = JSON.parse(JSON.stringify(gameData));
       }
+      
+      // Update previous data regardless of sync
+      previousData.current = JSON.parse(JSON.stringify(gameData));
     } catch (error) {
       console.error("Error during data persistence:", error);
       toast.error('Error saving changes', {
