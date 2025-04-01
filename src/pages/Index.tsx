@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
@@ -56,7 +55,7 @@ const Index = () => {
             {isLoggedIn ? (
               <Button 
                 onClick={() => navigate("/dashboard")} 
-                className="pixel-button text-lg"
+                className="pixel-button text-lg text-parchment bg-primary"
               >
                 Begin Your Journey
               </Button>
@@ -64,13 +63,13 @@ const Index = () => {
               <div className="flex flex-col md:flex-row gap-4">
                 <Button 
                   onClick={() => navigate("/login")} 
-                  className="pixel-button text-lg"
+                  className="pixel-button text-lg text-parchment bg-primary"
                 >
                   Login
                 </Button>
                 <Button 
                   onClick={() => navigate("/signup")} 
-                  className="pixel-button text-lg"
+                  className="pixel-button text-lg text-parchment bg-primary"
                 >
                   Sign Up
                 </Button>
