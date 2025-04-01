@@ -39,7 +39,7 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     secondary: "#00578D",    // Steel blue
     background: "#F0F8FF",   // Alice blue
     accent: "#1E90FF",       // Dodger blue
-    text: "#00578D",         // Midnight blue
+    text: "#191970",         // Midnight blue
     parchment: "#F0FFFF",    // Azure
     positive: "#00578D",     // Turquoise
     negative: "#D32F2F",     // Orange red
@@ -51,20 +51,20 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
     "nav-active-text": "#F0F8FF",  // Keep the same text color on active
   },
   barbie: {
-    primary: "#FFDBEA",      // Light pink
-    secondary: "#FA2479",    // Darker pink
+    primary: "#FFD1E4",      // Light pink
+    secondary: "#FA4C93",    // Darker pink
     background: "#FFF5F9",   // Lavender blush
-    accent: "#FA2479",       // Tomato
-    text: "#FA2479",         // Saddle brown
+    accent: "#FA4C93",       // Tomato
+    text: "#FA4C93",         // Saddle brown
     parchment: "#FFF0F6",    // Papaya whip
-    positive: "#FA2479",     // Lime green
+    positive: "#FA4C93",     // Lime green
     negative: "#D32F2F",     // Dark red
     purple: "#9C27B0",       // Purple for boss quests
-    navbar: "#FB5F9D",       // Navbar pink
-    "nav-hover": "#FA2479",  // Darker pink for hover
-    "nav-active": "#E91E63", // Active state
-    "nav-hover-text": "#FFFFFF", // White text for better contrast on hover
-    "nav-active-text": "#FFFFFF"  // White text for better contrast on active
+    navbar: "#FA478F",       // Navbar pink
+    "nav-hover": "#FA478F",  // Darker pink for hover
+    "nav-active": "#FA478F", // Active state
+    "nav-hover-text": "#FFF0F5", // Keep the same text color on hover
+    "nav-active-text": "#FFF0F5"  // Keep the same text color on active
   },
   royal: {
     primary: "#DDCCFA",      // Light purple

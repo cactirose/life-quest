@@ -1,19 +1,16 @@
 import { ThemeColors, ThemeName } from "./types";
 import { THEME_PRESETS } from "./presets";
-import { shadeColor, contrastColor, convertToHSL, lightenColor, ensureReadableText } from "./colorUtils";
+import { shadeColor, contrastColor, convertToHSL, lightenColor } from "./colorUtils";
 
 // Function to apply theme to CSS variables
-export function applyTheme(theme: ThemeColors, themeName: ThemeName = 'default'): void {
+export function applyTheme(theme: ThemeColors): void {
   // Set default values for nav-hover and nav-active if not provided
   const navHover = theme["nav-hover"] || shadeColor(theme.navbar, -20);
   const navActive = theme["nav-active"] || shadeColor(theme.navbar, -30);
   
   // Set default values for hover/active text colors if not provided
-  const navHoverText = theme["nav-hover-text"] || theme["nav-text"] || ensureReadableText(navHover, themeName);
-  const navActiveText = theme["nav-active-text"] || ensureReadableText(navActive, themeName);
-
-  // Force light text color for navbar text based on theme
-  const navText = ensureReadableText(theme.navbar, themeName);
+  const navHoverText = theme["nav-hover-text"] || theme["nav-text"] || contrastColor(theme.navbar);
+  const navActiveText = theme["nav-active-text"] || contrastColor(navActive);
 
   // Main RPG theme variables
   document.documentElement.style.setProperty('--rpg-tan', theme.primary);
@@ -45,7 +42,7 @@ export function applyTheme(theme: ThemeColors, themeName: ThemeName = 'default')
   
   // Navigation menu specific variables with improved contrast text colors
   document.documentElement.style.setProperty('--nav-bg', convertToHSL(theme.navbar));
-  document.documentElement.style.setProperty('--nav-text', convertToHSL(navText));
+  document.documentElement.style.setProperty('--nav-text', convertToHSL(contrastColor(theme.navbar)));
   document.documentElement.style.setProperty('--nav-hover', convertToHSL(navHover));
   document.documentElement.style.setProperty('--nav-hover-text', convertToHSL(navHoverText));
   document.documentElement.style.setProperty('--nav-active', convertToHSL(navActive));
@@ -103,11 +100,6 @@ export function getCurrentTheme(): ThemeColors {
   return THEME_PRESETS.default;
 }
 
-// Get current theme name from localStorage or use default
-export function getCurrentThemeName(): ThemeName {
-  return localStorage.getItem('rpgProductivityThemeName') as ThemeName || 'default';
-}
-
 // Save theme to localStorage
 export function saveTheme(theme: ThemeColors, themeName: ThemeName = 'custom'): void {
   // Ensure all required properties are set
@@ -126,12 +118,11 @@ export function saveTheme(theme: ThemeColors, themeName: ThemeName = 'custom'): 
   
   localStorage.setItem('rpgProductivityTheme', JSON.stringify(theme));
   localStorage.setItem('rpgProductivityThemeName', themeName);
-  applyTheme(theme, themeName);
+  applyTheme(theme);
 }
 
 // Initialize theme from localStorage or default
 export function initializeTheme(): void {
   const theme = getCurrentTheme();
-  const themeName = localStorage.getItem('rpgProductivityThemeName') as ThemeName || 'default';
-  applyTheme(theme, themeName);
+  applyTheme(theme);
 }

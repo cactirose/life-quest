@@ -1,3 +1,4 @@
+
 // Helper function to shade color (darken)
 export function shadeColor(color: string, percent: number): string {
   let R = parseInt(color.substring(1, 3), 16);
@@ -78,14 +79,4 @@ export function convertToHSL(hex: string): string {
   l = Math.round(l * 100);
   
   return `${h} ${s}% ${l}%`;
-}
-
-// Function to ensure contrasting text color for specific themes
-export function ensureReadableText(hex: string, themeType: string = ''): string {
-  // For pink colors in Barbie theme, force white text
-  if (themeType === 'barbie') {
-    return '#FFFFFF';
-  }
-  
-  return contrastColor(hex);
 }
