@@ -1,7 +1,9 @@
+
 import { Character, StatName } from "./character";
 import { Quest } from "./quests";
 import { GearItem } from "./inventory";
 import { SkillNode } from "./skills";
+import { Challenge } from "./challenges";
 import { Habit } from "./habits";
 import { MoodEntry } from "./mood";
 import { Achievement } from "./achievements";
@@ -15,6 +17,7 @@ export interface GameData {
   inventory: GearItem[];
   shopItems: GearItem[];
   skillTree: SkillNode[];
+  challenges: Challenge[];
   habits: Habit[];
   moods: MoodEntry[];
   achievements: Achievement[];
@@ -50,6 +53,14 @@ export interface GameData {
   deleteSkillNode: (nodeId: string) => void;
   unlockSkillNode: (nodeId: string) => void;
   
+  // Challenge methods
+  addChallenge: (challenge: Omit<Challenge, "id">) => void;
+  updateChallenge: (challenge: Challenge) => void;
+  deleteChallenge: (challengeId: string) => void;
+  incrementChallengeProgress: (challengeId: string) => void;
+  resetChallenges: () => void;
+  completeChallenge: (challengeId: string) => void;
+  
   // Habit methods
   addHabit: (habit: Omit<Habit, "id" | "completionHistory" | "streak">) => void;
   updateHabit: (habit: Habit) => void;
@@ -73,5 +84,5 @@ export interface GameData {
   claimDailyBonus: () => void;
   
   // Data access method
-  setGameData: React.Dispatch<React.SetStateAction<GameData>>;
+  setGameData?: React.Dispatch<React.SetStateAction<any>>;
 }

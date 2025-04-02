@@ -1,3 +1,4 @@
+
 import { GameData } from "../types/gameData";
 import { DEFAULT_CHARACTER } from "../types/character";
 
@@ -8,6 +9,7 @@ export const DEFAULT_GAME_DATA: GameData = {
   inventory: [],
   shopItems: [],
   skillTree: [],
+  challenges: [],
   habits: [],
   moods: [],
   achievements: [],
@@ -43,6 +45,14 @@ export const DEFAULT_GAME_DATA: GameData = {
   deleteSkillNode: () => {},
   unlockSkillNode: () => {},
   
+  // Challenge methods
+  addChallenge: () => {},
+  updateChallenge: () => {},
+  deleteChallenge: () => {},
+  incrementChallengeProgress: () => {},
+  resetChallenges: () => {},
+  completeChallenge: () => {},
+  
   // Habit methods
   addHabit: () => {},
   updateHabit: () => {},
@@ -63,8 +73,5 @@ export const DEFAULT_GAME_DATA: GameData = {
   
   // Daily login methods
   checkDailyLogin: () => {},
-  claimDailyBonus: () => {},
-  
-  // Data access method
-  setGameData: () => {}
+  claimDailyBonus: () => {}
 };

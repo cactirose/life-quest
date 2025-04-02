@@ -9,6 +9,7 @@ import {
   Backpack,
   ListChecks,
   Smile,
+  Flag,
   ShoppingCart,
   MapPin,
   Book,
@@ -70,6 +71,10 @@ const Navbar = () => {
         label: "Mood",
         path: "/mood",
         icon: <Smile size={18} />
+      }, {
+        label: "Challenges",
+        path: "/challenges",
+        icon: <Flag size={18} />
       }, {
         label: "Journal",
         path: "/journal",

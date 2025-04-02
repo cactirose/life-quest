@@ -141,6 +141,8 @@ export function useDataPersistence(gameData: GameData) {
           return Array.isArray(data) && data.every(item => item.id && item.name);
         case 'skillTree':
           return Array.isArray(data) && data.every(item => item.id && item.name);
+        case 'challenges':
+          return Array.isArray(data) && data.every(item => item.id && item.title);
         default:
           return true;
       }

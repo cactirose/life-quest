@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ScrollText, Sparkle, Target, Calendar } from "lucide-react";
+import { useGameData } from "@/contexts/DataContext";
+import { ScrollText, Sparkle, Target, Flag, Calendar } from "lucide-react";
 import { TutorialSection } from "@/components/TutorialSection";
 import { useEffect, useState } from "react";
 import { isAuthenticated } from "@/utils/auth";
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { character } = useGameData();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -23,6 +25,22 @@ const Index = () => {
     
     checkAuth();
   }, []);
+
+  // Determine if character is valid without conditional rendering
+  const hasValidCharacter = Boolean(
+    character && 
+    typeof character === 'object' && 
+    typeof character.level === 'number' &&
+    typeof character.xp === 'number' &&
+    typeof character.coins === 'number'
+  );
+
+  // Define formatDate function outside JSX to avoid conditional rendering
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "No recent login";
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -61,6 +79,103 @@ const Index = () => {
         </div>
 
         <TutorialSection />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          <div className="wood-texture p-6 animate-fade-in" style={{animationDelay: "0.2s"}}>
+            <div className="flex items-center mb-4">
+              <ScrollText className="text-secondary mr-2" size={24} />
+              <h2 className="text-2xl font-pixel text-secondary">Your Quests</h2>
+            </div>
+            <p className="mb-4 text-secondary">Track daily tasks, habits, and goals through engaging quests that reward you with XP, coins, and stat improvements.</p>
+            <Button 
+              onClick={() => navigate(isLoggedIn ? "/quests" : "/login")} 
+              className="pixel-button text-lg font-medium text-secondary bg-primary"
+            >
+              {isLoggedIn ? "View Quests" : "Login to View Quests"}
+            </Button>
+          </div>
+
+          <div className="wood-texture p-6 animate-fade-in" style={{animationDelay: "0.3s"}}>
+            <div className="flex items-center mb-4">
+              <Sparkle className="text-secondary mr-2" size={24} />
+              <h2 className="text-2xl font-pixel text-secondary">Character Profile</h2>
+            </div>
+            <p className="mb-4 text-secondary">Customize your character and watch your stats grow as you complete quests and equip new gear.</p>
+            <Button 
+              onClick={() => navigate(isLoggedIn ? "/character" : "/login")} 
+              className="pixel-button text-lg font-medium text-secondary bg-primary"
+            >
+              {isLoggedIn ? "View Profile" : "Login to View Profile"}
+            </Button>
+          </div>
+
+          <div className="wood-texture p-6 animate-fade-in" style={{animationDelay: "0.4s"}}>
+            <div className="flex items-center mb-4">
+              <Target className="text-secondary mr-2" size={24} />
+              <h2 className="text-2xl font-pixel text-secondary">Skill Tree</h2>
+            </div>
+            <p className="mb-4 text-secondary">Develop new skills and abilities through an interactive skill tree that visualizes your growth journey.</p>
+            <Button 
+              onClick={() => navigate(isLoggedIn ? "/skills" : "/login")} 
+              className="pixel-button text-lg font-medium text-secondary bg-primary"
+            >
+              {isLoggedIn ? "Explore Skills" : "Login to Explore Skills"}
+            </Button>
+          </div>
+
+          <div className="wood-texture p-6 animate-fade-in" style={{animationDelay: "0.5s"}}>
+            <div className="flex items-center mb-4">
+              <Flag className="text-secondary mr-2" size={24} />
+              <h2 className="text-2xl font-pixel text-secondary">Shop & Inventory</h2>
+            </div>
+            <p className="mb-4 text-secondary">Purchase new equipment with coins earned from quests, and manage your inventory to boost your character stats.</p>
+            <Button 
+              onClick={() => navigate(isLoggedIn ? "/shop" : "/login")} 
+              className="pixel-button text-lg font-medium text-secondary bg-primary"
+            >
+              {isLoggedIn ? "Visit Shop" : "Login to Visit Shop"}
+            </Button>
+          </div>
+        </div>
+
+        {hasValidCharacter && (
+          <div className="wood-texture p-6 text-center">
+            <h2 className="text-2xl font-pixel text-rpg-brown mb-4">
+              {character?.name ? character.name : "Adventurer"}'s Journey
+            </h2>
+            <div className="flex flex-wrap justify-center gap-4 text-rpg-brown font-pixel">
+              <div className="flex flex-col items-center">
+                <span className="text-3xl">📊</span>
+                <span>Level {character?.level}</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-3xl">✨</span>
+                <span>{character?.xp} XP</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-3xl">🪙</span>
+                <span>{character?.coins} Coins</span>
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <span className="text-3xl">🔥</span>
+                <span>{character?.loginStreak || 0} Day Streak</span>
+              </div>
+            </div>
+            
+            {character?.lastLoginDate && (
+              <div className="mt-4 flex justify-center items-center gap-2">
+                <Calendar size={16} className="text-rpg-brown" />
+                <span className="text-sm text-rpg-brown">Last Login: {formatDate(character.lastLoginDate)}</span>
+                {character.dailyBonusClaimed && (
+                  <Badge variant="secondary" className="text-xs">
+                    Daily Bonus Claimed
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

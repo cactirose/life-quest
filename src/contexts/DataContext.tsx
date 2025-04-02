@@ -20,6 +20,10 @@ import {
   createSkillTreeContextValue,
   SkillTreeContext,
 } from "./SkillTreeContext";
+import {
+  createChallengeContextValue,
+  ChallengeContext,
+} from "./ChallengeContext";
 import { createHabitContextValue, HabitContext } from "./HabitContext";
 import { createMoodContextValue, MoodContext } from "./MoodContext";
 import {
@@ -51,6 +55,10 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     gameData.skillTree,
     setGameData
   );
+  const challengeContextValue = createChallengeContextValue(
+    gameData.challenges,
+    setGameData
+  );
   const habitContextValue = createHabitContextValue(
     gameData.habits,
     setGameData
@@ -62,7 +70,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   // Handle side effects
-  useDataEffects(characterContextValue);
+  useDataEffects(characterContextValue, challengeContextValue);
 
   // Combined context value
   const contextValue: GameData = {
@@ -71,6 +79,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     ...questContextValue,
     ...inventoryContextValue,
     ...skillTreeContextValue,
+    ...challengeContextValue,
     ...habitContextValue,
     ...moodContextValue,
     ...achievementContextValue,
@@ -86,6 +95,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
         questContextValue={questContextValue}
         inventoryContextValue={inventoryContextValue}
         skillTreeContextValue={skillTreeContextValue}
+        challengeContextValue={challengeContextValue}
         habitContextValue={habitContextValue}
         moodContextValue={moodContextValue}
         achievementContextValue={achievementContextValue}
@@ -110,6 +120,11 @@ export type { Character, StatName, Stats } from "../types/character";
 export type { Quest, QuestType, QuestStatus, QuestStep } from "../types/quests";
 export type { GearItem, GearType, GearRarity } from "../types/inventory";
 export type { SkillNode } from "../types/skills";
+export type {
+  Challenge,
+  ChallengeFrequency,
+  ChallengeStatus,
+} from "../types/challenges";
 export type {
   Habit,
   HabitFrequency,
