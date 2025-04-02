@@ -1,7 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { GearItem, GearType, GearRarity } from "@/types/inventory";
-import { StatName } from "@/types/character";
+import { GearItem } from "@/types/inventory";
 
 // Inventory methods
 export const fetchInventory = async (): Promise<GearItem[]> => {
@@ -20,21 +19,18 @@ export const fetchInventory = async (): Promise<GearItem[]> => {
     }
 
     return data.map(item => {
-      // Map shield type to armor type for consistency but handle it differently
-      let mappedType: GearType = item.type as GearType;
-      if (item.type === "shield") {
-        mappedType = "armor";
-      }
+      // Map shield type to armor type for consistency
+      const mappedType = item.type === "shield" ? "armor" : item.type;
       
       return {
         id: item.id,
         name: item.name,
         description: item.description || "",
-        type: mappedType,
-        rarity: item.rarity as GearRarity,
+        type: mappedType as GearType,
+        rarity: item.rarity,
         icon: item.icon || "",
         cost: item.cost,
-        statBonuses: item.stat_bonuses as Partial<Record<StatName, number>>,
+        statBonuses: item.stat_bonuses as any,
         equipped: item.equipped,
         levelRequired: item.level_required || 1
       } as GearItem;
@@ -52,16 +48,13 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
 
     console.log("Upserting item:", { ...item });
 
-    // Handle shield type correctly for database consistency
-    let dbItemType = item.type;
-    if (item.type === "shield") {
-      dbItemType = "armor"; // Store shield as armor in DB
-    }
+    // Map shield type to armor type for database consistency
+    const mappedType = item.type === "shield" ? "armor" : item.type;
 
     // If item is being equipped, unequip other items of the same type first
     if (item.equipped) {
-      console.log("Item is being equipped, unequipping others of type:", dbItemType);
-      await unequipOtherItemsOfType(user.data.user.id, dbItemType, item.id);
+      console.log("Item is being equipped, unequipping others of type:", mappedType);
+      await unequipOtherItemsOfType(user.data.user.id, mappedType, item.id);
     }
 
     // Prepare the item data for upsert
@@ -70,7 +63,7 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
       user_id: user.data.user.id,
       name: item.name,
       description: item.description,
-      type: dbItemType, // Use the mapped type
+      type: mappedType, // Use the mapped type
       rarity: item.rarity,
       icon: item.icon,
       cost: item.cost,
@@ -101,10 +94,10 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
       name: data.name,
       description: data.description || "",
       type: data.type as GearType, // Ensure type is cast to GearType
-      rarity: data.rarity as GearRarity,
+      rarity: data.rarity,
       icon: data.icon || "",
       cost: data.cost,
-      statBonuses: data.stat_bonuses as Partial<Record<StatName, number>>,
+      statBonuses: data.stat_bonuses,
       equipped: data.equipped,
       levelRequired: data.level_required || 1
     };

@@ -1,4 +1,3 @@
-
 import { Character, StatName } from "./character";
 import { Quest } from "./quests";
 import { GearItem } from "./inventory";
@@ -8,7 +7,6 @@ import { MoodEntry } from "./mood";
 import { Achievement } from "./achievements";
 import { JournalEntry } from "./journal";
 import { ShoppingList } from "./shoppingList";
-import { Challenge } from "./challenges";
 
 // The actual data structure
 export interface GameData {
@@ -22,7 +20,6 @@ export interface GameData {
   achievements: Achievement[];
   journalEntries: JournalEntry[];
   shoppingLists: ShoppingList[];
-  challenges: Challenge[]; // Added challenges array
   
   // Character methods
   setCharacter: (character: Character) => void;
@@ -52,14 +49,6 @@ export interface GameData {
   updateSkillNode: (node: SkillNode) => void;
   deleteSkillNode: (nodeId: string) => void;
   unlockSkillNode: (nodeId: string) => void;
-  
-  // Challenge methods
-  addChallenge: (challenge: Omit<Challenge, "id">) => void;
-  updateChallenge: (challenge: Challenge) => void;
-  deleteChallenge: (challengeId: string) => void;
-  incrementChallengeProgress: (challengeId: string) => void;
-  resetChallenges: () => void;
-  completeChallenge: (challengeId: string) => void;
   
   // Habit methods
   addHabit: (habit: Omit<Habit, "id" | "completionHistory" | "streak">) => void;
