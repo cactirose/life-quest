@@ -1,4 +1,6 @@
+
 import { AuthCard } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 
 const AuthLoadingState = () => {
   return (
@@ -12,3 +14,5 @@ const AuthLoadingState = () => {
     </div>
   );
 }; 
+
+export default AuthLoadingState;
