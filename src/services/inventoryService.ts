@@ -1,6 +1,8 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { GearItem } from "@/types/inventory";
+import { GearItem, GearType, GearRarity } from "@/types/inventory";
+import { StatName } from "@/types/character";
 
 // Inventory methods
 export const fetchInventory = async (): Promise<GearItem[]> => {
@@ -27,10 +29,10 @@ export const fetchInventory = async (): Promise<GearItem[]> => {
         name: item.name,
         description: item.description || "",
         type: mappedType as GearType,
-        rarity: item.rarity,
+        rarity: item.rarity as GearRarity,
         icon: item.icon || "",
         cost: item.cost,
-        statBonuses: item.stat_bonuses as any,
+        statBonuses: item.stat_bonuses as Partial<Record<StatName, number>>,
         equipped: item.equipped,
         levelRequired: item.level_required || 1
       } as GearItem;
@@ -94,10 +96,10 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
       name: data.name,
       description: data.description || "",
       type: data.type as GearType, // Ensure type is cast to GearType
-      rarity: data.rarity,
+      rarity: data.rarity as GearRarity,
       icon: data.icon || "",
       cost: data.cost,
-      statBonuses: data.stat_bonuses,
+      statBonuses: data.stat_bonuses as Partial<Record<StatName, number>>,
       equipped: data.equipped,
       levelRequired: data.level_required || 1
     };

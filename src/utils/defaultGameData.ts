@@ -1,3 +1,4 @@
+
 import { GameData } from "../types/gameData";
 import { DEFAULT_CHARACTER } from "../types/character";
 
@@ -13,6 +14,7 @@ export const DEFAULT_GAME_DATA: GameData = {
   achievements: [],
   journalEntries: [], // Add empty journal entries array
   shoppingLists: [], // Add empty shopping lists array
+  challenges: [], // Add empty challenges array
   
   // Character methods
   setCharacter: () => {},
@@ -42,6 +44,14 @@ export const DEFAULT_GAME_DATA: GameData = {
   updateSkillNode: () => {},
   deleteSkillNode: () => {},
   unlockSkillNode: () => {},
+  
+  // Challenge methods
+  addChallenge: () => {},
+  updateChallenge: () => {},
+  deleteChallenge: () => {},
+  incrementChallengeProgress: () => {},
+  resetChallenges: () => {},
+  completeChallenge: () => {},
   
   // Habit methods
   addHabit: () => {},
