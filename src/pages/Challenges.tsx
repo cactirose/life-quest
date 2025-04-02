@@ -526,30 +526,6 @@ const Challenges = () => {
         </Dialog>
       </div>
       
-      <div className="parchment p-4 mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <Info size={20} className="text-rpg-brown" />
-          <h2 className="text-lg font-pixel text-rpg-brown">Daily Login Streak</h2>
-        </div>
-        <div className="flex flex-col sm:flex-row items-center justify-between">
-          <div className="flex flex-col items-center sm:items-start mb-4 sm:mb-0">
-            <div className="flex items-center gap-2 mb-1">
-              <CalendarClock className="text-rpg-brown" size={18} />
-              <span className="font-pixel text-rpg-brown">Day {character.loginStreak}</span>
-            </div>
-            <p className="text-sm text-rpg-brown">Keep logging in daily to earn increasing rewards!</p>
-          </div>
-          
-          <Button
-            disabled={character.dailyBonusClaimed}
-            className={`pixel-button ${character.dailyBonusClaimed ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={handleClaimDailyBonus}
-          >
-            {character.dailyBonusClaimed ? "Already Claimed" : "Claim Daily Bonus"}
-          </Button>
-        </div>
-      </div>
-      
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full mb-6 font-pixel bg-rpg-tan text-rpg-brown border-2 border-rpg-brown">
           <TabsTrigger 

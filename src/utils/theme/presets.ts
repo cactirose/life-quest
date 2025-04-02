@@ -52,12 +52,12 @@ export const THEME_PRESETS: Record<ThemeName, ThemeColors> = {
   },
   barbie: {
     primary: "#FFDBEA",      // Light pink
-    secondary: "#FA2479",    // Darker pink
+    secondary: "#FA428C",    // Darker pink
     background: "#FFF5F9",   // Lavender blush
-    accent: "#FA2479",       // Tomato
-    text: "#FA2479",         // Saddle brown
+    accent: "#FA428C",       // Tomato
+    text: "#FA428C",         // Saddle brown
     parchment: "#FFF0F6",    // Papaya whip
-    positive: "#FA2479",     // Lime green
+    positive: "#FA428C",     // Lime green
     negative: "#D32F2F",     // Dark red
     purple: "#9C27B0",       // Purple for boss quests
     navbar: "#FB5F9D",       // Navbar pink

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
-import { Award, BadgeCheck, CircleCheck, Clock, Plus, Sparkle, Target, BookOpen, ListChecks, UserCircle, LayoutGrid, Sword } from "lucide-react";
+import { Award, BadgeCheck, CircleCheck, Clock, Plus, Sparkle, Target, BookOpen, ListChecks, UserCircle, LayoutGrid, Sword, Info, CalendarClock } from "lucide-react";
 import { format } from "date-fns";
 
 // Category icon mapping
@@ -194,6 +194,34 @@ const Dashboard = () => {
         
         {/* Right Column */}
         <div className="space-y-6">
+          <div className="parchment p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Info size={20} className="text-rpg-brown" />
+              <h2 className="text-lg font-pixel text-rpg-brown">Daily Login Streak</h2>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="flex flex-col items-center sm:items-start mb-4 sm:mb-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <CalendarClock className="text-rpg-brown" size={18} />
+                  <span className="font-pixel text-rpg-brown">Day {safeCharacter.loginStreak}</span>
+                </div>
+                <p className="text-sm text-rpg-brown">Keep logging in daily to earn increasing rewards!</p>
+              </div>
+              
+              <Button
+                disabled={safeCharacter.dailyBonusClaimed}
+                className={`pixel-button ${safeCharacter.dailyBonusClaimed ? "opacity-50 cursor-not-allowed" : ""}`}
+                onClick={() => {
+                  if (character?.claimDailyBonus) {
+                    character.claimDailyBonus();
+                  }
+                }}
+              >
+                {safeCharacter.dailyBonusClaimed ? "Already Claimed" : "Claim Daily Bonus"}
+              </Button>
+            </div>
+          </div>
+
           <div className="parchment">
             <h2 className="text-2xl font-pixel text-rpg-brown mb-4">Character Stats</h2>
             
