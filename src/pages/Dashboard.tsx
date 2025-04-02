@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
 import { Award, BadgeCheck, CircleCheck, Clock, Plus, Sparkle, Target, BookOpen, ListChecks, UserCircle, LayoutGrid, Sword, Info, CalendarClock } from "lucide-react";
 import { format } from "date-fns";
+import { useLoginStreak } from "@/hooks/useLoginStreak";
 
 // Category icon mapping
 const categoryIcons: Record<string, JSX.Element> = {
@@ -16,9 +17,10 @@ const categoryIcons: Record<string, JSX.Element> = {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { character, quests, inventory, skillTree, achievements } = useGameData();
+  const { claimDailyBonus, isClaimingBonus } = useLoginStreak();
   
   // Make sure we have valid data or use defaults
-  const safeCharacter = character || { stats: {}, level: 1, xp: 0, nextLevelXp: 100, coins: 0 };
+  const safeCharacter = character || { stats: {}, level: 1, xp: 0, nextLevelXp: 100, coins: 0, loginStreak: 0, dailyBonusClaimed: false };
   const safeQuests = Array.isArray(quests) ? quests : [];
   const safeInventory = Array.isArray(inventory) ? inventory : [];
   const safeSkillTree = Array.isArray(skillTree) ? skillTree : [];
@@ -209,15 +211,11 @@ const Dashboard = () => {
               </div>
               
               <Button
-                disabled={safeCharacter.dailyBonusClaimed}
-                className={`pixel-button ${safeCharacter.dailyBonusClaimed ? "opacity-50 cursor-not-allowed" : ""}`}
-                onClick={() => {
-                  if (character?.claimDailyBonus) {
-                    character.claimDailyBonus();
-                  }
-                }}
+                disabled={safeCharacter.dailyBonusClaimed || isClaimingBonus}
+                className={`pixel-button ${(safeCharacter.dailyBonusClaimed || isClaimingBonus) ? "opacity-50 cursor-not-allowed" : ""}`}
+                onClick={claimDailyBonus}
               >
-                {safeCharacter.dailyBonusClaimed ? "Already Claimed" : "Claim Daily Bonus"}
+                {isClaimingBonus ? "Claiming..." : safeCharacter.dailyBonusClaimed ? "Already Claimed" : "Claim Daily Bonus"}
               </Button>
             </div>
           </div>

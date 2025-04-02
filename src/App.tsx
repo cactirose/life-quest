@@ -15,7 +15,6 @@ import SkillTree from "./pages/SkillTree";
 import Shop from "./pages/Shop";
 import Inventory from "./pages/Inventory";
 import NotFound from "./pages/NotFound";
-import Challenges from "./pages/Challenges";
 import Habits from "./pages/Habits";
 import Mood from "./pages/Mood";
 import Achievements from "./pages/Achievements";
@@ -46,7 +45,7 @@ initializeTheme();
 
 // Layout component that includes the navbar
 const Layout = ({ children }: { children: ReactNode }) => {
-  const { isLoading, loadingProgress } = useGameDataManager();
+  const { isLoading, loadingProgress, error } = useGameDataManager();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   
   // Add timeout detection
@@ -84,6 +83,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
                 style={{ width: `${loadingProgress}%` }}
               />
             </div>
+            
+            {error && (
+              <div className="mt-4 text-red-500">
+                <p>{error}</p>
+              </div>
+            )}
             
             {loadingTimeout && (
               <div className="mt-8">
@@ -205,16 +210,6 @@ const App = () => {
                     <ProtectedRoute>
                       <Layout>
                         <Inventory />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/challenges"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Challenges />
                       </Layout>
                     </ProtectedRoute>
                   }
