@@ -2,12 +2,19 @@ import { useState } from "react";
 import { useGameData, MoodEntry, MoodType } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { 
   HeartPulse, 
+  Smile, 
+  Frown, 
+  Meh, 
+  Sun, 
+  Cloud, 
+  Zap, 
   Plus, 
   Trash2, 
   Edit, 
@@ -16,8 +23,33 @@ import {
   History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AddMoodDialog } from "@/features/mood/components/AddMoodDialog";
-import { moodIcons, moodColors, moodNames } from "@/features/mood/components/MoodSelector";
+
+const moodIcons: Record<MoodType, JSX.Element> = {
+  happy: <Smile className="text-yellow-500" />,
+  motivated: <Sun className="text-orange-500" />,
+  neutral: <Meh className="text-blue-400" />,
+  tired: <Cloud className="text-gray-500" />,
+  stressed: <Zap className="text-purple-500" />,
+  sad: <Frown className="text-blue-600" />
+};
+
+const moodColors: Record<MoodType, string> = {
+  happy: "#FFD700",     // Gold
+  motivated: "#FFA500", // Orange
+  neutral: "#87CEEB",   // Sky Blue
+  tired: "#A9A9A9",     // Dark Gray
+  stressed: "#9932CC",  // Dark Orchid
+  sad: "#4682B4"        // Steel Blue
+};
+
+const moodNames: Record<MoodType, string> = {
+  happy: "Happy",
+  motivated: "Motivated",
+  neutral: "Neutral",
+  tired: "Tired",
+  stressed: "Stressed",
+  sad: "Sad"
+};
 
 const MoodEntryCard = ({
   entry,
@@ -206,6 +238,100 @@ const MoodStats = ({ entries }: { entries: MoodEntry[] }) => {
   );
 };
 
+const MoodForm = ({
+  onSubmit,
+  initialData = null,
+  onCancel
+}: {
+  onSubmit: (entry: Omit<MoodEntry, "id">) => void;
+  initialData?: MoodEntry | null;
+  onCancel: () => void;
+}) => {
+  const [mood, setMood] = useState<MoodType>(initialData?.mood || "neutral");
+  const [notes, setNotes] = useState(initialData?.notes || "");
+  const [date, setDate] = useState<Date>(
+    initialData ? new Date(initialData.date) : new Date()
+  );
+  
+  const handleSubmit = () => {
+    const entry: Omit<MoodEntry, "id"> = {
+      date: date.toISOString(),
+      mood,
+      notes: notes.trim() || undefined
+    };
+    
+    onSubmit(entry);
+  };
+  
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          How are you feeling today?
+        </label>
+        <div className="grid grid-cols-3 gap-3">
+          {(Object.keys(moodNames) as MoodType[]).map(moodType => (
+            <button
+              key={moodType}
+              type="button"
+              onClick={() => setMood(moodType)}
+              className={cn(
+                "flex flex-col items-center justify-center gap-1 p-3 rounded-md border-2",
+                mood === moodType
+                  ? "border-rpg-brown bg-rpg-tan/30"
+                  : "border-border hover:bg-muted"
+              )}
+            >
+              <div 
+                className="h-10 w-10 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: moodColors[moodType] }}
+              >
+                {moodIcons[moodType]}
+              </div>
+              <span className="text-xs">{moodNames[moodType]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium mb-2">
+          Date
+        </label>
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={(value) => value && setDate(value)}
+          className="border rounded-md"
+          disabled={(date) => date > new Date()}
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="notes" className="block text-sm font-medium mb-1">
+          Notes (Optional)
+        </label>
+        <Textarea
+          id="notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Add any notes about your mood"
+          className="w-full"
+        />
+      </div>
+      
+      <DialogFooter className="flex justify-between">
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={handleSubmit}>
+          {initialData ? "Update Entry" : "Save Entry"}
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+};
+
 const Mood = () => {
   const { moods, addMoodEntry, updateMoodEntry, deleteMoodEntry } = useGameData();
   
@@ -219,21 +345,15 @@ const Mood = () => {
   const today = new Date().toISOString().split("T")[0];
   const todayEntry = sortedEntries.find(entry => entry.date.startsWith(today));
   
-  const handleAddEntry = (mood: MoodType, notes: string, date: Date) => {
+  const handleAddEntry = (entry: Omit<MoodEntry, "id">) => {
     const existingEntryForDate = moods.find(
-      e => new Date(e.date).toDateString() === date.toDateString()
+      e => new Date(e.date).toDateString() === new Date(entry.date).toDateString()
     );
     
     if (existingEntryForDate && !editingEntry) {
       toast.error("You already have an entry for this date");
       return;
     }
-    
-    const entry = {
-      date: date.toISOString(),
-      mood,
-      notes: notes.trim() || undefined
-    };
     
     if (editingEntry) {
       updateMoodEntry({
@@ -260,34 +380,45 @@ const Mood = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-pixel text-rpg-brown">Mood Tracker</h1>
         
-        <Button 
-          className="pixel-button"
-          onClick={() => {
-            setShowAddDialog(true);
-          }}
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogTrigger asChild>
+            <Button className="pixel-button">
+              <Plus size={16} className="mr-2" />
+              {todayEntry ? "Update Today's Mood" : "Log Today's Mood"}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md parchment border-none">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-pixel text-rpg-brown">
+                {todayEntry ? "Update Your Mood" : "How Are You Feeling?"}
+              </DialogTitle>
+            </DialogHeader>
+            <MoodForm 
+              initialData={todayEntry || null}
+              onSubmit={handleAddEntry} 
+              onCancel={() => setShowAddDialog(false)} 
+            />
+          </DialogContent>
+        </Dialog>
+        
+        <Dialog 
+          open={!!editingEntry} 
+          onOpenChange={(open) => !open && setEditingEntry(null)}
         >
-          <Plus size={16} className="mr-2" />
-          {todayEntry ? "Update Today's Mood" : "Log Today's Mood"}
-        </Button>
+          <DialogContent className="max-w-md parchment border-none">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-pixel text-rpg-brown">Edit Mood Entry</DialogTitle>
+            </DialogHeader>
+            {editingEntry && (
+              <MoodForm 
+                initialData={editingEntry}
+                onSubmit={handleAddEntry} 
+                onCancel={() => setEditingEntry(null)} 
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
-      
-      <AddMoodDialog 
-        open={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        onAddMood={handleAddEntry}
-        initialMood={todayEntry?.mood}
-        initialDate={todayEntry ? new Date(todayEntry.date) : new Date()}
-        initialNotes={todayEntry?.notes}
-      />
-      
-      <AddMoodDialog 
-        open={!!editingEntry}
-        onOpenChange={(open) => !open && setEditingEntry(null)}
-        onAddMood={handleAddEntry}
-        initialMood={editingEntry?.mood}
-        initialDate={editingEntry ? new Date(editingEntry.date) : new Date()}
-        initialNotes={editingEntry?.notes}
-      />
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">

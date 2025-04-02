@@ -1,4 +1,3 @@
-
 // Re-export all sync functions from their respective modules
 export { syncCharacterData } from './syncCharacter';
 export { syncQuestsData } from './syncQuests';
@@ -11,8 +10,6 @@ export { syncJournalEntriesData } from './syncJournalEntries';
 export { syncShoppingListsData } from './syncShoppingLists';
 
 export { retrySyncOperation } from './syncUtils';
-
-import { supabase } from "@/integrations/supabase/client";
 
 export const loadCharacterData = async () => {
   const { data, error } = await supabase
