@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { GearItem, GearType, GearRarity } from "@/types/inventory";
@@ -21,14 +20,17 @@ export const fetchInventory = async (): Promise<GearItem[]> => {
     }
 
     return data.map(item => {
-      // Map shield type to armor type for consistency
-      const mappedType = item.type === "shield" ? "armor" : item.type;
+      // Map shield type to armor type for consistency but handle it differently
+      let mappedType: GearType = item.type as GearType;
+      if (item.type === "shield") {
+        mappedType = "armor";
+      }
       
       return {
         id: item.id,
         name: item.name,
         description: item.description || "",
-        type: mappedType as GearType,
+        type: mappedType,
         rarity: item.rarity as GearRarity,
         icon: item.icon || "",
         cost: item.cost,
@@ -50,13 +52,16 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
 
     console.log("Upserting item:", { ...item });
 
-    // Map shield type to armor type for database consistency
-    const mappedType = item.type === "shield" ? "armor" : item.type;
+    // Handle shield type correctly for database consistency
+    let dbItemType = item.type;
+    if (item.type === "shield") {
+      dbItemType = "armor"; // Store shield as armor in DB
+    }
 
     // If item is being equipped, unequip other items of the same type first
     if (item.equipped) {
-      console.log("Item is being equipped, unequipping others of type:", mappedType);
-      await unequipOtherItemsOfType(user.data.user.id, mappedType, item.id);
+      console.log("Item is being equipped, unequipping others of type:", dbItemType);
+      await unequipOtherItemsOfType(user.data.user.id, dbItemType, item.id);
     }
 
     // Prepare the item data for upsert
@@ -65,7 +70,7 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
       user_id: user.data.user.id,
       name: item.name,
       description: item.description,
-      type: mappedType, // Use the mapped type
+      type: dbItemType, // Use the mapped type
       rarity: item.rarity,
       icon: item.icon,
       cost: item.cost,

@@ -2,7 +2,7 @@
 import { GameData } from "@/types/gameData";
 import { DataLoadingStatus } from "../useDataStatus";
 import { supabase } from "@/integrations/supabase/client";
-import { Challenge } from "@/types/challenges";
+import { Challenge, ChallengeFrequency, ChallengeStatus } from "@/types/challenges";
 import { toast } from "sonner";
 
 export const useChallengesFetcher = (
@@ -36,13 +36,13 @@ export const useChallengesFetcher = (
         return null;
       }
       
-      // Map database fields to challenge object structure
+      // Map database fields to challenge object structure with proper type casting
       const challenges: Challenge[] = data.map(item => ({
         id: item.id,
         title: item.title,
         description: item.description,
-        frequency: item.frequency,
-        status: item.status,
+        frequency: item.frequency as ChallengeFrequency, // Cast to the enum type
+        status: item.status as ChallengeStatus, // Cast to the enum type
         currentCount: item.current_count,
         requiredCount: item.required_count,
         xpReward: item.xp_reward,
