@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 
 export type DataLoadingStatus = 'loading' | 'loaded' | 'error';
@@ -8,7 +7,6 @@ export interface DataStatus {
   quests: DataLoadingStatus;
   inventory: DataLoadingStatus;
   skillTree: DataLoadingStatus;
-  challenges: DataLoadingStatus;
   habits: DataLoadingStatus;
   moods: DataLoadingStatus;
   achievements: DataLoadingStatus;
@@ -20,7 +18,6 @@ export const useDataStatus = () => {
     quests: 'loading',
     inventory: 'loading',
     skillTree: 'loading',
-    challenges: 'loading',
     habits: 'loading',
     moods: 'loading',
     achievements: 'loading'

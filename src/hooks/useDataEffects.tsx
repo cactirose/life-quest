@@ -1,13 +1,11 @@
-
 import { useEffect } from "react";
 import { useAchievements } from "../contexts/AchievementContext";
 import { useGameData } from "../contexts/DataContext";
-import { CharacterContextType, ChallengeContextType } from "../utils/contextTypes";
+import { CharacterContextType } from "../utils/contextTypes";
 import { toast } from "sonner";
 
 export const useDataEffects = (
-  characterContext: CharacterContextType,
-  challengeContext: ChallengeContextType
+  characterContext: CharacterContextType
 ) => {
   const { achievements, checkAndUnlockAchievement } = useAchievements();
   const { setGameData } = useGameData();
@@ -51,18 +49,11 @@ export const useDataEffects = (
         // Don't block the app if this fails
       }
     }
-  // Use lastLoginDate instead of id since Character doesn't have an id property
-  }, [characterContext.character?.lastLoginDate, characterContext.character, setGameData]); 
+  }, [characterContext.character?.lastLoginDate]);
 
-  // Check achievements when challenges or character changes
+  // Check achievements when character changes
   useEffect(() => {
-    if (characterContext.character && 
-        challengeContext.challenges && 
-        Array.isArray(challengeContext.challenges) && 
-        challengeContext.challenges.length > 0 && 
-        achievements && 
-        Array.isArray(achievements)) {
-      
+    if (characterContext.character && achievements && Array.isArray(achievements)) {
       // Check for completed achievements based on character progress
       try {
         achievements.forEach(achievement => {
@@ -77,13 +68,6 @@ export const useDataEffects = (
             if ('requiredCoins' in achievement && characterContext.character.coins >= achievement.requiredCoins) {
               checkAndUnlockAchievement(achievement.id);
             }
-            
-            // Check challenge-based achievements
-            if ('requiredChallenges' in achievement && 
-                Array.isArray(challengeContext.challenges) &&
-                challengeContext.challenges.filter(c => c.status === "completed").length >= achievement.requiredChallenges) {
-              checkAndUnlockAchievement(achievement.id);
-            }
           }
         });
       } catch (error) {
@@ -94,7 +78,6 @@ export const useDataEffects = (
   }, [
     characterContext.character?.level,
     characterContext.character?.coins,
-    challengeContext.challenges,
     achievements,
     checkAndUnlockAchievement
   ]);

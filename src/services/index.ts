@@ -3,7 +3,6 @@ import { fetchCharacter } from "./characterService";
 import { fetchQuests } from "./questService";
 import { fetchInventory, fetchShopItems } from "./inventoryService";
 import { fetchSkillTree } from "./skillTreeService";
-import { fetchChallenges } from "./challengeService";
 import { fetchHabits } from "./habitService";
 import { fetchMoodEntries } from "./moodService";
 import { fetchAchievements } from "./achievementService";
@@ -58,7 +57,6 @@ export const loadAllGameData = async () => {
         inventory,
         shopItems,
         skillTree,
-        challenges,
         habits,
         moods,
         achievements
@@ -81,10 +79,6 @@ export const loadAllGameData = async () => {
         }),
         fetchSkillTree().catch(err => {
           console.error("Error fetching skill tree:", err);
-          return [];
-        }),
-        fetchChallenges().catch(err => {
-          console.error("Error fetching challenges:", err);
           return [];
         }),
         fetchHabits().catch(err => {
@@ -111,7 +105,6 @@ export const loadAllGameData = async () => {
       if (inventory && inventory.length > 0) result.inventory = inventory;
       if (shopItems && shopItems.length > 0) result.shopItems = shopItems;
       if (skillTree && skillTree.length > 0) result.skillTree = skillTree;
-      if (challenges && challenges.length > 0) result.challenges = challenges;
       if (habits && habits.length > 0) result.habits = habits;
       if (moods && moods.length > 0) result.moods = moods;
       if (achievements && achievements.length > 0) result.achievements = achievements;
@@ -139,7 +132,6 @@ export {
   fetchInventory,
   fetchShopItems,
   fetchSkillTree,
-  fetchChallenges,
   fetchHabits,
   fetchMoodEntries,
   fetchAchievements
@@ -147,33 +139,29 @@ export {
 
 // Re-export all upserting functions
 export {
+  upsertAchievement
+} from "./achievementService";
+
+export {
   upsertCharacter
 } from "./characterService";
-
-export {
-  upsertQuest
-} from "./questService";
-
-export {
-  upsertInventoryItem
-} from "./inventoryService";
-
-export {
-  upsertSkillNode
-} from "./skillTreeService";
-
-export {
-  upsertChallenge
-} from "./challengeService";
 
 export {
   upsertHabit
 } from "./habitService";
 
 export {
+  upsertInventoryItem
+} from "./inventoryService";
+
+export {
   upsertMoodEntry
 } from "./moodService";
 
 export {
-  upsertAchievement
-} from "./achievementService";
+  upsertQuest
+} from "./questService";
+
+export {
+  upsertSkillNode
+} from "./skillTreeService";

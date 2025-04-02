@@ -1,4 +1,3 @@
-
 import { GameData } from "@/types/gameData";
 
 /**
@@ -21,10 +20,6 @@ export function detectChangedFields(previousData: GameData, currentData: GameDat
   
   if (JSON.stringify(previousData.skillTree) !== JSON.stringify(currentData.skillTree)) {
     changedFields.push('skillTree');
-  }
-  
-  if (JSON.stringify(previousData.challenges) !== JSON.stringify(currentData.challenges)) {
-    changedFields.push('challenges');
   }
   
   if (JSON.stringify(previousData.habits) !== JSON.stringify(currentData.habits)) {

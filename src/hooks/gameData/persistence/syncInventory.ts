@@ -1,4 +1,3 @@
-
 import { GameData } from '@/types/gameData';
 import { upsertInventoryItem } from "@/services";
 import { retrySyncOperation } from './syncUtils';
@@ -18,14 +17,18 @@ export const syncInventoryData = async (gameData: GameData, changedFields: Set<s
   for (const item of gameData.inventory) {
     const success = await retrySyncOperation(
       async () => {
-        // Convert to void to fix TypeScript error
-        await upsertInventoryItem(item);
-        // We're just ignoring the return value here
+        const result = await upsertInventoryItem(item);
+        if (!result) {
+          console.error(`Failed to upsert inventory item ${item.id}`);
+          return false;
+        }
+        return true;
       },
       `inventory-${item.id}`
     );
     
     if (!success) {
+      console.error(`Failed to sync inventory item ${item.id}`);
       allInventorySuccess = false;
     }
   }

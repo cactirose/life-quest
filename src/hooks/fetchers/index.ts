@@ -1,9 +1,7 @@
-
 export * from './useCharacterFetcher';
-export * from './useQuestsFetcher';
+export * from './useQuestFetcher';
 export * from './useInventoryFetcher';
 export * from './useSkillTreeFetcher';
-export * from './useChallengesFetcher';
-export * from './useHabitsFetcher';
-export * from './useMoodsFetcher';
-export * from './useAchievementsFetcher';
+export * from './useHabitFetcher';
+export * from './useMoodFetcher';
+export * from './useAchievementFetcher';

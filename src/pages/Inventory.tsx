@@ -1,11 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useGameData, GearItem, GearType } from "@/contexts/DataContext";
 import { toast } from "sonner";
 import { Package } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import InventoryItemCard from "@/components/inventory/InventoryItemCard";
-import EquipmentSlots from "@/components/inventory/EquipmentSlots";
 import InventoryFilters from "@/components/inventory/InventoryFilters";
 import EmptyInventory from "@/components/inventory/EmptyInventory";
 
@@ -71,14 +69,6 @@ const Inventory = () => {
         <div className="parchment px-4 py-2">
           <span className="font-pixel text-rpg-brown">{inventory.length} Items</span>
         </div>
-      </div>
-      
-      <div className="parchment mb-8">
-        <h2 className="text-2xl font-pixel text-rpg-brown mb-4">Equipment</h2>
-        <EquipmentSlots 
-          equippedItems={equipmentSlots} 
-          onUnequip={handleUnequip} 
-        />
       </div>
       
       <InventoryFilters 
