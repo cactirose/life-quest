@@ -1,9 +1,10 @@
+
 import { createContext, useContext } from "react";
 import { Challenge, ChallengeStatus } from "../types/challenges";
 import { generateId } from "../utils/idGenerator";
 import { StatName } from "../types/character";
 import { updateCharacterStats } from "../services/characterService";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 
 interface ChallengeContextType {
   challenges: Challenge[];
@@ -29,7 +30,8 @@ export const useChallenges = () => useContext(ChallengeContext);
 
 export const createChallengeContextValue = (
   challenges: Challenge[] = [],
-  setGameData: React.Dispatch<React.SetStateAction<any>>
+  setGameData: React.Dispatch<React.SetStateAction<any>>,
+  currentGameData: any // Add parameter to receive the game data
 ): ChallengeContextType => {
   const addChallenge = (challenge: Omit<Challenge, "id">) => {
     const newChallenge = {
@@ -123,14 +125,15 @@ export const createChallengeContextValue = (
   };
   
   const completeChallenge = async (challengeId: string) => {
-    const challenge = gameData.challenges?.find(c => c.id === challengeId);
-    if (!challenge || challenge.status === "completed" || !gameData.character?.id) return;
+    // Use currentGameData instead of gameData global variable
+    const challenge = currentGameData.challenges?.find((c: any) => c.id === challengeId);
+    if (!challenge || challenge.status === "completed" || !currentGameData.character?.id) return;
 
     try {
       // Update character stats in Supabase first
-      const updatedChar = await updateCharacterStats(gameData.character.id, {
-        xp: gameData.character.xp + challenge.xpReward,
-        coins: gameData.character.coins + challenge.coinReward
+      const updatedChar = await updateCharacterStats(currentGameData.character.id, {
+        xp: currentGameData.character.xp + (challenge.xpReward || 0), // Add null check with || 0
+        coins: currentGameData.character.coins + (challenge.coinReward || 0)
       });
 
       if (!updatedChar) {

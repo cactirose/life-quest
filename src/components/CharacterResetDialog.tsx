@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,19 +12,31 @@ import {
 } from "@/components/ui/dialog";
 import { RefreshCcw } from "lucide-react";
 import { useCharacter } from "@/contexts/CharacterContext";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 export function CharacterResetDialog() {
   const [open, setOpen] = useState(false);
-  const { resetCharacter } = useCharacter();
+  const { updateCharacter } = useCharacter();
 
   const handleReset = () => {
-    resetCharacter();
+    // Reset character to default values
+    updateCharacter({
+      level: 1,
+      xp: 0,
+      coins: 50,
+      stats: {
+        strength: 10,
+        dexterity: 10,
+        constitution: 10,
+        intelligence: 10,
+        wisdom: 10,
+        charisma: 10
+      }
+    });
+    
     setOpen(false);
-    toast({
-      title: "Character Reset",
+    toast.success("Character Reset", {
       description: "Your character has been reset to level 1. Your adventure begins anew!",
-      variant: "default",
     });
   };
 

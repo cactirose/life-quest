@@ -1,9 +1,10 @@
+
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/hooks/auth/useAuth';
+import { useAuth } from '@/features/auth/context/AuthContext';
 import { useCharacter } from '@/contexts/CharacterContext';
 import { UserSkill, SkillName, SKILL_DEFINITIONS } from '@/types/skills';
 import * as skillService from '@/services/skillService';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import debounce from 'lodash/debounce';
 
 export interface SkillProgress {
@@ -16,7 +17,7 @@ export interface SkillProgress {
 
 export function useGrowthSystem() {
   const { user } = useAuth();
-  const { character, updateStats } = useCharacter();
+  const { character, updateCharacter } = useCharacter();
   const [skills, setSkills] = useState<UserSkill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -72,9 +73,10 @@ export function useGrowthSystem() {
         newStats[stat] = Math.max(10, character.stats[stat] + bonus);
       });
 
-      await updateStats(newStats);
+      // Update character with new stats
+      await updateCharacter({ stats: newStats });
     }, 1000),
-    [character, updateStats]
+    [character, updateCharacter]
   );
 
   // Update skills XP and trigger stat recalculation
@@ -133,4 +135,4 @@ export function useGrowthSystem() {
     addSkillXP,
     getSkillProgress
   };
-} 
+}

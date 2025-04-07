@@ -36,7 +36,7 @@ initializeTheme();
 
 // Layout component that includes the navbar
 const Layout = ({ children }: { children: ReactNode }) => {
-  const { isLoading, error } = useAuth();
+  const { isLoading, user } = useAuth();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   
   // Add timeout detection
@@ -78,7 +78,8 @@ const Layout = ({ children }: { children: ReactNode }) => {
     );
   }
 
-  if (error) {
+  // If there's no user (instead of checking for error)
+  if (!user) {
     return (
       <div className="flex flex-col min-h-screen bg-background">
         <Navbar />

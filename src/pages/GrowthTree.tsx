@@ -5,7 +5,6 @@ import { SkillName, SKILL_DEFINITIONS } from "@/types/skills";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { GitBranch, TrendingUp } from "lucide-react";
-import { Icon } from "@mui/material";
 
 const SkillCard = ({ skillName }: { skillName: SkillName }) => {
   const { getSkillProgress } = useGrowthSystem();
@@ -18,8 +17,9 @@ const SkillCard = ({ skillName }: { skillName: SkillName }) => {
     <Card className="p-4 bg-rpg-tan hover:bg-rpg-tan/90 transition-colors">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-rpg-brown flex items-center justify-center">
-            <Icon>{definition.icon}</Icon>
+          <div className="w-10 h-10 rounded-full bg-rpg-brown flex items-center justify-center text-white">
+            {/* Display first letter of skill name as fallback */}
+            {definition.name.charAt(0).toUpperCase()}
           </div>
           <div>
             <h3 className="font-pixel text-lg capitalize">{definition.name}</h3>

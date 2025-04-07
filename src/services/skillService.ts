@@ -1,6 +1,7 @@
-import { supabase } from '@/lib/supabaseClient';
+
+import { supabase } from '@/lib/supabase';
 import { UserSkill, SkillName, SKILL_DEFINITIONS } from '@/types/skills';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 export async function fetchUserSkills(userId: string): Promise<UserSkill[]> {
   const { data, error } = await supabase
@@ -103,4 +104,4 @@ export function getSkillLevelInfo(xp: number) {
     nextLevelXP,
     progress: Math.min(1, Math.max(0, progress))
   };
-} 
+}
