@@ -1,89 +1,86 @@
 
-import { DEFAULT_GAME_DATA } from './defaultGameData';
-import { Quest, QuestStatus, QuestType } from '../types/quests';
-import { Habit } from '../types/habits';
-import { Achievement } from '../types/achievements';
-import { Character } from '../types/character';
-import { Inventory } from '../types/inventory';
-import { SkillTree } from '../types/skills';
-import { Mood } from '../types/mood';
-import { Challenge } from '../types/challenges';
-import { generateId } from './idGenerator';
+import { generateId } from "./idGenerator";
+import { DEFAULT_CHARACTER } from "../types/character";
+import { SAMPLE_QUESTS } from "../types/quests";
+import { SAMPLE_SHOP_ITEMS } from "../types/inventory";
+import { SAMPLE_SKILL_TREE } from "../types/skills";
+import { SAMPLE_CHALLENGES } from "../types/challenges";
+import { SAMPLE_HABITS } from "../types/habits";
+import { SAMPLE_ACHIEVEMENTS } from "../types/achievements";
+import { GameData } from "../types/gameData";
 
-export interface LoadInitialDataParams {
-  resetCharacter?: boolean;
-  resetQuests?: boolean;
-  resetHabits?: boolean;
-  resetAchievements?: boolean;
-  resetInventory?: boolean;
-  resetSkillTree?: boolean;
-  resetMoods?: boolean;
-  resetChallenges?: boolean;
-}
-
-export function loadInitialData({
-  resetCharacter = false,
-  resetQuests = false,
-  resetHabits = false,
-  resetAchievements = false,
-  resetInventory = false,
-  resetSkillTree = false,
-  resetMoods = false,
-  resetChallenges = false,
-}: LoadInitialDataParams = {}) {
-  const loadedData = {
-    character: DEFAULT_GAME_DATA.character,
-    quests: DEFAULT_GAME_DATA.quests,
-    habits: DEFAULT_GAME_DATA.habits,
-    achievements: DEFAULT_GAME_DATA.achievements,
-    inventory: DEFAULT_GAME_DATA.inventory,
-    skillTrees: DEFAULT_GAME_DATA.skillTrees,
-    moods: DEFAULT_GAME_DATA.moods,
-    challenges: DEFAULT_GAME_DATA.challenges
-  };
-
-  const storedData = localStorage.getItem('gameData');
-
-  if (storedData) {
+// Load data from localStorage or use defaults with samples
+export const loadInitialData = (): Omit<GameData, keyof Omit<GameData, 'character' | 'quests' | 'inventory' | 'shopItems' | 'skillTree' | 'challenges' | 'habits' | 'moods' | 'achievements'>> => {
+  const savedData = localStorage.getItem("rpgProductivityData");
+  if (savedData) {
     try {
-      const parsedData = JSON.parse(storedData);
+      const parsedData = JSON.parse(savedData);
+      console.log("Loaded data from localStorage:", parsedData);
       
-      // Only load from storage if not resetting
-      if (!resetCharacter && parsedData.character) {
-        loadedData.character = parsedData.character;
-      }
+      // Validate data has required collections
+      if (!parsedData.challenges) parsedData.challenges = [];
+      if (!parsedData.inventory) parsedData.inventory = [];
+      if (!parsedData.habits) parsedData.habits = [];
+      if (!parsedData.quests) parsedData.quests = [];
+      if (!parsedData.skillTree) parsedData.skillTree = [];
+      if (!parsedData.shopItems) parsedData.shopItems = [];
+      if (!parsedData.moods) parsedData.moods = [];
+      if (!parsedData.achievements) parsedData.achievements = [];
       
-      if (!resetQuests && parsedData.quests) {
-        loadedData.quests = parsedData.quests;
-      }
-      
-      if (!resetHabits && parsedData.habits) {
-        loadedData.habits = parsedData.habits;
-      }
-      
-      if (!resetAchievements && parsedData.achievements) {
-        loadedData.achievements = parsedData.achievements;
-      }
-      
-      if (!resetInventory && parsedData.inventory) {
-        loadedData.inventory = parsedData.inventory;
-      }
-      
-      if (!resetSkillTree && parsedData.skillTrees) {
-        loadedData.skillTrees = parsedData.skillTrees;
-      }
-
-      if (!resetMoods && parsedData.moods) {
-        loadedData.moods = parsedData.moods;
-      }
-
-      if (!resetChallenges && parsedData.challenges) {
-        loadedData.challenges = parsedData.challenges;
-      }
+      return parsedData;
     } catch (error) {
-      console.error('Error parsing stored game data:', error);
+      console.error("Error parsing saved data:", error);
+      // Fall through to create default data if parsing fails
     }
   }
-
-  return loadedData;
-}
+  
+  // Get tomorrow date for the initial daily challenge
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  
+  // Get next Sunday for the initial weekly challenge
+  const nextSunday = new Date();
+  nextSunday.setDate(nextSunday.getDate() + (7 - nextSunday.getDay()));
+  nextSunday.setHours(0, 0, 0, 0);
+  
+  // Get first day of next month for the initial monthly challenge
+  const nextMonth = new Date();
+  nextMonth.setMonth(nextMonth.getMonth() + 1);
+  nextMonth.setDate(1);
+  nextMonth.setHours(0, 0, 0, 0);
+  
+  // First time setup with sample data
+  return {
+    character: DEFAULT_CHARACTER,
+    quests: SAMPLE_QUESTS.map(quest => ({ 
+      ...quest, 
+      id: generateId(),
+      steps: quest.steps.map(step => ({ ...step, id: step.id || generateId() }))
+    })),
+    inventory: [], // Ensure inventory is explicitly set
+    shopItems: SAMPLE_SHOP_ITEMS.map(item => ({ ...item, id: generateId() })),
+    skillTree: SAMPLE_SKILL_TREE.map(node => ({ ...node, id: generateId() })),
+    challenges: SAMPLE_CHALLENGES.map(challenge => ({
+      ...challenge,
+      id: generateId(),
+      resetDate: challenge.frequency === "daily" 
+        ? tomorrow.toISOString()
+        : challenge.frequency === "weekly"
+          ? nextSunday.toISOString()
+          : nextMonth.toISOString()
+    })),
+    habits: SAMPLE_HABITS.map(habit => ({
+      ...habit,
+      id: generateId(),
+      completionHistory: [],
+      streak: 0
+    })),
+    achievements: SAMPLE_ACHIEVEMENTS.map(achievement => ({
+      ...achievement,
+      id: generateId(),
+      unlocked: false
+    })),
+    moods: []
+  };
+};

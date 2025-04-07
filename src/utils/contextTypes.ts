@@ -1,22 +1,24 @@
-import { Achievement } from "../types/achievements";
+
 import { Character, StatName } from "../types/character";
-import { Habit } from "../types/habits";
-import { Item } from "../types/inventory";
-import { JournalEntry } from "../types/journal";
 import { Quest } from "../types/quests";
-import { SkillTree } from "../types/skills";
+import { GearItem } from "../types/inventory";
+import { SkillNode } from "../types/skills";
 import { Challenge } from "../types/challenges";
+import { Habit } from "../types/habits";
+import { MoodEntry } from "../types/mood";
+import { Achievement } from "../types/achievements";
+
+// Common Context State Updater Type
+export type GameDataUpdater = React.Dispatch<React.SetStateAction<any>>;
 
 // Character Context Types
-export type CharacterContextType = {
+export interface CharacterContextType {
   character: Character;
-  addXp: (amount: number) => void;
-  addCoins: (amount: number) => void;
-  updateStat: (stat: StatName, amount: number) => void;
-  resetCharacter: () => void;
-  updateCharacter: (character: Character) => void;
-  claimDailyBonus: (xp: number, coins: number) => void;
-};
+  setCharacter: (character: Character) => void;
+  updateCharacterStat: (stat: StatName, value: number) => void;
+  checkDailyLogin: () => void;
+  claimDailyBonus: () => void;
+}
 
 // Quest Context Types
 export interface QuestContextType {
@@ -30,9 +32,9 @@ export interface QuestContextType {
 
 // Inventory Context Types
 export interface InventoryContextType {
-  inventory: Item[];
-  shopItems: Item[];
-  addToInventory: (item: Item) => void;
+  inventory: GearItem[];
+  shopItems: GearItem[];
+  addToInventory: (item: GearItem) => void;
   removeFromInventory: (itemId: string) => void;
   equipItem: (itemId: string) => void;
   unequipItem: (itemId: string) => void;
@@ -41,9 +43,9 @@ export interface InventoryContextType {
 
 // Skill Tree Context Types
 export interface SkillTreeContextType {
-  skillTree: SkillTree[];
-  addSkillNode: (node: Omit<SkillTree, "id">) => string;
-  updateSkillNode: (node: SkillTree) => void;
+  skillTree: SkillNode[];
+  addSkillNode: (node: Omit<SkillNode, "id">) => string;
+  updateSkillNode: (node: SkillNode) => void;
   deleteSkillNode: (nodeId: string) => void;
   unlockSkillNode: (nodeId: string) => void;
 }
@@ -71,9 +73,9 @@ export interface HabitContextType {
 
 // Mood Context Types
 export interface MoodContextType {
-  moods: JournalEntry[];
-  addMoodEntry: (entry: Omit<JournalEntry, "id">) => void;
-  updateMoodEntry: (entry: JournalEntry) => void;
+  moods: MoodEntry[];
+  addMoodEntry: (entry: Omit<MoodEntry, "id">) => void;
+  updateMoodEntry: (entry: MoodEntry) => void;
   deleteMoodEntry: (entryId: string) => void;
 }
 
