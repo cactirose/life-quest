@@ -1,10 +1,10 @@
 
-import { Character } from "../types/character";
+import { Character, StatName } from "../types/character";
 import { Quest } from "../types/quests";
 import { GearItem } from "../types/inventory";
 import { SkillNode } from "../types/skills";
 import { Habit } from "../types/habits";
-import { MoodEntry } from "../types/mood";
+import { MoodEntry, MoodType } from "../types/mood";
 import { Achievement } from "../types/achievements";
 
 export type GameDataUpdater = React.Dispatch<React.SetStateAction<any>>;
@@ -37,8 +37,10 @@ export interface InventoryContextValue {
 
 export interface SkillTreeContextValue {
   skillTree: SkillNode[];
-  unlockNode: (nodeId: string) => void;
-  upgradeNode: (nodeId: string) => void;
+  addSkillNode: (node: Omit<SkillNode, "id">) => string;
+  updateSkillNode: (node: SkillNode) => void;
+  deleteSkillNode: (nodeId: string) => void;
+  unlockSkillNode: (nodeId: string) => void;
 }
 
 export interface HabitContextValue {
@@ -52,8 +54,9 @@ export interface HabitContextValue {
 
 export interface MoodContextType {
   moods: MoodEntry[];
-  addMood: (mood: Omit<MoodEntry, "id" | "date">) => void;
-  deleteMood: (moodId: string) => void;
+  addMoodEntry: (entry: Omit<MoodEntry, "id">) => void;
+  updateMoodEntry: (entry: MoodEntry) => void;
+  deleteMoodEntry: (entryId: string) => void;
 }
 
 export interface AchievementContextValue {

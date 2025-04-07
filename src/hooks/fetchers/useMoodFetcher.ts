@@ -34,9 +34,9 @@ export const useMoodFetcher = (
         id: entry.id,
         mood: entry.mood as MoodType,
         date: entry.date,
-        note: entry.note || "",
-        factors: entry.factors || [],
-        activities: entry.activities || []
+        notes: entry.notes || "",
+        factors: [] as string[],  // Default empty arrays for optional fields
+        activities: [] as string[]
       }));
 
       setGameData(prevData => ({

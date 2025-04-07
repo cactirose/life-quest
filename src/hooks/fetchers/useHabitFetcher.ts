@@ -29,23 +29,30 @@ export const useHabitFetcher = (
         return [];
       }
 
-      const habits = data.map(habit => ({
-        id: habit.id,
-        name: habit.name,
-        description: habit.description || "",
-        frequency: habit.frequency as HabitFrequency,
-        streak: habit.streak || 0,
-        completionHistory: (habit.completion_history as HabitCompletion[]) || [],
-        specificDays: habit.custom_days || [],
-        color: habit.color || "#4F46E5",
-        icon: habit.icon || "✨",
-        createdAt: habit.created_at || new Date().toISOString(),
-        archivedAt: null,
-        priority: "medium",
-        xpReward: habit.xp_reward || 10,
-        coinReward: habit.coin_reward || 5,
-        achievementLinks: habit.achievement_links || []
-      }));
+      const habits = data.map(habit => {
+        // Type conversion for JSON fields
+        const completionHistory = Array.isArray(habit.completion_history) 
+          ? habit.completion_history as unknown as HabitCompletion[] 
+          : [] as HabitCompletion[];
+          
+        return {
+          id: habit.id,
+          name: habit.name,
+          description: habit.description || "",
+          frequency: habit.frequency as HabitFrequency,
+          streak: habit.streak || 0,
+          completionHistory: completionHistory,
+          customDays: habit.custom_days || [],
+          color: habit.color || "#4F46E5",
+          icon: habit.icon || "✨",
+          createdAt: habit.created_at || new Date().toISOString(),
+          archivedAt: null,
+          priority: "medium",
+          xpReward: habit.xp_reward || 10,
+          coinReward: habit.coin_reward || 5,
+          achievementLinks: []  // Default empty array for achievement links
+        };
+      });
 
       setGameData(prevData => ({
         ...prevData,

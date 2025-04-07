@@ -7,4 +7,6 @@ export interface MoodEntry {
   date: string; // ISO date string
   mood: MoodType;
   notes?: string;
+  factors?: string[];
+  activities?: string[];
 }

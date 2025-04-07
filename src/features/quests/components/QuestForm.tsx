@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Quest, QuestStep, QuestType, QuestRepeatInterval, StatReward } from "@/types/quests";
@@ -46,7 +47,8 @@ const questFormSchema = z.object({
     intelligence: z.number().int().min(0).max(5).optional(),
     wisdom: z.number().int().min(0).max(5).optional(),
     charisma: z.number().int().min(0).max(5).optional()
-  }).optional()
+  }).optional(),
+  linkedAchievementIds: z.array(z.string()).optional()
 });
 
 type QuestFormValues = z.infer<typeof questFormSchema>;
@@ -111,7 +113,7 @@ export const QuestForm = ({
   ];
 
   const [selectedAchievementIds, setSelectedAchievementIds] = useState<string[]>(
-    defaultValues.linkedAchievementIds
+    initialData?.linkedAchievementIds || []
   );
 
   const handleFormSubmit = async (data: QuestFormValues) => {
@@ -129,6 +131,7 @@ export const QuestForm = ({
           description: step.description,
           completed: false 
         })),
+        completedSteps: initialData?.completedSteps || 0,
         xpReward: data.xpReward,
         coinReward: data.coinReward,
         tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
@@ -141,7 +144,7 @@ export const QuestForm = ({
             stat: stat as StatName,
             value: value as number
           })),
-        linkedAchievementIds: data.linkedAchievementIds
+        linkedAchievementIds: selectedAchievementIds
       };
 
       // Submit the quest data
@@ -163,7 +166,6 @@ export const QuestForm = ({
       const newIds = prev.includes(achievementId)
         ? prev.filter(id => id !== achievementId)
         : [...prev, achievementId];
-      methods.setValue("linkedAchievementIds", newIds);
       return newIds;
     });
   };

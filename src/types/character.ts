@@ -8,6 +8,7 @@ export type Stats = {
 
 // Character type
 export interface Character {
+  id?: string; // Added id property, optional for compatibility
   name: string;
   level: number;
   xp: number;

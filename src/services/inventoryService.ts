@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { GearItem, GearRarity } from "@/types/inventory";
+import { GearItem, GearType, GearRarity } from "@/types/inventory";
+import { toast } from "sonner";
 
 export const fetchInventory = async (): Promise<GearItem[]> => {
   try {
@@ -20,14 +21,14 @@ export const fetchInventory = async (): Promise<GearItem[]> => {
     return data.map(item => ({
       id: item.id,
       name: item.name,
-      description: item.description,
-      type: item.type,
+      description: item.description || "",
+      type: item.type as GearType, // Cast to ensure type safety
       rarity: item.rarity as GearRarity,
       cost: item.cost,
-      equipped: item.equipped || false,
-      statBonuses: item.stat_bonuses as GearItem["statBonuses"],
+      equipped: item.equipped,
+      statBonuses: item.stat_bonuses || {},
       levelRequired: item.level_required || 1,
-      icon: item.icon
+      icon: item.icon || "🔮"
     }));
   } catch (error) {
     console.error("Error in fetchInventory:", error);
@@ -49,14 +50,14 @@ export const fetchShopItems = async (): Promise<GearItem[]> => {
     return data.map(item => ({
       id: item.id,
       name: item.name,
-      description: item.description,
-      type: item.type, 
+      description: item.description || "",
+      type: item.type as GearType, // Cast to ensure type safety
       rarity: item.rarity as GearRarity,
       cost: item.cost,
       equipped: false,
-      statBonuses: item.stat_bonuses as GearItem["statBonuses"],
+      statBonuses: item.stat_bonuses || {},
       levelRequired: item.level_required || 1,
-      icon: item.icon
+      icon: item.icon || "🔮"
     }));
   } catch (error) {
     console.error("Error in fetchShopItems:", error);
@@ -64,11 +65,13 @@ export const fetchShopItems = async (): Promise<GearItem[]> => {
   }
 };
 
-// Add the upsertInventoryItem function
 export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | null> => {
   try {
     const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) throw new Error("No authenticated user");
+    if (!user?.user) {
+      toast.error("You must be logged in to save inventory items");
+      return null;
+    }
 
     // Check if item exists
     const { data } = await supabase
@@ -77,49 +80,43 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
       .eq("id", item.id)
       .single();
 
+    const itemData = {
+      name: item.name,
+      description: item.description,
+      type: item.type,
+      rarity: item.rarity,
+      icon: item.icon,
+      cost: item.cost,
+      equipped: item.equipped,
+      stat_bonuses: item.statBonuses,
+      level_required: item.levelRequired
+    };
+
     if (data) {
       // Update existing item
       const { error } = await supabase
         .from("inventory_items")
-        .update({
-          name: item.name,
-          description: item.description,
-          type: item.type,
-          rarity: item.rarity,
-          cost: item.cost,
-          equipped: item.equipped,
-          stat_bonuses: item.statBonuses,
-          level_required: item.levelRequired,
-          icon: item.icon
-        })
+        .update(itemData)
         .eq("id", item.id);
 
       if (error) {
         console.error("Error updating inventory item:", error);
+        toast.error("Failed to update item");
         return null;
       }
     } else {
       // Insert new item
       const { error } = await supabase
         .from("inventory_items")
-        .insert([
-          {
-            id: item.id,
-            user_id: user.user.id,
-            name: item.name,
-            description: item.description,
-            type: item.type,
-            rarity: item.rarity,
-            cost: item.cost,
-            equipped: item.equipped,
-            stat_bonuses: item.statBonuses,
-            level_required: item.levelRequired,
-            icon: item.icon
-          }
-        ]);
+        .insert([{
+          id: item.id,
+          user_id: user.user.id,
+          ...itemData
+        }]);
 
       if (error) {
         console.error("Error creating inventory item:", error);
+        toast.error("Failed to create item");
         return null;
       }
     }
@@ -127,65 +124,7 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
     return item;
   } catch (error) {
     console.error("Error in upsertInventoryItem:", error);
+    toast.error("Failed to save item");
     return null;
-  }
-};
-
-export const updateInventoryItem = async (item: GearItem): Promise<void> => {
-  try {
-    const { error } = await supabase
-      .from("inventory_items")
-      .update({
-        name: item.name,
-        description: item.description,
-        type: item.type,
-        rarity: item.rarity,
-        cost: item.cost,
-        equipped: item.equipped,
-        stat_bonuses: item.statBonuses,
-        level_required: item.levelRequired,
-        icon: item.icon
-      })
-      .eq("id", item.id);
-
-    if (error) {
-      console.error("Error updating inventory item:", error);
-    }
-  } catch (error) {
-    console.error("Error in updateInventoryItem:", error);
-  }
-};
-
-// Add the deleteInventoryItem function
-export const deleteInventoryItem = async (itemId: string): Promise<void> => {
-  try {
-    const { error } = await supabase
-      .from("inventory_items")
-      .delete()
-      .eq("id", itemId);
-
-    if (error) {
-      console.error("Error deleting inventory item:", error);
-    }
-  } catch (error) {
-    console.error("Error in deleteInventoryItem:", error);
-  }
-};
-
-// Add the toggleItemEquipped function
-export const toggleItemEquipped = async (itemId: string, equipped: boolean): Promise<void> => {
-  try {
-    const { error } = await supabase
-      .from("inventory_items")
-      .update({
-        equipped: equipped
-      })
-      .eq("id", itemId);
-
-    if (error) {
-      console.error("Error toggling item equipped status:", error);
-    }
-  } catch (error) {
-    console.error("Error in toggleItemEquipped:", error);
   }
 };
