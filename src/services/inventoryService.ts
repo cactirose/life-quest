@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { nanoid } from 'nanoid';
 import { GearItem, GearRarity, GearType, ItemType } from '../types/inventory';
 import { StatName } from '../types/character';
-import { Json } from '@/types/supabase';
 
 export const fetchInventoryItems = async (userId: string) => {
   const { data, error } = await supabase
@@ -33,8 +32,9 @@ export const addInventoryItem = async (userId: string, item: Partial<GearItem>) 
   };
 
   // Special handling for shields - map them to armor type for database consistency
-  const itemType = newItem.type === "shield" ? "armor" as GearType : newItem.type;
-  newItem.type = itemType;
+  if (newItem.type === "shield") {
+    newItem.type = "armor" as GearType;
+  }
   
   const { data, error } = await supabase
     .from('inventory_items')

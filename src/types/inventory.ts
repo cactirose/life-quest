@@ -2,7 +2,8 @@
 import { StatName } from "./character";
 
 // Gear types
-export type GearType = "weapon" | "armor" | "accessory" | "real-life";
+export type GearType = "weapon" | "armor" | "accessory" | "real-life" | "shield";
+
 export enum GearRarity {
   COMMON = "common",
   RARE = "rare",
@@ -26,13 +27,14 @@ export interface GearItem {
 
 // For compatibility with existing code
 export type Item = GearItem;
-export enum ItemType {
-  WEAPON = "weapon",
-  ARMOR = "armor",
-  ACCESSORY = "accessory",
-  CONSUMABLE = "consumable",
-  REAL_LIFE = "real-life"
-}
+
+export const ItemType = {
+  WEAPON: "weapon" as GearType,
+  ARMOR: "armor" as GearType,
+  ACCESSORY: "accessory" as GearType,
+  CONSUMABLE: "consumable" as GearType,
+  REAL_LIFE: "real-life" as GearType
+} as const;
 
 // Sample shop items for first run
 export const SAMPLE_SHOP_ITEMS: GearItem[] = [

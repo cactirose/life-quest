@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCharacter } from "./characterService";
 import { fetchQuests } from "./questService";
@@ -8,8 +9,8 @@ import { fetchMoodEntries } from "./moodService";
 import { fetchAchievements } from "./achievementService";
 import { fetchChallenges } from "./challengeService";
 import { ensureValidSession } from "@/utils/auth";
-import { ChallengeFrequency, ChallengeStatus } from "@/types/challenges";
-import { StatName } from "@/types/character";
+import type { ChallengeFrequency, ChallengeStatus } from "@/types/challenges";
+import type { StatName } from "@/types/character";
 
 export type GameData = {
   character: Awaited<ReturnType<typeof fetchCharacter>>;
@@ -25,11 +26,16 @@ export type GameData = {
 
 export const loadGameData = async (): Promise<GameData> => {
   ensureValidSession();
+  
+  const userId = (await supabase.auth.getUser()).data.user?.id;
+  if (!userId) {
+    throw new Error("User not authenticated");
+  }
 
   return {
     character: await fetchCharacter(),
     quests: await fetchQuests(),
-    inventoryItems: await fetchInventoryItems(),
+    inventoryItems: await fetchInventoryItems(userId),
     shopItems: await fetchShopItems(),
     skillTree: await fetchSkillTree(),
     habits: await fetchHabits(),
@@ -52,7 +58,8 @@ export {
   fetchMoodEntries,
   fetchAchievements,
   fetchChallenges,
-  ChallengeFrequency,
-  ChallengeStatus,
-  StatName,
 };
+
+// Re-export types
+export { ChallengeFrequency, ChallengeStatus } from "@/types/challenges";
+export { StatName } from "@/types/character";
