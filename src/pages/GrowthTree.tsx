@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useGrowthSystem, SkillProgress } from "@/hooks/useGrowthSystem";
 import { SkillName, SKILL_DEFINITIONS } from "@/types/skills";
@@ -136,4 +137,4 @@ const GrowthTree = () => {
   );
 };
 
-export default GrowthTree; 
+export default GrowthTree;
