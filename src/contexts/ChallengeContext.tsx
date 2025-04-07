@@ -150,7 +150,7 @@ export const createChallengeContextValue = (
             ...updatedChar.stats,
             ...Object.entries(challenge.statRewards || {}).reduce((acc, [stat, value]) => ({
               ...acc,
-              [stat]: updatedChar.stats[stat as StatName] + (value || 0)
+              [stat]: updatedChar.stats[stat as StatName] + (Number(value) || 0)
             }), {} as Record<StatName, number>)
           }
         };
