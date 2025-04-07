@@ -1,3 +1,4 @@
+
 import { StatName } from "./character";
 
 // Gear types

@@ -24,7 +24,7 @@ export const addInventoryItem = async (userId: string, item: Partial<GearItem>) 
     user_id: userId,
     name: item.name || 'Unnamed Item',
     description: item.description || '',
-    type: item.type || GearType.WEAPON,
+    type: item.type || "weapon" as GearType,
     rarity: item.rarity || GearRarity.COMMON,
     icon: item.icon || 'default',
     equipped: item.equipped || false,
@@ -33,8 +33,8 @@ export const addInventoryItem = async (userId: string, item: Partial<GearItem>) 
   };
 
   // Special handling for shields - map them to armor type for database consistency
-  const itemType = newItem.type === "shield" ? "armor" : newItem.type;
-  newItem.type = itemType as GearType;
+  const itemType = newItem.type === "shield" ? "armor" as GearType : newItem.type;
+  newItem.type = itemType;
   
   const { data, error } = await supabase
     .from('inventory_items')

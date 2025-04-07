@@ -28,7 +28,7 @@ export const useChallengesFetcher = (userId: string | null) => {
         if (error) throw error;
 
         // Map database results to Challenge type
-        const mappedChallenges = data.map(challenge => ({
+        const mappedChallenges: Challenge[] = data.map(challenge => ({
           id: challenge.id,
           title: challenge.title,
           description: challenge.description,

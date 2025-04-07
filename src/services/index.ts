@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCharacter } from "./characterService";
 import { fetchQuests } from "./questService";
@@ -7,163 +6,53 @@ import { fetchSkillTree } from "./skillTreeService";
 import { fetchHabits } from "./habitService";
 import { fetchMoodEntries } from "./moodService";
 import { fetchAchievements } from "./achievementService";
+import { fetchChallenges } from "./challengeService";
 import { ensureValidSession } from "@/utils/auth";
+import { ChallengeFrequency, ChallengeStatus } from "@/types/challenges";
+import { StatName } from "@/types/character";
 
-// Function to ping Supabase and check if it's up
-export const pingSupabase = async (): Promise<boolean> => {
-  try {
-    // Try to get the session as a lightweight way to check connectivity
-    const { data, error } = await supabase.auth.getSession();
-    
-    if (error) {
-      console.error("Supabase ping error:", error);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error("Supabase ping exception:", error);
-    return false;
-  }
+export type GameData = {
+  character: Awaited<ReturnType<typeof fetchCharacter>>;
+  quests: Awaited<ReturnType<typeof fetchQuests>>;
+  inventoryItems: Awaited<ReturnType<typeof fetchInventoryItems>>;
+  shopItems: Awaited<ReturnType<typeof fetchShopItems>>;
+  skillTree: Awaited<ReturnType<typeof fetchSkillTree>>;
+  habits: Awaited<ReturnType<typeof fetchHabits>>;
+  moodEntries: Awaited<ReturnType<typeof fetchMoodEntries>>;
+  achievements: Awaited<ReturnType<typeof fetchAchievements>>;
+  challenges: Awaited<ReturnType<typeof fetchChallenges>>;
 };
 
-// Load all game data in one go for efficiency
-export const loadAllGameData = async () => {
-  try {
-    // First ensure we have a valid session
-    const hasValidSession = await ensureValidSession();
-    if (!hasValidSession) {
-      console.log("No valid session for loadAllGameData");
-      return {};
-    }
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      console.log("No authenticated user for loadAllGameData");
-      return {};
-    }
-    
-    console.log("Loading all game data for user:", user.id);
-    
-    // Create an AbortController to handle timeouts
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-    
-    try {
-      // Run all queries in parallel with the AbortSignal
-      
-      const [
-        character,
-        quests,
-        inventory,
-        shopItems,
-        skillTree,
-        habits,
-        moods,
-        achievements
-      ] = await Promise.all([
-        fetchCharacter().catch(err => {
-          console.error("Error fetching character:", err);
-          return null;
-        }),
-        fetchQuests().catch(err => {
-          console.error("Error fetching quests:", err);
-          return [];
-        }),
-        fetchInventoryItems(user?.id).catch(err => {
-          console.error("Error fetching inventory:", err);
-          return [];
-        }),
-        fetchShopItems().catch(err => {
-          console.error("Error fetching shop items:", err);
-          return [];
-        }),
-        fetchSkillTree().catch(err => {
-          console.error("Error fetching skill tree:", err);
-          return [];
-        }),
-        fetchHabits().catch(err => {
-          console.error("Error fetching habits:", err);
-          return [];
-        }),
-        fetchMoodEntries().catch(err => {
-          console.error("Error fetching moods:", err);
-          return [];
-        }),
-        fetchAchievements().catch(err => {
-          console.error("Error fetching achievements:", err);
-          return [];
-        })
-      ]);
-      
-      clearTimeout(timeoutId);
-      
-      // Filter out any empty results and construct the data object
-      const result: any = {};
-      
-      if (character) result.character = character;
-      if (quests && quests.length > 0) result.quests = quests;
-      if (inventory && inventory.length > 0) result.inventory = inventory;
-      if (shopItems && shopItems.length > 0) result.shopItems = shopItems;
-      if (skillTree && skillTree.length > 0) result.skillTree = skillTree;
-      if (habits && habits.length > 0) result.habits = habits;
-      if (moods && moods.length > 0) result.moods = moods;
-      if (achievements && achievements.length > 0) result.achievements = achievements;
-      
-      console.log("Successfully loaded all game data");
-      return result;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        console.error("Data loading timed out after 15 seconds");
-        throw new Error("Data loading timed out");
-      }
-      throw error;
-    }
-  } catch (error) {
-    console.error("Error in loadAllGameData:", error);
-    return {};
-  }
+export const loadGameData = async (): Promise<GameData> => {
+  ensureValidSession();
+
+  return {
+    character: await fetchCharacter(),
+    quests: await fetchQuests(),
+    inventoryItems: await fetchInventoryItems(),
+    shopItems: await fetchShopItems(),
+    skillTree: await fetchSkillTree(),
+    habits: await fetchHabits(),
+    moodEntries: await fetchMoodEntries(),
+    achievements: await fetchAchievements(),
+    challenges: await fetchChallenges(),
+  };
 };
 
-// Export all service functions
 export {
+  supabase,
   fetchCharacter,
   fetchQuests,
   fetchInventoryItems,
   fetchShopItems,
+  updateInventoryItem,
+  upsertInventoryItem,
   fetchSkillTree,
   fetchHabits,
   fetchMoodEntries,
-  fetchAchievements
+  fetchAchievements,
+  fetchChallenges,
+  ChallengeFrequency,
+  ChallengeStatus,
+  StatName,
 };
-
-// Re-export all upserting functions
-export {
-  upsertAchievement
-} from "./achievementService";
-
-export {
-  upsertCharacter
-} from "./characterService";
-
-export {
-  upsertHabit
-} from "./habitService";
-
-export {
-  updateInventoryItem,
-  upsertInventoryItem
-} from "./inventoryService";
-
-export {
-  upsertMoodEntry
-} from "./moodService";
-
-export {
-  upsertQuest
-} from "./questService";
-
-export {
-  upsertSkillNode
-} from "./skillTreeService";
