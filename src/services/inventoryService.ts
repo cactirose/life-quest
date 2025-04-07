@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { GearItem, GearType, GearRarity } from "@/types/inventory";
 import { toast } from "sonner";
+import { Json } from "@/integrations/supabase/types";
 
 export const fetchInventory = async (): Promise<GearItem[]> => {
   try {
@@ -18,25 +19,32 @@ export const fetchInventory = async (): Promise<GearItem[]> => {
       return [];
     }
 
-    return data.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description || "",
-      type: item.type as GearType,
-      rarity: item.rarity as GearRarity,
-      cost: item.cost,
-      equipped: item.equipped,
-      statBonuses: item.stat_bonuses as { 
-        strength?: number;
-        dexterity?: number;
-        constitution?: number;
-        intelligence?: number;
-        wisdom?: number;
-        charisma?: number;
-      } || {},
-      levelRequired: item.level_required || 1,
-      icon: item.icon || "🔮"
-    }));
+    return data.map(item => {
+      // Properly convert stat_bonuses to the expected type
+      const statBonuses = typeof item.stat_bonuses === 'object' && item.stat_bonuses !== null
+        ? (item.stat_bonuses as { 
+            strength?: number;
+            dexterity?: number;
+            constitution?: number;
+            intelligence?: number;
+            wisdom?: number;
+            charisma?: number;
+          })
+        : {};
+        
+      return {
+        id: item.id,
+        name: item.name,
+        description: item.description || "",
+        type: item.type as GearType,
+        rarity: item.rarity as GearRarity,
+        cost: item.cost,
+        equipped: item.equipped,
+        statBonuses: statBonuses,
+        levelRequired: item.level_required || 1,
+        icon: item.icon || "🔮"
+      };
+    });
   } catch (error) {
     console.error("Error in fetchInventory:", error);
     return [];
@@ -54,25 +62,32 @@ export const fetchShopItems = async (): Promise<GearItem[]> => {
       return [];
     }
 
-    return data.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description || "",
-      type: item.type as GearType,
-      rarity: item.rarity as GearRarity,
-      cost: item.cost,
-      equipped: false,
-      statBonuses: item.stat_bonuses as { 
-        strength?: number;
-        dexterity?: number;
-        constitution?: number;
-        intelligence?: number;
-        wisdom?: number;
-        charisma?: number;
-      } || {},
-      levelRequired: item.level_required || 1,
-      icon: item.icon || "🔮"
-    }));
+    return data.map(item => {
+      // Properly convert stat_bonuses to the expected type
+      const statBonuses = typeof item.stat_bonuses === 'object' && item.stat_bonuses !== null
+        ? (item.stat_bonuses as { 
+            strength?: number;
+            dexterity?: number;
+            constitution?: number;
+            intelligence?: number;
+            wisdom?: number;
+            charisma?: number;
+          })
+        : {};
+        
+      return {
+        id: item.id,
+        name: item.name,
+        description: item.description || "",
+        type: item.type as GearType,
+        rarity: item.rarity as GearRarity,
+        cost: item.cost,
+        equipped: false,
+        statBonuses: statBonuses,
+        levelRequired: item.level_required || 1,
+        icon: item.icon || "🔮"
+      };
+    });
   } catch (error) {
     console.error("Error in fetchShopItems:", error);
     return [];

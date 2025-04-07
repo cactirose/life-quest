@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Habit, HabitFrequency, HabitCompletion, DayOfWeek } from "@/types/habits";
 import { toast } from "sonner";
+import { Json } from "@/integrations/supabase/types";
 
 export const fetchHabits = async (): Promise<Habit[]> => {
   try {
@@ -30,7 +31,7 @@ export const fetchHabits = async (): Promise<Habit[]> => {
         : [] as DayOfWeek[];
       
       // Properly handle achievement links
-      const achievementLinks = habit.achievement_links
+      const achievementLinks = habit.achievement_links !== undefined
         ? Array.isArray(habit.achievement_links) 
           ? (habit.achievement_links as string[])
           : []

@@ -1,7 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Quest, QuestStatus, QuestType, QuestDifficulty, StatReward } from "@/types/quests";
+import { Quest, QuestStatus, QuestType, QuestDifficulty, StatReward, RepeatType, QuestStep } from "@/types/quests";
 import { toast } from "sonner";
+import { Json } from "@/integrations/supabase/types";
 
 export const fetchQuests = async (): Promise<Quest[]> => {
   try {
@@ -21,24 +22,30 @@ export const fetchQuests = async (): Promise<Quest[]> => {
     return data.map(quest => {
       // Convert JSON fields to appropriate types
       const steps = Array.isArray(quest.steps) 
-        ? quest.steps 
-        : [];
+        ? (quest.steps as unknown as QuestStep[])
+        : [] as QuestStep[];
       
+      // Safely convert stat_rewards to StatReward[]
       const statRewards = Array.isArray(quest.stat_rewards) 
-        ? quest.stat_rewards as StatReward[] 
-        : [];
+        ? (quest.stat_rewards as unknown as StatReward[])
+        : [] as StatReward[];
       
-      const tags = quest.tags 
+      // Handle tags, which might not exist in all database records
+      const tags = quest.tags !== undefined
         ? Array.isArray(quest.tags) 
           ? quest.tags as string[] 
           : [] 
         : [];
         
-      const linkedAchievementIds = quest.linked_achievement_ids
+      // Handle linked achievement IDs, which might not exist in all database records
+      const linkedAchievementIds = quest.linked_achievement_ids !== undefined
         ? Array.isArray(quest.linked_achievement_ids)
           ? quest.linked_achievement_ids as string[]
           : []
         : [];
+      
+      // Parse repeat type safely to ensure it matches the RepeatType type
+      const repeatType = (quest.repeat_type || "none") as RepeatType;
       
       return {
         id: quest.id,
@@ -50,18 +57,18 @@ export const fetchQuests = async (): Promise<Quest[]> => {
         xpReward: quest.xp_reward || 0,
         coinReward: quest.coin_reward || 0,
         steps: steps,
-        completedSteps: steps.filter(step => step.completed).length,
+        completedSteps: steps.filter(step => step.completed === true).length,
         dueDate: quest.due_date,
-        completionDate: quest.completion_date,
+        completionDate: quest.completion_date || undefined,
         statRewards: statRewards,
         tags: tags,
-        repeatType: quest.repeat_type || "none",
+        repeatType: repeatType,
         customResetDays: Array.isArray(quest.custom_reset_days) 
           ? quest.custom_reset_days as number[] 
           : [],
         linkedAchievementIds: linkedAchievementIds,
-        repeat: quest.repeat_type !== "none" ? {
-          interval: quest.repeat_type as any,
+        repeat: repeatType !== "none" ? {
+          interval: repeatType,
           nextRepeatDate: new Date().toISOString() // Default value
         } : undefined
       };
@@ -84,6 +91,13 @@ export const upsertQuest = async (quest: Quest): Promise<Quest | null> => {
       .eq("id", quest.id)
       .single();
 
+    // Convert complex objects to JSON-compatible format
+    const stepsJson = JSON.parse(JSON.stringify(quest.steps || []));
+    const statRewardsJson = JSON.parse(JSON.stringify(quest.statRewards || []));
+    const tagsJson = JSON.parse(JSON.stringify(quest.tags || []));
+    const customResetDaysJson = JSON.parse(JSON.stringify(quest.customResetDays || []));
+    const linkedAchievementIdsJson = JSON.parse(JSON.stringify(quest.linkedAchievementIds || []));
+
     // Convert types for database compatibility
     const questData = {
       title: quest.title,
@@ -93,15 +107,14 @@ export const upsertQuest = async (quest: Quest): Promise<Quest | null> => {
       status: quest.status,
       xp_reward: quest.xpReward,
       coin_reward: quest.coinReward,
-      steps: quest.steps,
-      completed_steps: quest.completedSteps,
+      steps: stepsJson,
       due_date: quest.dueDate,
       completion_date: quest.completionDate,
-      stat_rewards: JSON.stringify(quest.statRewards),
-      tags: quest.tags,
+      stat_rewards: statRewardsJson,
+      tags: tagsJson,
       repeat_type: quest.repeatType,
-      custom_reset_days: quest.customResetDays,
-      linked_achievement_ids: quest.linkedAchievementIds
+      custom_reset_days: customResetDaysJson,
+      linked_achievement_ids: linkedAchievementIdsJson
     };
 
     if (data) {

@@ -2,7 +2,8 @@
 import { GameData } from "@/types/gameData";
 import { DataLoadingStatus } from "../useDataStatus";
 import { supabase } from "@/integrations/supabase/client";
-import { Quest, QuestType, QuestStatus, QuestDifficulty, QuestStep, StatReward } from "@/types/quests";
+import { Quest, QuestType, QuestStatus, QuestDifficulty, QuestStep, StatReward, RepeatType } from "@/types/quests";
+import { Json } from "@/integrations/supabase/types";
 
 export const useQuestsFetcher = (
   setGameData: React.Dispatch<React.SetStateAction<any>>,
@@ -40,19 +41,22 @@ export const useQuestsFetcher = (
           ? (quest.stat_rewards as unknown as StatReward[])
           : [] as StatReward[];
 
-        // Safely handle tags
-        const tags = quest.tags 
+        // Safely handle tags (might not exist in the database)
+        const tags = quest.tags !== undefined 
           ? Array.isArray(quest.tags) 
             ? quest.tags as string[] 
             : [] 
           : [];
         
         // Safely handle linked achievement IDs
-        const linkedAchievementIds = quest.linked_achievement_ids 
+        const linkedAchievementIds = quest.linked_achievement_ids !== undefined 
           ? Array.isArray(quest.linked_achievement_ids)
             ? quest.linked_achievement_ids as string[]
             : []
           : [];
+
+        // Parse repeat type safely
+        const repeatType = (quest.repeat_type || "none") as RepeatType;
 
         return {
           id: quest.id,
@@ -66,16 +70,16 @@ export const useQuestsFetcher = (
           steps: questSteps,
           completedSteps: questSteps.filter(step => step.completed).length,
           dueDate: quest.due_date,
-          completionDate: quest.completion_date,
+          completionDate: quest.completion_date || undefined,
           statRewards: statRewards,
           tags: tags,
-          repeatType: quest.repeat_type || "none",
+          repeatType: repeatType,
           customResetDays: Array.isArray(quest.custom_reset_days) 
             ? quest.custom_reset_days as number[] 
             : [],
           linkedAchievementIds: linkedAchievementIds,
-          repeat: quest.repeat_type !== "none" ? {
-            interval: quest.repeat_type as any,
+          repeat: repeatType !== "none" ? {
+            interval: repeatType,
             nextRepeatDate: new Date().toISOString() // Default value
           } : undefined
         };

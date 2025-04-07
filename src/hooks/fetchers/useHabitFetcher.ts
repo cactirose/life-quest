@@ -3,6 +3,7 @@ import { GameData } from "@/types/gameData";
 import { DataLoadingStatus } from "../useDataStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { Habit, HabitFrequency, HabitCompletion, DayOfWeek } from "@/types/habits";
+import { Json } from "@/integrations/supabase/types";
 
 export const useHabitFetcher = (
   setGameData: React.Dispatch<React.SetStateAction<any>>,
@@ -41,8 +42,11 @@ export const useHabitFetcher = (
           : [] as DayOfWeek[];
         
         // Properly handle achievement links
-        const achievementLinks = Array.isArray(habit.achievement_links)
-          ? (habit.achievement_links as unknown as string[])
+        // Use optional chaining to safely check if achievement_links exists
+        const achievementLinks = habit.achievement_links 
+          ? (Array.isArray(habit.achievement_links) 
+              ? (habit.achievement_links as unknown as string[])
+              : [] as string[])
           : [] as string[];
           
         return {

@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { SkillNode } from "@/types/skills";
 import { StatName } from "@/types/character";
+import { Json } from "@/integrations/supabase/types";
 
 export const fetchSkillTree = async (): Promise<SkillNode[]> => {
   try {
@@ -20,9 +21,11 @@ export const fetchSkillTree = async (): Promise<SkillNode[]> => {
 
     return data.map(node => {
       // Convert position from database to expected structure
-      const position = typeof node.position === 'object' && node.position !== null 
-        ? { x: node.position.x || 0, y: node.position.y || 0 }
-        : { x: 0, y: 0 };
+      const nodePosition = node.position as Record<string, number> || { x: 0, y: 0 };
+      const position = {
+        x: nodePosition.x || 0,
+        y: nodePosition.y || 0
+      };
       
       // Convert connectedTo array from DB
       const connectedTo = Array.isArray(node.connected_to) ? node.connected_to as string[] : [];
