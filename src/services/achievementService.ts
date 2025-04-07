@@ -93,8 +93,10 @@ export const updateAchievement = async (achievement: Achievement): Promise<Achie
         xp_reward: achievement.xpReward,
         coin_reward: achievement.coinReward,
         special_reward: achievement.specialReward,
-        required_count: achievement.goal, // Use goal instead of requiredCount
-        current_count: achievement.progress, // Use progress instead of currentCount
+        unlocked: achievement.unlocked,
+        date_unlocked: achievement.dateUnlocked,
+        required_count: achievement.goal,
+        current_count: achievement.progress,
       })
       .eq("id", achievement.id);
 
@@ -129,7 +131,7 @@ export const deleteAchievement = async (achievementId: string): Promise<void> =>
   }
 };
 
-// Add the missing upsertAchievement function
+// Export the upsertAchievement function
 export const upsertAchievement = async (achievement: Achievement): Promise<Achievement | null> => {
   try {
     // Check if achievement already exists

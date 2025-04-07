@@ -1,4 +1,6 @@
 
+import { StatName } from "./character";
+
 export type QuestType = "main" | "side" | "boss";
 export type QuestDifficulty = "easy" | "medium" | "hard";
 export type QuestStatus = "active" | "completed" | "failed";
@@ -10,6 +12,7 @@ export interface QuestStep {
 }
 
 export type RepeatType = "daily" | "weekly" | "monthly" | "custom" | "none";
+export type QuestRepeatInterval = RepeatType;
 
 export interface StatReward {
   stat: StatName;
@@ -41,3 +44,4 @@ export interface Quest {
 }
 
 export const DEFAULT_QUESTS: Quest[] = [];
+export const SAMPLE_QUESTS: Quest[] = [];

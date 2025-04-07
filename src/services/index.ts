@@ -1,12 +1,12 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCharacter, upsertCharacter } from "./characterService";
-import { fetchQuests } from "./questService";
-import { fetchInventory, fetchShopItems, upsertInventoryItem } from "./inventoryService";
-import { fetchSkillTree } from "./skillTreeService";
-import { fetchHabits, upsertHabit } from "./habitService";
-import { fetchMoodEntries } from "./moodService";
-import { fetchAchievements, upsertAchievement } from "./achievementService";
+import { fetchQuests, upsertQuest } from "./questService";
+import { fetchInventory, fetchShopItems, upsertInventoryItem, deleteInventoryItem, toggleItemEquipped } from "./inventoryService";
+import { fetchSkillTree, upsertSkillNode } from "./skillTreeService";
+import { fetchHabits, upsertHabit, deleteHabit } from "./habitService";
+import { fetchMoodEntries, upsertMoodEntry } from "./moodService";
+import { fetchAchievements, upsertAchievement, deleteAchievement } from "./achievementService";
 import { ensureValidSession } from "@/utils/auth";
 import { StatName } from "@/types/character";
 
@@ -29,10 +29,10 @@ export const loadGameData = async () => {
 // Re-export all services
 export { supabase };
 export { fetchCharacter, upsertCharacter };
-export { fetchQuests };
-export { fetchInventory, fetchShopItems, upsertInventoryItem };
-export { fetchSkillTree };
-export { fetchHabits, upsertHabit };
-export { fetchMoodEntries };
-export { fetchAchievements, upsertAchievement };
+export { fetchQuests, upsertQuest };
+export { fetchInventory, fetchShopItems, upsertInventoryItem, deleteInventoryItem, toggleItemEquipped };
+export { fetchSkillTree, upsertSkillNode };
+export { fetchHabits, upsertHabit, deleteHabit };
+export { fetchMoodEntries, upsertMoodEntry };
+export { fetchAchievements, upsertAchievement, deleteAchievement };
 export type { StatName };

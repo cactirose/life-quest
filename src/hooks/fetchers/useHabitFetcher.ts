@@ -1,37 +1,63 @@
 
 import { GameData } from "@/types/gameData";
 import { DataLoadingStatus } from "../useDataStatus";
+import { supabase } from "@/integrations/supabase/client";
+import { Habit, HabitFrequency, HabitCompletion } from "@/types/habits";
 
 export const useHabitFetcher = (
   setGameData: React.Dispatch<React.SetStateAction<any>>,
   updateStatus: (key: keyof GameData, status: DataLoadingStatus) => void
 ) => {
-  const fetchHabits = async (signal?: AbortSignal) => {
+  const fetchHabits = async (signal?: AbortSignal): Promise<Habit[]> => {
     try {
       updateStatus('habits', 'loading');
       
-      const { fetchHabits } = await import('@/services/habitService');
-      
-      if (signal?.aborted) {
-        console.log("Habits fetch aborted");
-        return null;
+      const { data: user } = await supabase.auth.getUser();
+      if (!user?.user) {
+        updateStatus('habits', 'error');
+        return [];
       }
       
-      const data = await fetchHabits();
-      if (data) {
-        setGameData(prev => ({ ...prev, habits: data }));
+      const { data, error } = await supabase
+        .from("habits")
+        .select("*")
+        .eq("user_id", user.user.id);
+
+      if (error) {
+        console.error("Error fetching habits:", error);
+        updateStatus('habits', 'error');
+        return [];
       }
+
+      const habits = data.map(habit => ({
+        id: habit.id,
+        name: habit.name,
+        description: habit.description || "",
+        frequency: habit.frequency as HabitFrequency,
+        streak: habit.streak || 0,
+        completionHistory: (habit.completion_history as HabitCompletion[]) || [],
+        specificDays: habit.custom_days || [],
+        color: habit.color || "#4F46E5",
+        icon: habit.icon || "✨",
+        createdAt: habit.created_at || new Date().toISOString(),
+        archivedAt: null,
+        priority: "medium",
+        xpReward: habit.xp_reward || 10,
+        coinReward: habit.coin_reward || 5,
+        achievementLinks: habit.achievement_links || []
+      }));
+
+      setGameData(prevData => ({
+        ...prevData,
+        habits: habits
+      }));
+      
       updateStatus('habits', 'loaded');
-      return data;
+      return habits;
     } catch (error) {
-      if (signal?.aborted) {
-        console.log("Habits fetch aborted");
-        return null;
-      }
-      
-      console.error("Error loading habits:", error);
+      console.error("Error in fetchHabits:", error);
       updateStatus('habits', 'error');
-      return null;
+      return [];
     }
   };
 

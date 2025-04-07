@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Habit, HabitCompletion } from "@/types/habits";
+import { Habit, HabitFrequency, HabitCompletion } from "@/types/habits";
 import { toast } from "sonner";
 
 export const fetchHabits = async (): Promise<Habit[]> => {
@@ -22,24 +22,44 @@ export const fetchHabits = async (): Promise<Habit[]> => {
       id: habit.id,
       name: habit.name,
       description: habit.description || "",
-      frequency: habit.frequency,
+      frequency: habit.frequency as HabitFrequency,
       streak: habit.streak || 0,
-      completionHistory: habit.completion_history || [],
-      specificDays: habit.specific_days || [],
+      completionHistory: (habit.completion_history as HabitCompletion[]) || [],
+      specificDays: habit.custom_days || [],
       color: habit.color || "#4F46E5",
       icon: habit.icon || "✨",
       createdAt: habit.created_at || new Date().toISOString(),
-      archivedAt: habit.archived_at || null,
-      priority: habit.priority || "medium",
-      reward: {
-        xp: habit.xp_reward || 10,
-        coins: habit.coin_reward || 5
-      },
+      archivedAt: null,
+      priority: "medium",
+      xpReward: habit.xp_reward || 10,
+      coinReward: habit.coin_reward || 5,
       achievementLinks: habit.achievement_links || []
     }));
   } catch (error) {
     console.error("Error in fetchHabits:", error);
     return [];
+  }
+};
+
+// Add the deleteHabit function
+export const deleteHabit = async (habitId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from("habits")
+      .delete()
+      .eq("id", habitId);
+
+    if (error) {
+      console.error("Error deleting habit:", error);
+      toast.error("Failed to delete habit");
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in deleteHabit:", error);
+    toast.error("Failed to delete habit");
+    return false;
   }
 };
 
@@ -56,6 +76,9 @@ export const upsertHabit = async (habit: Habit): Promise<Habit | null> => {
       .eq("id", habit.id)
       .single();
 
+    // Convert completion history to JSON compatible format
+    const completionHistory = JSON.parse(JSON.stringify(habit.completionHistory || []));
+
     if (data) {
       // Update existing habit
       const { error } = await supabase
@@ -65,14 +88,12 @@ export const upsertHabit = async (habit: Habit): Promise<Habit | null> => {
           description: habit.description,
           frequency: habit.frequency,
           streak: habit.streak,
-          completion_history: habit.completionHistory,
-          specific_days: habit.specificDays,
+          completion_history: completionHistory,
+          custom_days: habit.specificDays,
           color: habit.color,
           icon: habit.icon,
-          archived_at: habit.archivedAt,
-          priority: habit.priority,
-          xp_reward: habit.reward?.xp,
-          coin_reward: habit.reward?.coins,
+          xp_reward: habit.xpReward,
+          coin_reward: habit.coinReward,
           achievement_links: habit.achievementLinks
         })
         .eq("id", habit.id);
@@ -94,15 +115,13 @@ export const upsertHabit = async (habit: Habit): Promise<Habit | null> => {
             description: habit.description,
             frequency: habit.frequency,
             streak: habit.streak,
-            completion_history: habit.completionHistory,
-            specific_days: habit.specificDays,
+            completion_history: completionHistory,
+            custom_days: habit.specificDays,
             color: habit.color,
             icon: habit.icon,
-            created_at: habit.createdAt,
-            archived_at: habit.archivedAt,
-            priority: habit.priority,
-            xp_reward: habit.reward?.xp,
-            coin_reward: habit.reward?.coins,
+            created_at: new Date().toISOString(),
+            xp_reward: habit.xpReward,
+            coin_reward: habit.coinReward,
             achievement_links: habit.achievementLinks
           }
         ]);

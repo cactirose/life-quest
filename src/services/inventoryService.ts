@@ -25,7 +25,8 @@ export const fetchInventory = async (): Promise<GearItem[]> => {
       rarity: item.rarity as GearRarity,
       cost: item.cost,
       equipped: item.equipped || false,
-      stats: item.stats as GearItem["stats"],
+      statBonuses: item.stat_bonuses as GearItem["statBonuses"],
+      levelRequired: item.level_required || 1,
       icon: item.icon
     }));
   } catch (error) {
@@ -50,10 +51,11 @@ export const fetchShopItems = async (): Promise<GearItem[]> => {
       name: item.name,
       description: item.description,
       type: item.type, 
-      rarity: item.rarity as GearRarity, // Type assertion for rarity
+      rarity: item.rarity as GearRarity,
       cost: item.cost,
       equipped: false,
-      stats: item.stats as GearItem["stats"], // Type assertion for stats
+      statBonuses: item.stat_bonuses as GearItem["statBonuses"],
+      levelRequired: item.level_required || 1,
       icon: item.icon
     }));
   } catch (error) {
@@ -86,7 +88,8 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
           rarity: item.rarity,
           cost: item.cost,
           equipped: item.equipped,
-          stats: item.stats,
+          stat_bonuses: item.statBonuses,
+          level_required: item.levelRequired,
           icon: item.icon
         })
         .eq("id", item.id);
@@ -109,7 +112,8 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
             rarity: item.rarity,
             cost: item.cost,
             equipped: item.equipped,
-            stats: item.stats,
+            stat_bonuses: item.statBonuses,
+            level_required: item.levelRequired,
             icon: item.icon
           }
         ]);
@@ -138,7 +142,8 @@ export const updateInventoryItem = async (item: GearItem): Promise<void> => {
         rarity: item.rarity,
         cost: item.cost,
         equipped: item.equipped,
-        stats: item.stats,
+        stat_bonuses: item.statBonuses,
+        level_required: item.levelRequired,
         icon: item.icon
       })
       .eq("id", item.id);
@@ -148,5 +153,39 @@ export const updateInventoryItem = async (item: GearItem): Promise<void> => {
     }
   } catch (error) {
     console.error("Error in updateInventoryItem:", error);
+  }
+};
+
+// Add the deleteInventoryItem function
+export const deleteInventoryItem = async (itemId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from("inventory_items")
+      .delete()
+      .eq("id", itemId);
+
+    if (error) {
+      console.error("Error deleting inventory item:", error);
+    }
+  } catch (error) {
+    console.error("Error in deleteInventoryItem:", error);
+  }
+};
+
+// Add the toggleItemEquipped function
+export const toggleItemEquipped = async (itemId: string, equipped: boolean): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from("inventory_items")
+      .update({
+        equipped: equipped
+      })
+      .eq("id", itemId);
+
+    if (error) {
+      console.error("Error toggling item equipped status:", error);
+    }
+  } catch (error) {
+    console.error("Error in toggleItemEquipped:", error);
   }
 };
