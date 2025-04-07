@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Achievement, AchievementCategory } from "@/types/achievements";
 import { toast } from "sonner";
@@ -125,5 +126,31 @@ export const deleteAchievement = async (achievementId: string): Promise<void> =>
   } catch (error) {
     console.error("Error in deleteAchievement:", error);
     toast.error("Failed to delete achievement");
+  }
+};
+
+// Add the missing upsertAchievement function
+export const upsertAchievement = async (achievement: Achievement): Promise<Achievement | null> => {
+  try {
+    // Check if achievement already exists
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) throw new Error("No authenticated user");
+
+    const { data } = await supabase
+      .from("achievements")
+      .select("id")
+      .eq("id", achievement.id)
+      .single();
+
+    // If achievement exists, update it, otherwise create it
+    if (data) {
+      return updateAchievement(achievement);
+    } else {
+      return createAchievement(achievement);
+    }
+  } catch (error) {
+    console.error("Error in upsertAchievement:", error);
+    toast.error("Failed to save achievement");
+    return null;
   }
 };

@@ -1,157 +1,116 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { Character, Stats } from "@/types/character";
 import { toast } from "sonner";
-import { Character, StatName } from "@/types/character";
 
-// Character methods
-export const fetchCharacter = async (signal?: AbortSignal): Promise<Character | null> => {
+export const fetchCharacter = async (): Promise<Character | null> => {
   try {
-    // Create a timeout promise that will reject after 10 seconds
-    const timeoutPromise = new Promise<null>((_, reject) => {
-      const id = setTimeout(() => {
-        reject(new Error("Character fetch timeout"));
-      }, 10000);
-      
-      // If the signal is aborted, clear the timeout
-      if (signal) {
-        signal.addEventListener('abort', () => {
-          clearTimeout(id);
-          reject(new Error("Character fetch aborted"));
-        });
-      }
-    });
-    
-    // Create the actual fetch promise
-    const fetchPromise = (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-      
-      const { data, error } = await supabase
-        .from("characters")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) return null;
 
-      if (error) {
-        console.error("Error fetching character:", error);
-        return null;
-      }
+    const { data, error } = await supabase
+      .from("characters")
+      .select("*")
+      .eq("user_id", user.user.id)
+      .single();
 
-      if (!data) return null;
-
-      // Map database fields to Character type
-      return {
-        name: data.name,
-        level: data.level,
-        xp: data.xp,
-        nextLevelXp: data.next_level_xp,
-        coins: data.coins,
-        portrait: data.portrait || "/placeholder.svg",
-        bio: data.bio || "A brave adventurer ready to conquer life's challenges.",
-        stats: data.stats as any,
-        lastLoginDate: data.last_login_date,
-        loginStreak: data.login_streak,
-        dailyBonusClaimed: data.daily_bonus_claimed
-      } as Character;
-    })();
-    
-    // Race between the timeout and the fetch
-    return await Promise.race([fetchPromise, timeoutPromise]);
-  } catch (error) {
-    // If the error is due to an aborted request, don't log it as an error
-    if (signal?.aborted || (error as Error).message === "Character fetch aborted") {
-      console.log("Character fetch was aborted");
+    if (error) {
+      console.error("Error fetching character:", error);
       return null;
     }
-    
+
+    if (!data) {
+      console.warn("No character data found");
+      return null;
+    }
+
+    return {
+      id: data.id,
+      name: data.name,
+      level: data.level,
+      xp: data.xp,
+      coins: data.coins,
+      stats: data.stats as Stats,
+      loginStreak: data.login_streak || 0,
+    };
+  } catch (error) {
     console.error("Error in fetchCharacter:", error);
     return null;
   }
 };
 
-export const upsertCharacter = async (character: Character): Promise<Character | null> => {
+export const updateCharacter = async (character: Character): Promise<Character | null> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("No authenticated user");
-
-    // First check if the user already has a character
-    const { data: existingCharacter, error: checkError } = await supabase
+    const { error } = await supabase
       .from("characters")
-      .select("id")
-      .eq("user_id", user.id)
-      .maybeSingle();
+      .update({
+        name: character.name,
+        level: character.level,
+        xp: character.xp,
+        coins: character.coins,
+        stats: character.stats,
+        login_streak: character.loginStreak,
+      })
+      .eq("id", character.id);
 
-    if (checkError) {
-      console.error("Error checking for existing character:", checkError);
-      throw checkError;
+    if (error) {
+      console.error("Error updating character:", error);
+      toast.error("Failed to update character");
+      return null;
     }
 
-    // Prepare the data for upsert
-    const characterData = {
-      user_id: user.id,
-      name: character.name,
-      level: character.level,
-      xp: character.xp,
-      next_level_xp: character.nextLevelXp,
-      coins: character.coins,
-      portrait: character.portrait,
-      bio: character.bio,
-      stats: character.stats,
-      last_login_date: character.lastLoginDate,
-      login_streak: character.loginStreak,
-      daily_bonus_claimed: character.dailyBonusClaimed
-    };
-
-    // If character exists, do an update instead of upsert to avoid conflicts
-    if (existingCharacter) {
-      console.log("Existing character found, updating instead of inserting");
-      const { error: updateError } = await supabase
-        .from("characters")
-        .update(characterData)
-        .eq("user_id", user.id);
-
-      if (updateError) {
-        console.error("Error updating character:", updateError);
-        toast.error("Failed to update character data");
-        return null;
-      }
-    } else {
-      // Only try to insert if no existing character
-      console.log("No existing character found, inserting new record");
-      const { error: insertError } = await supabase
-        .from("characters")
-        .insert([characterData]);
-
-      if (insertError) {
-        // Check for duplicate key violation
-        if (insertError.code === '23505') {
-          console.log("Duplicate character detected. Another process may have created it. Updating instead.");
-          
-          // Try updating instead
-          const { error: updateError } = await supabase
-            .from("characters")
-            .update(characterData)
-            .eq("user_id", user.id);
-            
-          if (updateError) {
-            console.error("Error updating character after duplicate detection:", updateError);
-            toast.error("Failed to save character data");
-            return null;
-          }
-        } else {
-          console.error("Error inserting character:", insertError);
-          toast.error("Failed to save character data");
-          return null;
-        }
-      }
-      console.log("Character data saved successfully");
-    }
-    
-    // After successful update/insert, return the character
     return character;
   } catch (error) {
+    console.error("Error in updateCharacter:", error);
+    toast.error("Failed to update character");
+    return null;
+  }
+};
+
+// Add the upsertCharacter function
+export const upsertCharacter = async (character: Character): Promise<Character | null> => {
+  try {
+    // Check if character already exists
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) throw new Error("No authenticated user");
+
+    const { data } = await supabase
+      .from("characters")
+      .select("id")
+      .eq("id", character.id)
+      .single();
+
+    // If character exists, update it, otherwise create it
+    if (data) {
+      return updateCharacter(character);
+    } else {
+      // Create character
+      const { error } = await supabase
+        .from("characters")
+        .insert([
+          {
+            id: character.id,
+            user_id: user.user.id,
+            name: character.name,
+            level: character.level,
+            xp: character.xp,
+            coins: character.coins,
+            stats: character.stats,
+            login_streak: character.loginStreak,
+          },
+        ]);
+
+      if (error) {
+        console.error("Error creating character:", error);
+        toast.error("Failed to create character");
+        return null;
+      }
+
+      return character;
+    }
+  } catch (error) {
     console.error("Error in upsertCharacter:", error);
-    toast.error("Failed to save character data");
+    toast.error("Failed to save character");
     return null;
   }
 };

@@ -1,12 +1,12 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { fetchCharacter } from "./characterService";
+import { fetchCharacter, upsertCharacter } from "./characterService";
 import { fetchQuests } from "./questService";
-import { fetchInventory, fetchShopItems } from "./inventoryService";
+import { fetchInventory, fetchShopItems, upsertInventoryItem } from "./inventoryService";
 import { fetchSkillTree } from "./skillTreeService";
-import { fetchHabits } from "./habitService";
+import { fetchHabits, upsertHabit } from "./habitService";
 import { fetchMoodEntries } from "./moodService";
-import { fetchAchievements } from "./achievementService";
+import { fetchAchievements, upsertAchievement } from "./achievementService";
 import { ensureValidSession } from "@/utils/auth";
 import { StatName } from "@/types/character";
 
@@ -28,17 +28,11 @@ export const loadGameData = async () => {
 
 // Re-export all services
 export { supabase };
-export { fetchCharacter };
+export { fetchCharacter, upsertCharacter };
 export { fetchQuests };
-export { fetchInventory, fetchShopItems };
+export { fetchInventory, fetchShopItems, upsertInventoryItem };
 export { fetchSkillTree };
-export { fetchHabits };
+export { fetchHabits, upsertHabit };
 export { fetchMoodEntries };
-export { fetchAchievements };
+export { fetchAchievements, upsertAchievement };
 export type { StatName };
-
-// Export a placeholder for fetchChallenges
-export const fetchChallenges = async () => {
-  console.log("Challenges feature has been removed");
-  return [];
-};

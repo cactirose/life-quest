@@ -1,5 +1,6 @@
+
 import { createContext, useContext } from "react";
-import { Quest, QuestStatus, QuestRepeatInterval, StatReward } from "../types/quests";
+import { Quest, QuestStatus } from "../types/quests";
 import { generateId } from "../utils/idGenerator";
 import { StatName } from "../types/character";
 import { addDays, addMonths, addWeeks, format } from "date-fns";
@@ -91,10 +92,10 @@ export const createQuestContextValue = (
 
       // Update achievements if quest has linked achievements
       let updatedAchievements = prevData.achievements;
-      if (quest.achievementLinks && quest.achievementLinks.length > 0) {
+      if (quest.linkedAchievementIds && quest.linkedAchievementIds.length > 0) {
         updatedAchievements = updateAchievementProgress(
           prevData.achievements,
-          quest.achievementLinks
+          quest.linkedAchievementIds
         );
       }
 

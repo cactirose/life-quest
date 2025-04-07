@@ -1,13 +1,20 @@
+
 export type QuestType = "main" | "side" | "boss";
 export type QuestDifficulty = "easy" | "medium" | "hard";
 export type QuestStatus = "active" | "completed" | "failed";
 
 export interface QuestStep {
+  id: string;
   description: string;
   completed: boolean;
 }
 
-export type RepeatType = "daily" | "weekly" | "monthly" | "custom";
+export type RepeatType = "daily" | "weekly" | "monthly" | "custom" | "none";
+
+export interface StatReward {
+  stat: StatName;
+  value: number;
+}
 
 export interface Quest {
   id: string;
@@ -22,18 +29,15 @@ export interface Quest {
   completedSteps: number;
   dueDate?: string;
   completionDate?: string;
-  statRewards?: {
-    strength?: number;
-    dexterity?: number;
-    constitution?: number;
-    intelligence?: number;
-    wisdom?: number;
-    charisma?: number;
-  };
+  statRewards?: StatReward[];
   tags?: string[];
   repeatType?: RepeatType;
   customResetDays?: number[];
-  linkedAchievementIds?: string[]; // Added this field
+  linkedAchievementIds?: string[];
+  repeat?: {
+    interval: RepeatType;
+    nextRepeatDate: string;
+  };
 }
 
 export const DEFAULT_QUESTS: Quest[] = [];
