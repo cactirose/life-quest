@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { 
   Sparkles,
@@ -29,6 +28,7 @@ import { FeatureCard } from "@/components/landing/FeatureCard";
 import { SectionTitle } from "@/components/landing/SectionTitle";
 import { ScrollDownIndicator } from "@/components/landing/ScrollDownIndicator";
 import { FloatingParticles } from "@/components/landing/FloatingParticles";
+import { IconRing } from "@/components/landing/IconRing";
 
 const SectionDivider = () => (
   <div className="flex items-center justify-center py-12">
@@ -67,28 +67,19 @@ export const Landing = () => {
   return (
     <div className="min-h-screen bg-rpg-cream">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <FloatingParticles count={80} />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-1/4 h-32 w-32 bg-rpg-gold/10 rounded-full blur-3xl" />
           <div className="absolute top-1/3 right-1/4 h-48 w-48 bg-rpg-brown/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 left-1/3 h-40 w-40 bg-rpg-gold/5 rounded-full blur-3xl" />
           {/* Pixel stars decoration */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--rpg-gold)_1px,_transparent_1px)] [background-size:20px_20px] opacity-[0.03]" />
         </div>
         
         <div className="container mx-auto px-4 py-20 text-center relative z-10 flex flex-col items-center">
-          {/* Hero illustration */}
-          <div className="mb-6 relative">
-            <div className="w-32 h-32 md:w-40 md:h-40 relative">
-              <div className="absolute inset-0 bg-rpg-brown rounded-lg rotate-45 animate-pulse-gentle" style={{ animationDelay: "0.5s" }}></div>
-              <div className="absolute inset-2 bg-rpg-tan rounded-lg rotate-45 flex items-center justify-center">
-                <Sword className="h-16 w-16 md:h-20 md:w-20 text-rpg-brown rotate-[315deg] animate-float" />
-              </div>
-            </div>
-            <div className="absolute -top-3 -right-3 h-10 w-10 bg-rpg-gold/80 rounded-full animate-pulse-gentle flex items-center justify-center">
-              <Sparkles className="h-6 w-6 text-rpg-brown" />
-            </div>
+          {/* Replace sword icon with animated icon ring */}
+          <div className="mb-8 relative">
+            <IconRing />
           </div>
 
           <h1 className="font-pixel text-4xl md:text-5xl lg:text-6xl text-rpg-brown mb-6 [text-shadow:2px_2px_0px_rgba(var(--rpg-gold-rgb)/0.2)]">
