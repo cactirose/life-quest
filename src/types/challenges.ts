@@ -1,5 +1,4 @@
 
-import { Json } from "./supabase";
 import { StatName } from "./character";
 
 export enum ChallengeFrequency {

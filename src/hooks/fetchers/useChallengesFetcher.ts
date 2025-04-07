@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 import { Challenge, ChallengeFrequency, ChallengeStatus } from '@/types/challenges';
 import { StatName } from '@/types/character';
 

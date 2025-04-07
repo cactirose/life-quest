@@ -1,7 +1,8 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCharacter } from "./characterService";
 import { fetchQuests } from "./questService";
-import { fetchInventory, fetchShopItems } from "./inventoryService";
+import { fetchInventoryItems, fetchShopItems, updateInventoryItem, upsertInventoryItem } from "./inventoryService";
 import { fetchSkillTree } from "./skillTreeService";
 import { fetchHabits } from "./habitService";
 import { fetchMoodEntries } from "./moodService";
@@ -69,7 +70,7 @@ export const loadAllGameData = async () => {
           console.error("Error fetching quests:", err);
           return [];
         }),
-        fetchInventory().catch(err => {
+        fetchInventoryItems(user?.id).catch(err => {
           console.error("Error fetching inventory:", err);
           return [];
         }),
@@ -129,7 +130,7 @@ export const loadAllGameData = async () => {
 export {
   fetchCharacter,
   fetchQuests,
-  fetchInventory,
+  fetchInventoryItems,
   fetchShopItems,
   fetchSkillTree,
   fetchHabits,
@@ -151,6 +152,7 @@ export {
 } from "./habitService";
 
 export {
+  updateInventoryItem,
   upsertInventoryItem
 } from "./inventoryService";
 
