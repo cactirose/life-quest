@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Quest, QuestStatus, QuestType, QuestDifficulty } from "@/types/quests";
+import { Quest, QuestStatus, QuestType, QuestDifficulty, StatReward } from "@/types/quests";
 import { toast } from "sonner";
 
 export const fetchQuests = async (): Promise<Quest[]> => {
@@ -18,29 +18,54 @@ export const fetchQuests = async (): Promise<Quest[]> => {
       return [];
     }
 
-    return data.map(quest => ({
-      id: quest.id,
-      title: quest.title,
-      description: quest.description || "",
-      type: (quest.quest_type || quest.type) as QuestType,
-      difficulty: quest.difficulty as QuestDifficulty,
-      status: quest.status as QuestStatus,
-      xpReward: quest.xp_reward || 0,
-      coinReward: quest.coin_reward || 0,
-      steps: quest.steps || [],
-      completedSteps: quest.completed_steps || 0,
-      dueDate: quest.due_date,
-      completionDate: quest.completion_date,
-      statRewards: quest.stat_rewards,
-      tags: quest.tags,
-      repeatType: quest.repeat_type,
-      customResetDays: quest.custom_reset_days,
-      linkedAchievementIds: quest.linked_achievement_ids || [],
-      repeat: quest.repeat ? {
-        interval: quest.repeat.interval,
-        nextRepeatDate: quest.repeat.next_repeat_date
-      } : undefined
-    }));
+    return data.map(quest => {
+      // Convert JSON fields to appropriate types
+      const steps = Array.isArray(quest.steps) 
+        ? quest.steps 
+        : [];
+      
+      const statRewards = Array.isArray(quest.stat_rewards) 
+        ? quest.stat_rewards as StatReward[] 
+        : [];
+      
+      const tags = quest.tags 
+        ? Array.isArray(quest.tags) 
+          ? quest.tags as string[] 
+          : [] 
+        : [];
+        
+      const linkedAchievementIds = quest.linked_achievement_ids
+        ? Array.isArray(quest.linked_achievement_ids)
+          ? quest.linked_achievement_ids as string[]
+          : []
+        : [];
+      
+      return {
+        id: quest.id,
+        title: quest.title,
+        description: quest.description || "",
+        type: quest.quest_type as QuestType,
+        difficulty: quest.difficulty as QuestDifficulty,
+        status: quest.status as QuestStatus,
+        xpReward: quest.xp_reward || 0,
+        coinReward: quest.coin_reward || 0,
+        steps: steps,
+        completedSteps: steps.filter(step => step.completed).length,
+        dueDate: quest.due_date,
+        completionDate: quest.completion_date,
+        statRewards: statRewards,
+        tags: tags,
+        repeatType: quest.repeat_type || "none",
+        customResetDays: Array.isArray(quest.custom_reset_days) 
+          ? quest.custom_reset_days as number[] 
+          : [],
+        linkedAchievementIds: linkedAchievementIds,
+        repeat: quest.repeat_type !== "none" ? {
+          interval: quest.repeat_type as any,
+          nextRepeatDate: new Date().toISOString() // Default value
+        } : undefined
+      };
+    });
   } catch (error) {
     console.error("Error in fetchQuests:", error);
     return [];
@@ -59,6 +84,7 @@ export const upsertQuest = async (quest: Quest): Promise<Quest | null> => {
       .eq("id", quest.id)
       .single();
 
+    // Convert types for database compatibility
     const questData = {
       title: quest.title,
       description: quest.description,
@@ -71,15 +97,11 @@ export const upsertQuest = async (quest: Quest): Promise<Quest | null> => {
       completed_steps: quest.completedSteps,
       due_date: quest.dueDate,
       completion_date: quest.completionDate,
-      stat_rewards: quest.statRewards,
+      stat_rewards: JSON.stringify(quest.statRewards),
       tags: quest.tags,
       repeat_type: quest.repeatType,
       custom_reset_days: quest.customResetDays,
-      linked_achievement_ids: quest.linkedAchievementIds,
-      repeat: quest.repeat ? {
-        interval: quest.repeat.interval,
-        next_repeat_date: quest.repeat.nextRepeatDate
-      } : null
+      linked_achievement_ids: quest.linkedAchievementIds
     };
 
     if (data) {

@@ -78,7 +78,7 @@ export const useDataSync = () => {
     
     setIsSyncing(true);
     try {
-      // Load data from Supabase
+      // Load data from Supabase - passing no argument to loadData as it doesn't expect one
       await loadData();
       console.log("Sync from Supabase completed");
     } catch (error) {

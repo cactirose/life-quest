@@ -2,7 +2,7 @@
 import { GameData } from "@/types/gameData";
 import { DataLoadingStatus } from "../useDataStatus";
 import { supabase } from "@/integrations/supabase/client";
-import { Habit, HabitFrequency, HabitCompletion } from "@/types/habits";
+import { Habit, HabitFrequency, HabitCompletion, DayOfWeek } from "@/types/habits";
 
 export const useHabitFetcher = (
   setGameData: React.Dispatch<React.SetStateAction<any>>,
@@ -32,8 +32,18 @@ export const useHabitFetcher = (
       const habits = data.map(habit => {
         // Type conversion for JSON fields
         const completionHistory = Array.isArray(habit.completion_history) 
-          ? habit.completion_history as unknown as HabitCompletion[] 
+          ? (habit.completion_history as unknown as HabitCompletion[])
           : [] as HabitCompletion[];
+          
+        // Properly type custom_days as DayOfWeek[]
+        const customDays = Array.isArray(habit.custom_days)
+          ? (habit.custom_days as unknown as DayOfWeek[])
+          : [] as DayOfWeek[];
+        
+        // Properly handle achievement links
+        const achievementLinks = Array.isArray(habit.achievement_links)
+          ? (habit.achievement_links as unknown as string[])
+          : [] as string[];
           
         return {
           id: habit.id,
@@ -42,7 +52,7 @@ export const useHabitFetcher = (
           frequency: habit.frequency as HabitFrequency,
           streak: habit.streak || 0,
           completionHistory: completionHistory,
-          customDays: habit.custom_days || [],
+          customDays: customDays,
           color: habit.color || "#4F46E5",
           icon: habit.icon || "✨",
           createdAt: habit.created_at || new Date().toISOString(),
@@ -50,7 +60,7 @@ export const useHabitFetcher = (
           priority: "medium",
           xpReward: habit.xp_reward || 10,
           coinReward: habit.coin_reward || 5,
-          achievementLinks: []  // Default empty array for achievement links
+          achievementLinks: achievementLinks
         };
       });
 

@@ -22,11 +22,18 @@ export const fetchInventory = async (): Promise<GearItem[]> => {
       id: item.id,
       name: item.name,
       description: item.description || "",
-      type: item.type as GearType, // Cast to ensure type safety
+      type: item.type as GearType,
       rarity: item.rarity as GearRarity,
       cost: item.cost,
       equipped: item.equipped,
-      statBonuses: item.stat_bonuses || {},
+      statBonuses: item.stat_bonuses as { 
+        strength?: number;
+        dexterity?: number;
+        constitution?: number;
+        intelligence?: number;
+        wisdom?: number;
+        charisma?: number;
+      } || {},
       levelRequired: item.level_required || 1,
       icon: item.icon || "🔮"
     }));
@@ -51,11 +58,18 @@ export const fetchShopItems = async (): Promise<GearItem[]> => {
       id: item.id,
       name: item.name,
       description: item.description || "",
-      type: item.type as GearType, // Cast to ensure type safety
+      type: item.type as GearType,
       rarity: item.rarity as GearRarity,
       cost: item.cost,
       equipped: false,
-      statBonuses: item.stat_bonuses || {},
+      statBonuses: item.stat_bonuses as { 
+        strength?: number;
+        dexterity?: number;
+        constitution?: number;
+        intelligence?: number;
+        wisdom?: number;
+        charisma?: number;
+      } || {},
       levelRequired: item.level_required || 1,
       icon: item.icon || "🔮"
     }));

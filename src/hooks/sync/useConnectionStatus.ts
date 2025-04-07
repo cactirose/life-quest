@@ -1,63 +1,53 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
-export const useConnectionStatus = () => {
+interface ConnectionStatus {
+  isOnline: boolean;
+  supabaseConnected: boolean;
+}
+
+export const useConnectionStatus = (): ConnectionStatus => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [supabaseConnected, setSupabaseConnected] = useState(true);
-  const [lastCheckTime, setLastCheckTime] = useState(Date.now());
+  const [supabaseConnected, setSupabaseConnected] = useState(false);
+  const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Update online status
   useEffect(() => {
+    // Update online status
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Regularly check Supabase connection
+    const checkSupabaseConnection = async () => {
+      try {
+        // Use a simple query to check if Supabase is reachable
+        const { error } = await supabase
+          .from('characters')  // Use an existing table instead of 'health_check'
+          .select('id')
+          .limit(1);
+        
+        setSupabaseConnected(!error);
+      } catch (e) {
+        console.error("Failed to check Supabase connection:", e);
+        setSupabaseConnected(false);
+      }
+    };
+    
+    // Check connection immediately and then periodically
+    checkSupabaseConnection();
+    pingIntervalRef.current = setInterval(checkSupabaseConnection, 60000); // Check every minute
+    
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+      }
     };
   }, []);
-
-  // Check Supabase connection
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-
-    const checkSupabaseConnection = async () => {
-      if (!isOnline) {
-        setSupabaseConnected(false);
-        return;
-      }
-
-      try {
-        // Use a simple query to check connection
-        const { error } = await supabase
-          .from("profiles") // Using a table we know exists instead of "health_check"
-          .select("id")
-          .limit(1);
-
-        setSupabaseConnected(!error);
-      } catch (error) {
-        console.error("Error checking Supabase connection:", error);
-        setSupabaseConnected(false);
-      }
-
-      setLastCheckTime(Date.now());
-      timeout = setTimeout(checkSupabaseConnection, 60000); // Check again in 1 minute
-    };
-
-    checkSupabaseConnection();
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [isOnline]);
-
-  return { 
-    isOnline, 
-    supabaseConnected,
-    lastCheckTime
-  };
+  
+  return { isOnline, supabaseConnected };
 };

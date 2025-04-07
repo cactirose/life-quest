@@ -29,9 +29,14 @@ export const fetchCharacter = async (): Promise<Character | null> => {
       name: data.name,
       level: data.level,
       xp: data.xp,
+      nextLevelXp: data.next_level_xp || 100,
       coins: data.coins,
+      portrait: data.portrait || "/placeholder.svg",
+      bio: data.bio || "A brave adventurer ready to conquer life's challenges.",
       stats: data.stats as Stats,
+      lastLoginDate: data.last_login_date,
       loginStreak: data.login_streak || 0,
+      dailyBonusClaimed: data.daily_bonus_claimed || false
     };
   } catch (error) {
     console.error("Error in fetchCharacter:", error);
@@ -47,9 +52,14 @@ export const updateCharacter = async (character: Character): Promise<Character |
         name: character.name,
         level: character.level,
         xp: character.xp,
+        next_level_xp: character.nextLevelXp,
         coins: character.coins,
+        portrait: character.portrait,
+        bio: character.bio,
         stats: character.stats,
+        last_login_date: character.lastLoginDate,
         login_streak: character.loginStreak,
+        daily_bonus_claimed: character.dailyBonusClaimed
       })
       .eq("id", character.id);
 
@@ -67,7 +77,6 @@ export const updateCharacter = async (character: Character): Promise<Character |
   }
 };
 
-// Add the upsertCharacter function
 export const upsertCharacter = async (character: Character): Promise<Character | null> => {
   try {
     // Check if character already exists
@@ -94,9 +103,14 @@ export const upsertCharacter = async (character: Character): Promise<Character |
             name: character.name,
             level: character.level,
             xp: character.xp,
+            next_level_xp: character.nextLevelXp,
             coins: character.coins,
+            portrait: character.portrait,
+            bio: character.bio,
             stats: character.stats,
+            last_login_date: character.lastLoginDate,
             login_streak: character.loginStreak,
+            daily_bonus_claimed: character.dailyBonusClaimed
           },
         ]);
 

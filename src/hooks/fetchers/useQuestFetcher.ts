@@ -2,7 +2,7 @@
 import { GameData } from "@/types/gameData";
 import { DataLoadingStatus } from "../useDataStatus";
 import { supabase } from "@/integrations/supabase/client";
-import { Quest, QuestType, QuestStatus, QuestDifficulty, QuestStep } from "@/types/quests";
+import { Quest, QuestType, QuestStatus, QuestDifficulty, QuestStep, StatReward } from "@/types/quests";
 
 export const useQuestsFetcher = (
   setGameData: React.Dispatch<React.SetStateAction<any>>,
@@ -30,10 +30,29 @@ export const useQuestsFetcher = (
       }
 
       const quests = data.map(quest => {
-        // Handle proper type conversions from database
+        // Properly convert steps from JSON to QuestStep[]
         const questSteps = Array.isArray(quest.steps) 
-          ? quest.steps as unknown as QuestStep[] 
+          ? (quest.steps as unknown as QuestStep[])
           : [] as QuestStep[];
+
+        // Safely convert stat_rewards to StatReward[]
+        const statRewards = Array.isArray(quest.stat_rewards)
+          ? (quest.stat_rewards as unknown as StatReward[])
+          : [] as StatReward[];
+
+        // Safely handle tags
+        const tags = quest.tags 
+          ? Array.isArray(quest.tags) 
+            ? quest.tags as string[] 
+            : [] 
+          : [];
+        
+        // Safely handle linked achievement IDs
+        const linkedAchievementIds = quest.linked_achievement_ids 
+          ? Array.isArray(quest.linked_achievement_ids)
+            ? quest.linked_achievement_ids as string[]
+            : []
+          : [];
 
         return {
           id: quest.id,
@@ -45,14 +64,16 @@ export const useQuestsFetcher = (
           xpReward: quest.xp_reward || 0,
           coinReward: quest.coin_reward || 0,
           steps: questSteps,
-          completedSteps: 0,  // Default value, to be calculated from steps
+          completedSteps: questSteps.filter(step => step.completed).length,
           dueDate: quest.due_date,
-          completionDate: quest.completion_date || undefined,
-          statRewards: quest.stat_rewards || [],
-          tags: quest.tags || [],
+          completionDate: quest.completion_date,
+          statRewards: statRewards,
+          tags: tags,
           repeatType: quest.repeat_type || "none",
-          customResetDays: quest.custom_reset_days || [],
-          linkedAchievementIds: [],  // Default empty array
+          customResetDays: Array.isArray(quest.custom_reset_days) 
+            ? quest.custom_reset_days as number[] 
+            : [],
+          linkedAchievementIds: linkedAchievementIds,
           repeat: quest.repeat_type !== "none" ? {
             interval: quest.repeat_type as any,
             nextRepeatDate: new Date().toISOString() // Default value
@@ -60,19 +81,13 @@ export const useQuestsFetcher = (
         };
       });
 
-      // Calculate completedSteps for each quest
-      const updatedQuests = quests.map(quest => ({
-        ...quest,
-        completedSteps: quest.steps.filter(step => step.completed).length
-      }));
-
       setGameData(prevData => ({
         ...prevData,
-        quests: updatedQuests
+        quests: quests
       }));
       
       updateStatus('quests', 'loaded');
-      return updatedQuests;
+      return quests;
     } catch (error) {
       console.error("Error in fetchQuests:", error);
       updateStatus('quests', 'error');

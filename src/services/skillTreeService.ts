@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { SkillNode } from "@/types/skills";
+import { StatName } from "@/types/character";
 
 export const fetchSkillTree = async (): Promise<SkillNode[]> => {
   try {
@@ -17,20 +18,31 @@ export const fetchSkillTree = async (): Promise<SkillNode[]> => {
       return [];
     }
 
-    return data.map(node => ({
-      id: node.id,
-      name: node.name,
-      description: node.description,
-      level: node.level || 0,
-      maxLevel: node.max_level || 5,
-      unlocked: node.unlocked || false,
-      icon: node.icon,
-      parentIds: node.parent_ids || [],
-      position: node.position || { x: 0, y: 0 },
-      statBoosts: node.stat_boosts || {},
-      category: node.category,
-      cost: node.cost || 0,
-    }));
+    return data.map(node => {
+      // Convert position from database to expected structure
+      const position = typeof node.position === 'object' && node.position !== null 
+        ? { x: node.position.x || 0, y: node.position.y || 0 }
+        : { x: 0, y: 0 };
+      
+      // Convert connectedTo array from DB
+      const connectedTo = Array.isArray(node.connected_to) ? node.connected_to as string[] : [];
+      
+      // Convert statBonuses from database
+      const statBonuses = typeof node.stat_bonuses === 'object' && node.stat_bonuses !== null
+        ? node.stat_bonuses as Partial<Record<StatName, number>>
+        : {};
+      
+      return {
+        id: node.id,
+        name: node.name,
+        description: node.description || "",
+        unlocked: node.unlocked || false,
+        icon: node.icon || "",
+        statBonuses,
+        position,
+        connectedTo
+      };
+    });
   } catch (error) {
     console.error("Error in fetchSkillTree:", error);
     return [];
@@ -52,15 +64,11 @@ export const upsertSkillNode = async (node: SkillNode): Promise<SkillNode | null
     const nodeData = {
       name: node.name,
       description: node.description,
-      level: node.level,
-      max_level: node.maxLevel,
       unlocked: node.unlocked,
       icon: node.icon,
-      parent_ids: node.parentIds,
+      connected_to: node.connectedTo,
       position: node.position,
-      stat_boosts: node.statBoosts,
-      category: node.category,
-      cost: node.cost,
+      stat_bonuses: node.statBonuses
     };
 
     if (data) {
