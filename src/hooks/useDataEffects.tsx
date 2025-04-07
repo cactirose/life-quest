@@ -1,34 +1,38 @@
+
 import { useEffect } from "react";
 import { useAchievements } from "../contexts/AchievementContext";
 import { useGameData } from "../contexts/DataContext";
-import { CharacterContextType } from "../utils/contextTypes";
+import { CharacterContextValue } from "../utils/contextTypes";
 import { toast } from "sonner";
 
 export const useDataEffects = (
-  characterContext: CharacterContextType
+  characterContext?: CharacterContextValue
 ) => {
   const { achievements, checkAndUnlockAchievement } = useAchievements();
-  const { setGameData } = useGameData();
+  const { setGameData, character } = useGameData();
+
+  // Use the character from the context if provided, otherwise use the one from GameData
+  const characterData = characterContext?.character || character;
 
   // Check daily login only once when the component mounts
   useEffect(() => {
     // Only check daily login if character data is available
-    if (characterContext.character) {
+    if (characterData) {
       // Create a function to check daily login within the effect
       const checkDailyLoginStatus = () => {
         // Get the current date as a string
         const today = new Date().toISOString().split('T')[0];
-        const lastLogin = characterContext.character?.lastLoginDate 
-          ? new Date(characterContext.character.lastLoginDate).toISOString().split('T')[0]
+        const lastLogin = characterData.lastLoginDate 
+          ? new Date(characterData.lastLoginDate).toISOString().split('T')[0]
           : null;
         
         // Only update if it's a new day (player hasn't logged in today)
         if (lastLogin !== today) {
           // Update the character's lastLoginDate and streak
           const updatedCharacter = {
-            ...characterContext.character,
+            ...characterData,
             lastLoginDate: new Date().toISOString(),
-            loginStreak: lastLogin ? characterContext.character.loginStreak + 1 : 1,
+            loginStreak: lastLogin ? characterData.loginStreak + 1 : 1,
             dailyBonusClaimed: false
           };
           
@@ -49,23 +53,23 @@ export const useDataEffects = (
         // Don't block the app if this fails
       }
     }
-  }, [characterContext.character?.lastLoginDate]);
+  }, [characterData?.lastLoginDate, characterData, setGameData]);
 
   // Check achievements when character changes
   useEffect(() => {
-    if (characterContext.character && achievements && Array.isArray(achievements)) {
+    if (characterData && achievements && Array.isArray(achievements)) {
       // Check for completed achievements based on character progress
       try {
         achievements.forEach(achievement => {
           // Basic checks for common achievement types
           if (achievement && !achievement.unlocked) {
             // Check level-based achievements
-            if ('requiredLevel' in achievement && characterContext.character.level >= achievement.requiredLevel) {
+            if ('requiredLevel' in achievement && characterData.level >= achievement.requiredLevel) {
               checkAndUnlockAchievement(achievement.id);
             }
             
             // Check coin-based achievements
-            if ('requiredCoins' in achievement && characterContext.character.coins >= achievement.requiredCoins) {
+            if ('requiredCoins' in achievement && characterData.coins >= achievement.requiredCoins) {
               checkAndUnlockAchievement(achievement.id);
             }
           }
@@ -76,8 +80,8 @@ export const useDataEffects = (
       }
     }
   }, [
-    characterContext.character?.level,
-    characterContext.character?.coins,
+    characterData?.level,
+    characterData?.coins,
     achievements,
     checkAndUnlockAchievement
   ]);

@@ -23,6 +23,8 @@ export function useGameDataManager() {
   // Use hooks without parameters as they expect in their implementations
   const { dataStatus, updateStatus } = useDataStatus();
   const { syncFromSupabase } = useSupabaseSync();
+  
+  // Call useDataEffects with no parameters - it will now handle this case correctly
   useDataEffects();
 
   useEffect(() => {
