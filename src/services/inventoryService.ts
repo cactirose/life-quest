@@ -128,3 +128,45 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
     return null;
   }
 };
+
+// Add the missing deleteInventoryItem function
+export const deleteInventoryItem = async (itemId: string): Promise<boolean> => {
+  try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) {
+      toast.error("You must be logged in to delete inventory items");
+      return false;
+    }
+
+    const { error } = await supabase
+      .from("inventory_items")
+      .delete()
+      .eq("id", itemId)
+      .eq("user_id", user.user.id);
+
+    if (error) {
+      console.error("Error deleting inventory item:", error);
+      toast.error("Failed to delete item");
+      return false;
+    }
+
+    toast.success("Item deleted successfully");
+    return true;
+  } catch (error) {
+    console.error("Error in deleteInventoryItem:", error);
+    toast.error("Failed to delete item");
+    return false;
+  }
+};
+
+// Add toggleItemEquipped function
+export const toggleItemEquipped = async (item: GearItem): Promise<GearItem | null> => {
+  try {
+    const updatedItem = { ...item, equipped: !item.equipped };
+    return await upsertInventoryItem(updatedItem);
+  } catch (error) {
+    console.error("Error toggling item equipped status:", error);
+    toast.error("Failed to update item");
+    return null;
+  }
+};

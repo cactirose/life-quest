@@ -5,7 +5,7 @@ import { fetchQuests, upsertQuest } from "./questService";
 import { fetchInventory, fetchShopItems, upsertInventoryItem, deleteInventoryItem, toggleItemEquipped } from "./inventoryService";
 import { fetchSkillTree, upsertSkillNode } from "./skillTreeService";
 import { fetchHabits, upsertHabit, deleteHabit } from "./habitService";
-import { fetchMoodEntries, upsertMoodEntry } from "./moodService";
+import { fetchMoods, upsertMood } from "./moodService";
 import { fetchAchievements, upsertAchievement, deleteAchievement } from "./achievementService";
 import { ensureValidSession } from "@/utils/auth";
 import { StatName } from "@/types/character";
@@ -20,7 +20,7 @@ export const loadGameData = async () => {
     shopItems: await fetchShopItems(),
     skillTree: await fetchSkillTree(),
     habits: await fetchHabits(),
-    moods: await fetchMoodEntries(),
+    moods: await fetchMoods(),
     achievements: await fetchAchievements(),
     challenges: [] // Empty array since challenges feature was removed
   };
@@ -33,6 +33,6 @@ export { fetchQuests, upsertQuest };
 export { fetchInventory, fetchShopItems, upsertInventoryItem, deleteInventoryItem, toggleItemEquipped };
 export { fetchSkillTree, upsertSkillNode };
 export { fetchHabits, upsertHabit, deleteHabit };
-export { fetchMoodEntries, upsertMoodEntry };
+export { fetchMoods, upsertMood };
 export { fetchAchievements, upsertAchievement, deleteAchievement };
 export type { StatName };

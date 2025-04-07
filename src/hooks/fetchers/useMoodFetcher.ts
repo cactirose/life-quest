@@ -3,6 +3,7 @@ import { GameData } from "@/types/gameData";
 import { DataLoadingStatus } from "../useDataStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { MoodEntry, MoodType } from "@/types/mood";
+import { fetchMoods } from "@/services/moodService";
 
 export const useMoodFetcher = (
   setGameData: React.Dispatch<React.SetStateAction<any>>,

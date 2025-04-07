@@ -1,7 +1,8 @@
+
 import { createContext, useContext, useRef } from "react";
 import { GearItem, GearType } from "../types/inventory";
 import { generateId } from "../utils/idGenerator";
-import { toggleItemEquipped, upsertInventoryItem, fetchInventory } from "@/services/inventoryService";
+import { upsertInventoryItem, fetchInventory } from "@/services/inventoryService";
 import { toast } from "sonner";
 
 interface InventoryContextType {
