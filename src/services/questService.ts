@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Quest, QuestStatus, QuestType } from "@/types/quests";
+import { Quest, QuestStatus, QuestType, QuestDifficulty } from "@/types/quests";
 import { toast } from "sonner";
 
 export const fetchQuests = async (): Promise<Quest[]> => {
@@ -22,8 +22,8 @@ export const fetchQuests = async (): Promise<Quest[]> => {
       id: quest.id,
       title: quest.title,
       description: quest.description || "",
-      type: quest.type as QuestType,
-      difficulty: quest.difficulty,
+      type: (quest.quest_type || quest.type) as QuestType,
+      difficulty: quest.difficulty as QuestDifficulty,
       status: quest.status as QuestStatus,
       xpReward: quest.xp_reward || 0,
       coinReward: quest.coin_reward || 0,
@@ -62,7 +62,7 @@ export const upsertQuest = async (quest: Quest): Promise<Quest | null> => {
     const questData = {
       title: quest.title,
       description: quest.description,
-      type: quest.type,
+      quest_type: quest.type,
       difficulty: quest.difficulty,
       status: quest.status,
       xp_reward: quest.xpReward,
@@ -116,5 +116,47 @@ export const upsertQuest = async (quest: Quest): Promise<Quest | null> => {
     console.error("Error in upsertQuest:", error);
     toast.error("Failed to save quest");
     return null;
+  }
+};
+
+// Add the deleteQuest function that was missing
+export const deleteQuest = async (questId: string): Promise<boolean> => {
+  try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) {
+      toast.error("You must be logged in to delete quests");
+      return false;
+    }
+
+    // Verify the quest belongs to the user before deleting
+    const { data: questCheck } = await supabase
+      .from("quests")
+      .select("id")
+      .eq("id", questId)
+      .eq("user_id", user.user.id)
+      .single();
+
+    if (!questCheck) {
+      console.warn("Quest not found or doesn't belong to user:", questId);
+      return false;
+    }
+
+    const { error } = await supabase
+      .from("quests")
+      .delete()
+      .eq("id", questId)
+      .eq("user_id", user.user.id);
+
+    if (error) {
+      console.error("Error deleting quest:", error);
+      toast.error("Failed to delete quest");
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in deleteQuest:", error);
+    toast.error("An error occurred while deleting the quest");
+    return false;
   }
 };
