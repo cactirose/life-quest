@@ -4,7 +4,7 @@ import { MoodEntry, MoodType } from "@/types/mood";
 import { generateId } from "@/utils/idGenerator";
 import { toast } from "sonner";
 
-// Renamed to match what's being imported in other files
+// Fetch mood entries
 export const fetchMoods = async (): Promise<MoodEntry[]> => {
   try {
     const { data: user } = await supabase.auth.getUser();
@@ -35,7 +35,7 @@ export const fetchMoods = async (): Promise<MoodEntry[]> => {
   }
 };
 
-// Renamed to ensure consistency with imports
+// Create or update mood entry
 export const upsertMood = async (entry: MoodEntry): Promise<boolean> => {
   try {
     const { data: user } = await supabase.auth.getUser();
@@ -92,6 +92,6 @@ export const upsertMood = async (entry: MoodEntry): Promise<boolean> => {
   }
 };
 
-// Alias for backward compatibility
+// Export aliases for backward compatibility
 export const upsertMoodEntry = upsertMood;
 export const fetchMoodEntries = fetchMoods;

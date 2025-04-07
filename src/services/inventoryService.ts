@@ -129,7 +129,7 @@ export const upsertInventoryItem = async (item: GearItem): Promise<GearItem | nu
   }
 };
 
-// Add the missing deleteInventoryItem function
+// Add the deleteInventoryItem function
 export const deleteInventoryItem = async (itemId: string): Promise<boolean> => {
   try {
     const { data: user } = await supabase.auth.getUser();
