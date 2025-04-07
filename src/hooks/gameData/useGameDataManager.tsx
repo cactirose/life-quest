@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GameData } from "@/types/gameData";
 import { DEFAULT_GAME_DATA } from "@/utils/defaultGameData";
@@ -5,7 +6,9 @@ import { useDataStatus } from "../useDataStatus";
 import { useSupabaseSync } from "../useSupabaseSync";
 import { useDataEffects } from "../useDataEffects";
 import { loadGameData } from "@/services";
-import { createDataSetterMethod } from "./changeDetectionUtils";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client"; // Added missing import
+import { useAuth } from "@/features/auth/context/AuthContext";
 
 export function useGameDataManager() {
   const [gameData, setGameData] = useState<GameData>(DEFAULT_GAME_DATA);
@@ -14,10 +17,13 @@ export function useGameDataManager() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loadAttempts, setLoadAttempts] = useState(0);
+  
+  const { isAuthenticated } = useAuth(); // Get authentication status from AuthContext
 
-  useDataStatus(gameData);
-  useSupabaseSync(gameData);
-  useDataEffects(gameData);
+  // Use hooks without parameters as they expect in their implementations
+  const { dataStatus, updateStatus } = useDataStatus();
+  const { syncFromSupabase } = useSupabaseSync();
+  useDataEffects();
 
   useEffect(() => {
     let isMounted = true;
@@ -31,8 +37,8 @@ export function useGameDataManager() {
       setLoadingProgress(0);
       
       try {
-        const authenticated = await isAuthenticated();
-        if (!authenticated) {
+        // Now using the isAuthenticated from AuthContext
+        if (!isAuthenticated) {
           console.log("User is not authenticated, using default data");
           if (isMounted) {
             setGameData(DEFAULT_GAME_DATA);
@@ -109,14 +115,14 @@ export function useGameDataManager() {
         unsubscribe();
       }
     };
-  }, [loadAttempts]);
+  }, [loadAttempts, isAuthenticated]);
 
   const refreshData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const authenticated = await isAuthenticated();
-      if (!authenticated) {
+      // Now using isAuthenticated from AuthContext
+      if (!isAuthenticated) {
         toast.error("You must be logged in to refresh data");
         setIsLoading(false);
         return;
@@ -142,7 +148,7 @@ export function useGameDataManager() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   return {
     gameData,
