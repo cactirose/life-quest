@@ -12,7 +12,7 @@ import { Landing } from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Quests from "./pages/Quests";
 import Character from "./pages/Character";
-import SkillTree from "./pages/SkillTree";
+import GrowthTree from "@/pages/GrowthTree";
 import Shop from "./pages/Shop";
 import Inventory from "./pages/Inventory";
 import NotFound from "./pages/NotFound";
@@ -180,7 +180,7 @@ const App = () => {
                       element={
                         <ProtectedRoute>
                           <Layout>
-                            <SkillTree />
+                            <GrowthTree />
                           </Layout>
                         </ProtectedRoute>
                       }
