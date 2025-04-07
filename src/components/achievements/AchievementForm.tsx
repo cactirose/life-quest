@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Achievement, AchievementCategory } from "@/types/achievements";
 import { DialogFooter } from "@/components/ui/dialog";
@@ -25,8 +24,7 @@ const AchievementForm = ({ onSubmit, initialData = null, onCancel }: Achievement
   const [icon, setIcon] = useState(initialData?.icon || "🏆");
   const [xpReward, setXpReward] = useState(initialData?.xpReward || 50);
   const [coinReward, setCoinReward] = useState(initialData?.coinReward || 25);
-  const [isTrackable, setIsTrackable] = useState(!!initialData?.requiredCount);
-  const [requiredCount, setRequiredCount] = useState(initialData?.requiredCount || 5);
+  const [goal, setGoal] = useState(initialData?.goal || 1);
   
   const handleSubmit = () => {
     if (!title.trim()) {
@@ -42,10 +40,8 @@ const AchievementForm = ({ onSubmit, initialData = null, onCancel }: Achievement
       xpReward,
       coinReward,
       specialReward: initialData?.specialReward,
-      ...(isTrackable ? { 
-        requiredCount, 
-        currentCount: initialData?.currentCount || 0 
-      } : {})
+      progress: initialData?.progress || 0,
+      goal
     };
     
     onSubmit(achievement);
@@ -72,10 +68,8 @@ const AchievementForm = ({ onSubmit, initialData = null, onCancel }: Achievement
       />
       
       <TrackableFields
-        isTrackable={isTrackable}
-        setIsTrackable={setIsTrackable}
-        requiredCount={requiredCount}
-        setRequiredCount={setRequiredCount}
+        goal={goal}
+        setGoal={setGoal}
       />
       
       {initialData?.specialReward && (

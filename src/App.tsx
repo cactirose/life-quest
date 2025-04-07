@@ -7,7 +7,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { DataProvider } from "./contexts/DataContext";
 import { AuthProvider } from "./features/auth/context/AuthContext";
 import Navbar from "./components/Navbar";
-import Index from "./pages/Index";
+import { Landing } from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Quests from "./pages/Quests";
 import Character from "./pages/Character";
@@ -37,6 +37,7 @@ import JournalEntryForm from "./pages/JournalEntryForm";
 import JournalEntryDetail from "./pages/JournalEntryDetail";
 import JournalEntryEdit from "./pages/JournalEntryEdit";
 import { validateThemeImplementation } from '@/utils/theme/themeValidator';
+import { useAuth } from "@/features/auth/context/AuthContext";
 
 const queryClient = new QueryClient();
 
@@ -73,34 +74,30 @@ const Layout = ({ children }: { children: ReactNode }) => {
     return (
       <div className="flex flex-col min-h-screen relative">
         <Navbar />
-        <main className="flex-grow px-4 pb-16 pt-20 flex items-center justify-center">
+        <main className="flex-grow flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin text-3xl mb-4">⌛</div>
-            <p className="text-lg font-medium">Loading your quest data...</p>
-            <div className="w-64 h-2 bg-gray-200 rounded-full mt-4">
-              <div 
-                className="h-full bg-rpg-brown rounded-full transition-all duration-300"
-                style={{ width: `${loadingProgress}%` }}
-              />
-            </div>
-            
-            {error && (
-              <div className="mt-4 text-red-500">
-                <p>{error}</p>
-              </div>
-            )}
-            
+            <div className="mb-4">Loading your game data... {loadingProgress}%</div>
             {loadingTimeout && (
-              <div className="mt-8">
-                <p className="text-red-500 mb-2">Loading is taking longer than expected.</p>
-                <button 
-                  onClick={handleRetry}
-                  className="bg-primary text-secondary font-pixel py-2 px-4 rounded-md border-2 border-secondary"
-                >
-                  Retry
-                </button>
-              </div>
+              <Button onClick={handleRetry}>
+                Taking too long? Click to retry
+              </Button>
             )}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col min-h-screen relative">
+        <Navbar />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <div className="mb-4">Error loading game data</div>
+            <Button onClick={handleRetry}>
+              Retry
+            </Button>
           </div>
         </main>
       </div>
@@ -119,9 +116,15 @@ const Layout = ({ children }: { children: ReactNode }) => {
 const PublicLayout = ({ children }: { children: ReactNode }) => (
   <div className="flex flex-col min-h-screen relative">
     <Navbar />
-    <main className="flex-grow px-4 pb-16 pt-20">{children}</main>
+    <main className="flex-grow">{children}</main>
   </div>
 );
+
+// Route guard for authenticated users
+const AuthenticatedRoute = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+};
 
 const App = () => {
   useEffect(() => {
@@ -143,9 +146,11 @@ const App = () => {
                 <Route
                   path="/"
                   element={
-                    <PublicLayout>
-                      <Index />
-                    </PublicLayout>
+                    <AuthenticatedRoute>
+                      <PublicLayout>
+                        <Landing />
+                      </PublicLayout>
+                    </AuthenticatedRoute>
                   }
                 />
                 <Route path="/login" element={<Login />} />

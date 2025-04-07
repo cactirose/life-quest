@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Habit } from '@/types/habits';
 import { EmptyHabitState } from './EmptyHabitState';
@@ -29,7 +28,7 @@ export const HabitList = ({
   }
 
   return (
-    <div className="space-y-5 animate-fade-in mt-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       {safeHabits.map((habit) => (
         <HabitCard
           key={habit.id}

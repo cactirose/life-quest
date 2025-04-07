@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { Quest } from "@/types/quests";
@@ -18,7 +17,8 @@ const Quests = () => {
     updateQuest, 
     deleteQuest, 
     completeQuestStep,
-    completeQuest
+    completeQuest,
+    achievements
   } = useGameData();
   
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -145,6 +145,7 @@ const Quests = () => {
         onOpenChange={setShowAddDialog}
         onAddQuest={handleAddQuest}
         isProcessing={isProcessing}
+        achievements={achievements}
       />
       
       <EditQuestDialog 
@@ -153,6 +154,7 @@ const Quests = () => {
         onOpenChange={(open) => !open && setEditingQuest(null)}
         onUpdateQuest={handleEditQuest}
         isProcessing={isProcessing}
+        achievements={achievements}
       />
       
       <QuestSearch 

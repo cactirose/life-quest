@@ -4,6 +4,8 @@ import { generateId } from "../utils/idGenerator";
 import { StatName } from "../types/character";
 import { addDays, addMonths, addWeeks, format } from "date-fns";
 import { useQuestManager } from "@/features/quests/hooks/useQuestManager";
+import { updateAchievementProgress } from "@/features/achievements/utils/achievementProgressUtils";
+import { upsertAchievement } from "@/services/achievementService";
 
 interface QuestContextType {
   quests: Quest[];
@@ -87,6 +89,15 @@ export const createQuestContextValue = (
         q.id === questId ? { ...q, status: "completed" as QuestStatus } : q
       );
 
+      // Update achievements if quest has linked achievements
+      let updatedAchievements = prevData.achievements;
+      if (quest.achievementLinks && quest.achievementLinks.length > 0) {
+        updatedAchievements = updateAchievementProgress(
+          prevData.achievements,
+          quest.achievementLinks
+        );
+      }
+
       if (quest.repeatType && quest.repeatType !== "none") {
         const now = new Date();
         let nextResetDate: Date;
@@ -125,10 +136,20 @@ export const createQuestContextValue = (
         updatedQuests = [...updatedQuests, newQuestInstance];
       }
 
+      // Sync updated achievements with Supabase
+      updatedAchievements.forEach(achievement => {
+        if (achievement.progress !== prevData.achievements.find(a => a.id === achievement.id)?.progress) {
+          upsertAchievement(achievement).catch(err =>
+            console.error("Error syncing achievement:", err, achievement)
+          );
+        }
+      });
+
       return { 
         ...prevData, 
         character: updatedCharacter,
-        quests: updatedQuests
+        quests: updatedQuests,
+        achievements: updatedAchievements
       };
     });
   };

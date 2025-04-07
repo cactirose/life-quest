@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ import { HabitStatsCard } from "@/features/habits/components/HabitStatsCard";
 import { HabitList } from "@/features/habits/components/HabitList";
 
 const Habits = () => {
-  const { habits, addHabit, updateHabit, deleteHabit, completeHabit, uncompleteHabit } = useGameData();
+  const { habits, achievements, addHabit, updateHabit, deleteHabit, completeHabit, uncompleteHabit } = useGameData();
   
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
@@ -101,7 +100,8 @@ const Habits = () => {
             </DialogHeader>
             <HabitForm 
               onSubmit={handleAddHabit} 
-              onCancel={() => setShowAddDialog(false)} 
+              onCancel={() => setShowAddDialog(false)}
+              achievements={achievements}
             />
           </DialogContent>
         </Dialog>
@@ -118,7 +118,8 @@ const Habits = () => {
               <HabitForm 
                 initialData={editingHabit}
                 onSubmit={handleUpdateHabit} 
-                onCancel={() => setEditingHabit(null)} 
+                onCancel={() => setEditingHabit(null)}
+                achievements={achievements}
               />
             )}
           </DialogContent>
@@ -127,7 +128,7 @@ const Habits = () => {
       
       <HabitStatsCard habits={habits} />
       
-      <HabitList 
+      <HabitList
         habits={habits}
         onAddHabit={() => setShowAddDialog(true)}
         onCompleteHabit={handleCompleteHabit}

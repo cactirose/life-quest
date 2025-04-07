@@ -1,4 +1,3 @@
-
 // Habit types
 export type HabitFrequency = "daily" | "weekdays" | "weekends" | "weekly" | "custom";
 export type DayOfWeek = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
@@ -28,6 +27,7 @@ export interface Habit {
   completionHistory: HabitCompletion[];
   color: string; // CSS color for the habit
   steps?: HabitStep[]; // Optional steps for the habit
+  achievementLinks?: string[]; // Array of achievement IDs that this habit contributes to
 }
 
 // Sample habits for first run

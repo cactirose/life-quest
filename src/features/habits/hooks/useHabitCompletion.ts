@@ -3,6 +3,7 @@ import { upsertHabit } from "@/services/habitService";
 import { upsertCharacter } from "@/services/characterService";
 import { upsertAchievement } from "@/services/achievementService";
 import { isCompletedForDate, recalculateStreak } from "../utils/habitCompletionUtils";
+import { updateAchievementProgress } from "@/features/achievements/utils/achievementProgressUtils";
 import { toast } from "sonner";
 
 export const useHabitCompletion = (
@@ -60,11 +61,21 @@ export const useHabitCompletion = (
           coins: (prevData.character.coins || 0) + (habit.coinReward || 0)
         };
         
+        // Update achievements if habit has linked achievements
+        let updatedAchievements = prevData.achievements;
+        if (habit.achievementLinks && habit.achievementLinks.length > 0) {
+          updatedAchievements = updateAchievementProgress(
+            prevData.achievements,
+            habit.achievementLinks
+          );
+        }
+        
         // Update the game data
         const updatedData = {
           ...prevData,
           habits: prevData.habits.map(h => h.id === habitId ? updatedHabit : h),
-          character: updatedCharacter
+          character: updatedCharacter,
+          achievements: updatedAchievements
         };
         
         // Sync with Supabase
@@ -78,6 +89,15 @@ export const useHabitCompletion = (
           upsertCharacter(updatedCharacter).catch(err => 
             console.error("Error syncing character:", err, updatedCharacter)
           );
+          
+          // Sync updated achievements
+          updatedAchievements.forEach(achievement => {
+            if (achievement.progress !== prevData.achievements.find(a => a.id === achievement.id)?.progress) {
+              upsertAchievement(achievement).catch(err =>
+                console.error("Error syncing achievement:", err, achievement)
+              );
+            }
+          });
         } catch (err) {
           console.error("Error preparing data for upsert:", err);
         }
@@ -143,11 +163,20 @@ export const useHabitCompletion = (
           coins: Math.max(0, (prevData.character.coins || 0) - (habit.coinReward || 0))
         };
         
+        // Update achievements if habit has linked achievements
+        let updatedAchievements = prevData.achievements;
+        if (habit.achievementLinks && habit.achievementLinks.length > 0) {
+          // When uncompleting, we don't want to decrease achievement progress
+          // as it could lead to negative progress
+          updatedAchievements = prevData.achievements;
+        }
+        
         // Update the game data
         const updatedData = {
           ...prevData,
           habits: prevData.habits.map(h => h.id === habitId ? updatedHabit : h),
-          character: updatedCharacter
+          character: updatedCharacter,
+          achievements: updatedAchievements
         };
         
         // Sync with Supabase

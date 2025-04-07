@@ -1,4 +1,3 @@
-
 import React from "react";
 import { 
   Dialog, 
@@ -8,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Quest } from "@/types/quests";
 import { QuestForm } from "./QuestForm";
+import { Achievement } from "@/types/achievements";
 
 interface EditQuestDialogProps {
   isOpen: boolean;
@@ -16,6 +16,7 @@ interface EditQuestDialogProps {
   onUpdateQuest?: (quest: Omit<Quest, "id" | "status">) => Promise<void>;
   editingQuest?: Quest | null;
   isProcessing?: boolean;
+  achievements: Achievement[];
 }
 
 export const EditQuestDialog = ({ 
@@ -24,7 +25,8 @@ export const EditQuestDialog = ({
   onAddQuest, 
   onUpdateQuest, 
   editingQuest, 
-  isProcessing = false 
+  isProcessing = false,
+  achievements
 }: EditQuestDialogProps) => {
   const handleSubmit = async (quest: Omit<Quest, "id" | "status">) => {
     try {
@@ -60,6 +62,7 @@ export const EditQuestDialog = ({
           onCancel={handleCancel}
           isSubmitting={isProcessing}
           submitButtonText={editingQuest ? "Update Quest" : "Create Quest"}
+          achievements={achievements}
         />
       </DialogContent>
     </Dialog>

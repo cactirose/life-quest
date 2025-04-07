@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -46,12 +45,17 @@ export const HabitCard = ({
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
   
-  // Get today's date string
   const today = new Date().toISOString().split('T')[0];
-  
-  // Check if habit was completed today
   const isTodayCompleted = habit.completionHistory.some(
     comp => comp.date.startsWith(today) && comp.completed
+  );
+  
+  // Get today's date string
+  const todayString = today;
+  
+  // Check if habit was completed today
+  const isTodayCompletedToday = habit.completionHistory.some(
+    comp => comp.date.startsWith(todayString) && comp.completed
   );
   
   // Get selected date string
@@ -108,82 +112,64 @@ export const HabitCard = ({
   };
   
   return (
-    <div className="quest-card">
-      <div className="flex justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div 
-            className="h-6 w-6 flex items-center justify-center rounded-full" 
-            style={{ backgroundColor: habit.color }}
-          >
-            <span className="text-white">{habit.icon}</span>
-          </div>
-          <h3 className="font-pixel text-lg text-rpg-brown">{habit.name}</h3>
+    <div className="quest-card p-3 flex items-center justify-between gap-4">
+      {/* Left section: Icon, Name, and Complete button */}
+      <div className="flex items-center gap-3 min-w-0">
+        <div 
+          className="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-full" 
+          style={{ backgroundColor: habit.color }}
+        >
+          <span className="text-white">{habit.icon}</span>
         </div>
         
-        <div className="flex items-center">
-          <div className="flex items-center gap-1 mr-2">
-            <Sparkle size={14} className="text-rpg-brown" />
-            <span className="text-xs text-rpg-brown">{habit.streak}</span>
+        <div className="min-w-0">
+          <h3 className="font-pixel text-base text-rpg-brown truncate">{habit.name}</h3>
+          <div className="flex items-center gap-2 text-xs text-rpg-brown mt-0.5">
+            <CalendarDays size={12} />
+            <span className="truncate">{formatFrequency(habit.frequency, habit.customDays)}</span>
           </div>
-          
-          <Button 
-            onClick={() => onEdit(habit)}
-            variant="outline"
-            size="sm"
-            className="p-1 h-8 w-8 mr-1"
-          >
-            <Edit size={14} />
-          </Button>
-          
-          <Button 
-            onClick={() => onDelete(habit.id)}
-            variant="outline"
-            size="sm"
-            className="p-1 h-8 w-8 text-rpg-red hover:text-white hover:bg-rpg-red"
-          >
-            <Trash2 size={14} />
-          </Button>
         </div>
       </div>
-      
-      {habit.description && (
-        <p className="text-sm text-rpg-brown mb-3">{habit.description}</p>
-      )}
-      
-      <div className="flex justify-between items-center mb-3">
-        <div className="flex items-center gap-2 text-xs text-rpg-brown">
-          <CalendarDays size={14} />
-          <span>{formatFrequency(habit.frequency, habit.customDays)}</span>
+
+      {/* Middle section: Rewards */}
+      <div className="flex items-center gap-3 text-xs text-rpg-brown">
+        <div className="flex items-center gap-1">
+          <Sparkle size={12} className="text-rpg-gold" />
+          <span>+{habit.xpReward}</span>
         </div>
-        
-        {habit.reminder && (
-          <div className="flex items-center gap-2 text-xs text-rpg-brown">
-            <Clock size={14} />
-            <span>{habit.reminder}</span>
+        <div className="flex items-center gap-1">
+          <Coins size={12} className="text-rpg-gold" />
+          <span>+{habit.coinReward}</span>
+        </div>
+        {habit.streak > 0 && (
+          <div className="flex items-center gap-1">
+            <Sparkle size={12} className="text-rpg-red" />
+            <span>{habit.streak}</span>
           </div>
         )}
       </div>
-      
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3 text-xs text-rpg-brown">
-          <div className="flex items-center">
-            <Sparkle size={14} className="mr-1" />
-            <span>+{habit.xpReward} XP</span>
-          </div>
-          <div className="flex items-center">
-            <Coins size={14} className="mr-1" />
-            <span>+{habit.coinReward}</span>
-          </div>
-        </div>
-        
+
+      {/* Right section: Action buttons */}
+      <div className="flex items-center gap-2">
+        <Button
+          onClick={() => isTodayCompleted ? onUncomplete(habit.id, today) : onComplete(habit.id, today)}
+          variant={isTodayCompleted ? "outline" : "default"}
+          size="sm"
+          className={cn(
+            "h-8 w-8",
+            isTodayCompleted && "text-rpg-green border-rpg-green hover:text-rpg-green"
+          )}
+        >
+          <Check size={16} />
+        </Button>
+
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8">
-              <CalendarDays size={14} className="mr-1" />
-              <span>History</span>
+            <Button variant="outline" size="sm" className="h-8 w-8">
+              <CalendarDays size={16} />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
+          <PopoverContent className="w-auto p-0" align="end">
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -198,72 +184,27 @@ export const HabitCard = ({
                 completed: "bg-rpg-green text-white"
               }}
             />
-            <div className="p-3 border-t">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">
-                  {format(selectedDate, "PPP")}
-                </span>
-                {shouldBeCompletedOn(selectedDate) ? (
-                  isSelectedDateCompleted ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        onUncomplete(habit.id, selectedDateString);
-                        setCalendarOpen(false);
-                      }}
-                    >
-                      <X size={14} className="mr-1" />
-                      <span>Uncomplete</span>
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        onComplete(habit.id, selectedDateString);
-                        setCalendarOpen(false);
-                      }}
-                    >
-                      <Check size={14} className="mr-1" />
-                      <span>Complete</span>
-                    </Button>
-                  )
-                ) : (
-                  <span className="text-xs text-muted-foreground">
-                    Not scheduled
-                  </span>
-                )}
-              </div>
-            </div>
           </PopoverContent>
         </Popover>
+
+        <Button 
+          onClick={() => onEdit(habit)}
+          variant="outline"
+          size="sm"
+          className="h-8 w-8"
+        >
+          <Edit size={16} />
+        </Button>
+        
+        <Button 
+          onClick={() => onDelete(habit.id)}
+          variant="outline"
+          size="sm"
+          className="h-8 w-8 text-rpg-red hover:text-white hover:bg-rpg-red"
+        >
+          <Trash2 size={16} />
+        </Button>
       </div>
-      
-      <Button
-        onClick={() => isTodayCompleted 
-          ? onUncomplete(habit.id, today) 
-          : onComplete(habit.id, today)
-        }
-        className={cn(
-          "w-full font-pixel", 
-          isTodayCompleted 
-            ? "bg-rpg-green text-white hover:bg-rpg-green/80"
-            : "bg-rpg-tan text-rpg-brown hover:bg-rpg-brown hover:text-rpg-tan"
-        )}
-      >
-        {isTodayCompleted ? (
-          <>
-            <Check size={16} className="mr-2" />
-            Completed Today
-          </>
-        ) : (
-          <>
-            <PenLine size={16} className="mr-2" />
-            Mark Today Complete
-          </>
-        )}
-      </Button>
     </div>
   );
 };

@@ -12,7 +12,8 @@ import {
   ShoppingCart,
   MapPin,
   Book,
-  ShoppingBag
+  ShoppingBag,
+  LogIn
 } from "lucide-react";
 import { ThemeSettings } from "./ThemeSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -21,12 +22,20 @@ import StatusBar from "./navigation/StatusBar";
 import DesktopNav from "./navigation/DesktopNav";
 import { toast } from "@/components/ui/use-toast";
 import { logout } from "@/utils/auth";
+import { useAuth } from "@/features/auth/context/AuthContext";
+import { Button } from "./ui/button";
 
 const Navbar = () => {
   const { character } = useGameData();
+  const { isAuthenticated } = useAuth();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(isAuthenticated ? "/dashboard" : "/");
+  };
+
   const navStructure = [
     {
       label: "Milestones",
@@ -125,32 +134,53 @@ const Navbar = () => {
       <div className="container mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-2">
+            <a href="#" onClick={handleLogoClick} className="flex items-center gap-2">
               <h1 className="text-xl font-pixel text-[hsl(var(--nav-text))]">Life Quest</h1>
-            </Link>
+            </a>
           </div>
           
-          <div className="hidden md:flex items-center gap-4">
-            <StatusBar />
-          </div>
-          
-          {!isMobile && (
-            <DesktopNav navStructure={navStructure} />
-          )}
-          
-          {isMobile && (
-            <div className="flex items-center ml-auto z-[100]">
-              <MobileNavMenu 
-                items={mobileMenuItems} 
-                onLogout={handleLogout} 
-                statusBar={<StatusBar />} 
-              />
+          {isAuthenticated ? (
+            <>
+              <div className="hidden md:flex items-center gap-4">
+                <StatusBar />
+              </div>
+              
+              {!isMobile && (
+                <DesktopNav navStructure={navStructure} />
+              )}
+              
+              {isMobile && (
+                <div className="flex items-center ml-auto z-[100]">
+                  <MobileNavMenu 
+                    items={mobileMenuItems} 
+                    onLogout={handleLogout} 
+                    statusBar={<StatusBar />} 
+                  />
+                </div>
+              )}
+              
+              <div className="hidden md:block">
+                <ThemeSettings />
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                className="font-pixel text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))]"
+                onClick={() => navigate("/login")}
+              >
+                <LogIn className="h-5 w-5 mr-2" />
+                Login
+              </Button>
+              <Button
+                className="font-pixel"
+                onClick={() => navigate("/signup")}
+              >
+                Start Your Quest
+              </Button>
             </div>
           )}
-          
-          <div className="hidden md:block">
-            <ThemeSettings />
-          </div>
         </div>
       </div>
     </header>

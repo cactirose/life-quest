@@ -1,4 +1,3 @@
-
 import { StatName } from "./character";
 
 export type QuestType = "main" | "side" | "boss";
@@ -38,6 +37,7 @@ export interface Quest {
   repeatType?: QuestRepeatInterval;
   customResetDays?: number[];
   repeat?: RepeatSettings;
+  achievementLinks?: string[]; // Array of achievement IDs that this quest contributes to
 }
 
 // Sample quests for testing/initial data
