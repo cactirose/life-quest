@@ -2,14 +2,8 @@
 import { StatName } from "./character";
 
 // Gear types
-export type GearType = "weapon" | "armor" | "accessory" | "real-life" | "shield";
-
-export enum GearRarity {
-  COMMON = "common",
-  RARE = "rare",
-  EPIC = "epic",
-  LEGENDARY = "legendary"
-}
+export type GearType = "weapon" | "armor" | "accessory" | "real-life";
+export type GearRarity = "common" | "rare" | "epic" | "legendary";
 
 export interface GearItem {
   id: string;
@@ -25,17 +19,6 @@ export interface GearItem {
   realLifeReward?: boolean;
 }
 
-// For compatibility with existing code
-export type Item = GearItem;
-
-export const ItemType = {
-  WEAPON: "weapon" as GearType,
-  ARMOR: "armor" as GearType,
-  ACCESSORY: "accessory" as GearType,
-  CONSUMABLE: "consumable" as GearType,
-  REAL_LIFE: "real-life" as GearType
-} as const;
-
 // Sample shop items for first run
 export const SAMPLE_SHOP_ITEMS: GearItem[] = [
   {
@@ -43,7 +26,7 @@ export const SAMPLE_SHOP_ITEMS: GearItem[] = [
     name: "Wooden Sword",
     description: "A basic training sword",
     type: "weapon",
-    rarity: GearRarity.COMMON,
+    rarity: "common",
     icon: "⚔️",
     cost: 20,
     statBonuses: { strength: 1 },
@@ -55,7 +38,7 @@ export const SAMPLE_SHOP_ITEMS: GearItem[] = [
     name: "Leather Armor",
     description: "Simple protective gear",
     type: "armor",
-    rarity: GearRarity.COMMON,
+    rarity: "common",
     icon: "🛡️",
     cost: 30,
     statBonuses: { constitution: 1 },
@@ -67,7 +50,7 @@ export const SAMPLE_SHOP_ITEMS: GearItem[] = [
     name: "Scholar's Tome",
     description: "A book of ancient knowledge",
     type: "accessory",
-    rarity: GearRarity.RARE,
+    rarity: "rare",
     icon: "📖",
     cost: 50,
     statBonuses: { intelligence: 2, wisdom: 1 },
@@ -79,7 +62,7 @@ export const SAMPLE_SHOP_ITEMS: GearItem[] = [
     name: "Charming Amulet",
     description: "Makes you more likable",
     type: "accessory",
-    rarity: GearRarity.RARE,
+    rarity: "rare",
     icon: "📿",
     cost: 50,
     statBonuses: { charisma: 3 },
@@ -91,7 +74,7 @@ export const SAMPLE_SHOP_ITEMS: GearItem[] = [
     name: "Swift Boots",
     description: "Increases your agility",
     type: "armor",
-    rarity: GearRarity.RARE,
+    rarity: "rare",
     icon: "👢",
     cost: 65,
     statBonuses: { dexterity: 3 },
@@ -103,19 +86,20 @@ export const SAMPLE_SHOP_ITEMS: GearItem[] = [
     name: "Dragon Slayer",
     description: "A legendary blade",
     type: "weapon",
-    rarity: GearRarity.LEGENDARY,
+    rarity: "legendary",
     icon: "🗡️",
     cost: 200,
     statBonuses: { strength: 5, dexterity: 2 },
     equipped: false,
     levelRequired: 5
   },
+  // Adding sample real-life rewards
   {
     id: "",
     name: "Movie Night",
     description: "Treat yourself to a movie",
     type: "real-life",
-    rarity: GearRarity.COMMON,
+    rarity: "common",
     icon: "🎬",
     cost: 50,
     statBonuses: {},
@@ -128,7 +112,7 @@ export const SAMPLE_SHOP_ITEMS: GearItem[] = [
     name: "Coffee Break",
     description: "Enjoy a nice cup of coffee",
     type: "real-life",
-    rarity: GearRarity.COMMON,
+    rarity: "common",
     icon: "☕",
     cost: 25,
     statBonuses: {},
