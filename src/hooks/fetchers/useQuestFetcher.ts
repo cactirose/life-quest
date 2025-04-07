@@ -42,21 +42,29 @@ export const useQuestsFetcher = (
           : [] as StatReward[];
 
         // Safely handle tags (might not exist in the database)
-        const tags = quest.tags !== undefined 
-          ? Array.isArray(quest.tags) 
-            ? quest.tags as string[] 
-            : [] 
-          : [];
+        let tags: string[] = [];
+        if ('tags' in quest && quest.tags !== undefined && quest.tags !== null) {
+          if (Array.isArray(quest.tags)) {
+            tags = quest.tags as string[];
+          }
+        }
         
         // Safely handle linked achievement IDs
-        const linkedAchievementIds = quest.linked_achievement_ids !== undefined 
-          ? Array.isArray(quest.linked_achievement_ids)
-            ? quest.linked_achievement_ids as string[]
-            : []
-          : [];
+        let linkedAchievementIds: string[] = [];
+        if ('linked_achievement_ids' in quest && quest.linked_achievement_ids !== undefined && quest.linked_achievement_ids !== null) {
+          if (Array.isArray(quest.linked_achievement_ids)) {
+            linkedAchievementIds = quest.linked_achievement_ids as string[];
+          }
+        }
 
         // Parse repeat type safely
         const repeatType = (quest.repeat_type || "none") as RepeatType;
+        
+        // Safely handle completion_date
+        let completionDate: string | undefined = undefined;
+        if ('completion_date' in quest && quest.completion_date) {
+          completionDate = quest.completion_date as string;
+        }
 
         return {
           id: quest.id,
@@ -70,7 +78,7 @@ export const useQuestsFetcher = (
           steps: questSteps,
           completedSteps: questSteps.filter(step => step.completed).length,
           dueDate: quest.due_date,
-          completionDate: quest.completion_date || undefined,
+          completionDate: completionDate,
           statRewards: statRewards,
           tags: tags,
           repeatType: repeatType,

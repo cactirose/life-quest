@@ -41,13 +41,14 @@ export const useHabitFetcher = (
           ? (habit.custom_days as unknown as DayOfWeek[])
           : [] as DayOfWeek[];
         
-        // Properly handle achievement links
-        // Use optional chaining to safely check if achievement_links exists
-        const achievementLinks = habit.achievement_links 
-          ? (Array.isArray(habit.achievement_links) 
-              ? (habit.achievement_links as unknown as string[])
-              : [] as string[])
-          : [] as string[];
+        // Safely check for achievement_links field which might be missing in DB
+        // Adding a type assertion after safely checking if it exists and is an array
+        let achievementLinks: string[] = [];
+        if ('achievement_links' in habit && habit.achievement_links !== null) {
+          if (Array.isArray(habit.achievement_links)) {
+            achievementLinks = habit.achievement_links as string[];
+          }
+        }
           
         return {
           id: habit.id,

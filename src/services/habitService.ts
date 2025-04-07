@@ -30,12 +30,13 @@ export const fetchHabits = async (): Promise<Habit[]> => {
         ? (habit.custom_days as unknown as DayOfWeek[])
         : [] as DayOfWeek[];
       
-      // Properly handle achievement links
-      const achievementLinks = habit.achievement_links !== undefined
-        ? Array.isArray(habit.achievement_links) 
-          ? (habit.achievement_links as string[])
-          : []
-        : [];
+      // Safely handle achievement_links
+      let achievementLinks: string[] = [];
+      if ('achievement_links' in habit && habit.achievement_links !== null) {
+        if (Array.isArray(habit.achievement_links)) {
+          achievementLinks = habit.achievement_links as string[];
+        }
+      }
         
       return {
         id: habit.id,
@@ -114,7 +115,7 @@ export const upsertHabit = async (habit: Habit): Promise<Habit | null> => {
           icon: habit.icon,
           xp_reward: habit.xpReward,
           coin_reward: habit.coinReward,
-          achievement_links: habit.achievementLinks
+          achievement_links: habit.achievementLinks || []
         })
         .eq("id", habit.id);
 
@@ -142,7 +143,7 @@ export const upsertHabit = async (habit: Habit): Promise<Habit | null> => {
             created_at: new Date().toISOString(),
             xp_reward: habit.xpReward,
             coin_reward: habit.coinReward,
-            achievement_links: habit.achievementLinks
+            achievement_links: habit.achievementLinks || []
           }
         ]);
 

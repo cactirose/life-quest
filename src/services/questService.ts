@@ -30,22 +30,30 @@ export const fetchQuests = async (): Promise<Quest[]> => {
         ? (quest.stat_rewards as unknown as StatReward[])
         : [] as StatReward[];
       
-      // Handle tags, which might not exist in all database records
-      const tags = quest.tags !== undefined
-        ? Array.isArray(quest.tags) 
-          ? quest.tags as string[] 
-          : [] 
-        : [];
+      // Handle tags safely
+      let tags: string[] = [];
+      if ('tags' in quest && quest.tags !== undefined && quest.tags !== null) {
+        if (Array.isArray(quest.tags)) {
+          tags = quest.tags as string[];
+        }
+      }
         
-      // Handle linked achievement IDs, which might not exist in all database records
-      const linkedAchievementIds = quest.linked_achievement_ids !== undefined
-        ? Array.isArray(quest.linked_achievement_ids)
-          ? quest.linked_achievement_ids as string[]
-          : []
-        : [];
+      // Handle linked achievement IDs safely
+      let linkedAchievementIds: string[] = [];
+      if ('linked_achievement_ids' in quest && quest.linked_achievement_ids !== undefined && quest.linked_achievement_ids !== null) {
+        if (Array.isArray(quest.linked_achievement_ids)) {
+          linkedAchievementIds = quest.linked_achievement_ids as string[];
+        }
+      }
       
-      // Parse repeat type safely to ensure it matches the RepeatType type
+      // Parse repeat type safely
       const repeatType = (quest.repeat_type || "none") as RepeatType;
+
+      // Handle completion_date safely
+      let completionDate: string | undefined = undefined;
+      if ('completion_date' in quest && quest.completion_date) {
+        completionDate = quest.completion_date as string;
+      }
       
       return {
         id: quest.id,
@@ -57,9 +65,9 @@ export const fetchQuests = async (): Promise<Quest[]> => {
         xpReward: quest.xp_reward || 0,
         coinReward: quest.coin_reward || 0,
         steps: steps,
-        completedSteps: steps.filter(step => step.completed === true).length,
+        completedSteps: steps.filter(step => step && typeof step === 'object' && 'completed' in step && step.completed === true).length,
         dueDate: quest.due_date,
-        completionDate: quest.completion_date || undefined,
+        completionDate: completionDate,
         statRewards: statRewards,
         tags: tags,
         repeatType: repeatType,
@@ -133,11 +141,11 @@ export const upsertQuest = async (quest: Quest): Promise<Quest | null> => {
       // Insert new quest
       const { error } = await supabase
         .from("quests")
-        .insert([{
+        .insert({
           id: quest.id,
           user_id: user.user.id,
           ...questData
-        }]);
+        });
 
       if (error) {
         console.error("Error creating quest:", error);
