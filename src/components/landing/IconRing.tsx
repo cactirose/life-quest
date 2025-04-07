@@ -28,6 +28,7 @@ export const IconRing: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   
   // Define our ring of icons - position is relative to center
+  // Moving the book icon to a different position to avoid overlap with the central sparkle
   const iconPositions: IconPosition[] = [
     { icon: Sword, size: 'lg', offsetX: 0, offsetY: -75, delay: 0, duration: 4 },
     { icon: Shield, size: 'md', offsetX: 65, offsetY: -35, delay: 0.2, duration: 5 },
@@ -36,7 +37,7 @@ export const IconRing: React.FC = () => {
     { icon: Scroll, size: 'md', offsetX: -35, offsetY: 80, delay: 1, duration: 4 },
     { icon: Trophy, size: 'sm', offsetX: -80, offsetY: 40, delay: 1.2, duration: 3.5 },
     { icon: Coins, size: 'md', offsetX: -65, offsetY: -35, delay: 1.5, duration: 5 },
-    { icon: BookOpen, size: 'sm', offsetX: 0, offsetY: 0, delay: 0.8, duration: 3 },
+    { icon: BookOpen, size: 'sm', offsetX: -40, offsetY: 20, delay: 0.8, duration: 3 }, // Moved from 0,0 to -40,20
     { icon: Dices, size: 'sm', offsetX: 55, offsetY: 25, delay: 0.3, duration: 4.2 },
   ];
 
