@@ -1,9 +1,6 @@
 
-import { StatName } from "./character";
-
-// Gear types
-export type GearType = "weapon" | "armor" | "accessory" | "real-life";
-export type GearRarity = "common" | "rare" | "epic" | "legendary";
+export type GearType = "weapon" | "armor" | "accessory" | "consumable" | "special" | "shield";
+export type GearRarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
 
 export interface GearItem {
   id: string;
@@ -11,113 +8,80 @@ export interface GearItem {
   description: string;
   type: GearType;
   rarity: GearRarity;
-  icon: string; // path to icon image
+  icon: string;
   cost: number;
-  statBonuses: Partial<Record<StatName, number>>;
+  statBonuses: {
+    strength?: number;
+    dexterity?: number;
+    constitution?: number;
+    intelligence?: number;
+    wisdom?: number;
+    charisma?: number;
+  };
   equipped: boolean;
   levelRequired: number;
-  realLifeReward?: boolean;
 }
 
-// Sample shop items for first run
+// Default items for testing
 export const SAMPLE_SHOP_ITEMS: GearItem[] = [
   {
-    id: "",
+    id: "weapon-1",
     name: "Wooden Sword",
-    description: "A basic training sword",
+    description: "A simple wooden sword for beginners.",
     type: "weapon",
     rarity: "common",
-    icon: "⚔️",
-    cost: 20,
+    icon: "🗡️",
+    cost: 10,
     statBonuses: { strength: 1 },
     equipped: false,
     levelRequired: 1
   },
   {
-    id: "",
+    id: "armor-1",
     name: "Leather Armor",
-    description: "Simple protective gear",
+    description: "Basic protection made of leather.",
     type: "armor",
     rarity: "common",
-    icon: "🛡️",
-    cost: 30,
+    icon: "🥋",
+    cost: 15,
     statBonuses: { constitution: 1 },
     equipped: false,
     levelRequired: 1
   },
   {
-    id: "",
-    name: "Scholar's Tome",
-    description: "A book of ancient knowledge",
+    id: "accessory-1",
+    name: "Lucky Charm",
+    description: "A small charm that brings luck to its owner.",
     type: "accessory",
     rarity: "rare",
-    icon: "📖",
-    cost: 50,
-    statBonuses: { intelligence: 2, wisdom: 1 },
-    equipped: false,
-    levelRequired: 2
-  },
-  {
-    id: "",
-    name: "Charming Amulet",
-    description: "Makes you more likable",
-    type: "accessory",
-    rarity: "rare",
-    icon: "📿",
-    cost: 50,
-    statBonuses: { charisma: 3 },
-    equipped: false,
-    levelRequired: 2
-  },
-  {
-    id: "",
-    name: "Swift Boots",
-    description: "Increases your agility",
-    type: "armor",
-    rarity: "rare",
-    icon: "👢",
-    cost: 65,
-    statBonuses: { dexterity: 3 },
+    icon: "🍀",
+    cost: 30,
+    statBonuses: { charisma: 2 },
     equipped: false,
     levelRequired: 3
   },
   {
-    id: "",
-    name: "Dragon Slayer",
-    description: "A legendary blade",
-    type: "weapon",
-    rarity: "legendary",
-    icon: "🗡️",
-    cost: 200,
-    statBonuses: { strength: 5, dexterity: 2 },
+    id: "consumable-1",
+    name: "Health Potion",
+    description: "Restores health when used.",
+    type: "consumable",
+    rarity: "common",
+    icon: "🧪",
+    cost: 5,
+    statBonuses: {},
+    equipped: false,
+    levelRequired: 1
+  },
+  {
+    id: "special-1",
+    name: "Book of Knowledge",
+    description: "Contains ancient wisdom and knowledge.",
+    type: "special",
+    rarity: "epic",
+    icon: "📚",
+    cost: 50,
+    statBonuses: { intelligence: 3, wisdom: 2 },
     equipped: false,
     levelRequired: 5
-  },
-  // Adding sample real-life rewards
-  {
-    id: "",
-    name: "Movie Night",
-    description: "Treat yourself to a movie",
-    type: "real-life",
-    rarity: "common",
-    icon: "🎬",
-    cost: 50,
-    statBonuses: {},
-    equipped: false,
-    levelRequired: 1,
-    realLifeReward: true
-  },
-  {
-    id: "",
-    name: "Coffee Break",
-    description: "Enjoy a nice cup of coffee",
-    type: "real-life",
-    rarity: "common",
-    icon: "☕",
-    cost: 25,
-    statBonuses: {},
-    equipped: false,
-    levelRequired: 1,
-    realLifeReward: true
   }
 ];

@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { 
   Sparkles,
@@ -11,44 +12,26 @@ import {
   BookHeart,
   Heart,
   MessageCircle,
-  ExternalLink
+  ExternalLink,
+  Sword,
+  TrendingUp,
+  Target,
+  Coins,
+  Shield,
+  Dices
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
 import { useEffect } from "react";
-
-const FeatureCard = ({ icon: Icon, title, description }: { 
-  icon: React.ElementType; 
-  title: string; 
-  description: string;
-}) => (
-  <div className="group bg-rpg-tan/50 rounded-lg p-6 flex flex-col items-center text-center transition-all hover:transform hover:scale-[1.02] hover:shadow-lg">
-    <div className="h-16 w-16 rounded-full bg-rpg-brown flex items-center justify-center mb-4 transition-all group-hover:shadow-[0_0_15px_rgba(var(--rpg-gold-rgb)/0.3)]">
-      <Icon className="h-8 w-8 text-rpg-tan transition-all group-hover:scale-110" />
-    </div>
-    <h3 className="font-pixel text-lg text-rpg-brown mb-2">{title}</h3>
-    <p className="text-rpg-brown/80 text-sm">{description}</p>
-  </div>
-);
-
-const ProcessStep = ({ number, title, description }: {
-  number: number;
-  title: string;
-  description: string;
-}) => (
-  <div className="group flex items-start gap-4 p-4 rounded-lg transition-all hover:bg-rpg-tan/20">
-    <div className="h-12 w-12 rounded-full bg-rpg-brown flex-shrink-0 flex items-center justify-center font-pixel text-rpg-tan group-hover:shadow-[0_0_15px_rgba(var(--rpg-gold-rgb)/0.3)]">
-      {number}
-    </div>
-    <div>
-      <h3 className="font-pixel text-lg text-rpg-brown mb-1">{title}</h3>
-      <p className="text-rpg-brown/80">{description}</p>
-    </div>
-  </div>
-);
+import { PixelButton } from "@/components/landing/PixelButton";
+import { PixelCard } from "@/components/landing/PixelCard";
+import { ProcessStepCard } from "@/components/landing/ProcessStepCard";
+import { FeatureCard } from "@/components/landing/FeatureCard";
+import { SectionTitle } from "@/components/landing/SectionTitle";
+import { ScrollDownIndicator } from "@/components/landing/ScrollDownIndicator";
+import { FloatingParticles } from "@/components/landing/FloatingParticles";
 
 const SectionDivider = () => (
-  <div className="flex items-center justify-center py-8">
+  <div className="flex items-center justify-center py-12">
     <div className="w-24 h-px bg-rpg-brown/20" />
     <Sparkles className="h-6 w-6 text-rpg-gold mx-4" />
     <div className="w-24 h-px bg-rpg-brown/20" />
@@ -84,7 +67,8 @@ export const Landing = () => {
   return (
     <div className="min-h-screen bg-rpg-cream">
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100vh-4rem)] flex items-center">
+      <section className="relative min-h-screen flex items-center justify-center">
+        <FloatingParticles count={80} />
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-1/4 h-32 w-32 bg-rpg-gold/10 rounded-full blur-3xl" />
           <div className="absolute top-1/3 right-1/4 h-48 w-48 bg-rpg-brown/5 rounded-full blur-3xl" />
@@ -93,7 +77,20 @@ export const Landing = () => {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--rpg-gold)_1px,_transparent_1px)] [background-size:20px_20px] opacity-[0.03]" />
         </div>
         
-        <div className="container mx-auto px-4 py-20 text-center relative">
+        <div className="container mx-auto px-4 py-20 text-center relative z-10 flex flex-col items-center">
+          {/* Hero illustration */}
+          <div className="mb-6 relative">
+            <div className="w-32 h-32 md:w-40 md:h-40 relative">
+              <div className="absolute inset-0 bg-rpg-brown rounded-lg rotate-45 animate-pulse-gentle" style={{ animationDelay: "0.5s" }}></div>
+              <div className="absolute inset-2 bg-rpg-tan rounded-lg rotate-45 flex items-center justify-center">
+                <Sword className="h-16 w-16 md:h-20 md:w-20 text-rpg-brown rotate-[315deg] animate-float" />
+              </div>
+            </div>
+            <div className="absolute -top-3 -right-3 h-10 w-10 bg-rpg-gold/80 rounded-full animate-pulse-gentle flex items-center justify-center">
+              <Sparkles className="h-6 w-6 text-rpg-brown" />
+            </div>
+          </div>
+
           <h1 className="font-pixel text-4xl md:text-5xl lg:text-6xl text-rpg-brown mb-6 [text-shadow:2px_2px_0px_rgba(var(--rpg-gold-rgb)/0.2)]">
             Gamify Your Life.<br />
             Become the Hero of Your Own Story.
@@ -102,14 +99,17 @@ export const Landing = () => {
             Turn your real-world habits, goals, and routines into quests. Build your character, 
             unlock achievements, and level up — all by living with purpose.
           </p>
-          <Button 
-            size="lg"
-            className="font-pixel text-lg px-8 py-6 relative overflow-hidden group"
+          
+          <PixelButton 
+            className="animate-scale-in"
             onClick={() => navigate("/signup")}
           >
-            <span className="relative z-10">Start Your Quest</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-rpg-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          </Button>
+            Start Your Quest
+          </PixelButton>
+          
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+            <ScrollDownIndicator targetId="how-it-works" />
+          </div>
         </div>
       </section>
 
@@ -118,35 +118,44 @@ export const Landing = () => {
       {/* How It Works */}
       <section className="bg-rpg-tan/30 py-20" id="how-it-works">
         <div className="container mx-auto px-4">
-          <h2 className="font-pixel text-3xl text-rpg-brown text-center mb-12 flex items-center justify-center gap-3">
-            <Trophy className="h-8 w-8 text-rpg-gold" />
-            How It Works
-          </h2>
-          <div className="grid gap-8 max-w-3xl mx-auto">
-            <ProcessStep 
+          <SectionTitle icon={Trophy}>How It Works</SectionTitle>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <ProcessStepCard 
               number={1}
+              icon={ScrollText}
               title="Create Quests"
               description="Break your goals into epic main quests, quick side quests, and big boss battles."
             />
-            <ProcessStep 
+            <ProcessStepCard 
               number={2}
+              icon={Calendar}
               title="Build Habits"
               description="Stay consistent with daily habits and watch your streaks grow."
             />
-            <ProcessStep 
+            <ProcessStepCard 
               number={3}
+              icon={Coins}
               title="Earn XP and Coins"
               description="Complete tasks to level up and earn coins to spend in the shop."
             />
-            <ProcessStep 
+            <ProcessStepCard 
               number={4}
+              icon={Shield}
               title="Equip Gear"
               description="Reward yourself with armor, weapons, or real-life perks — all tracked in your inventory."
             />
-            <ProcessStep 
+            <ProcessStepCard 
               number={5}
-              title="Evolve Your Character"
-              description="Customize your skills, track attributes like strength and wisdom, and become your ideal future self."
+              icon={Brain}
+              title="Unlock Skills"
+              description="Build your skill tree and craft your own character progression."
+            />
+            <ProcessStepCard 
+              number={6}
+              icon={TrendingUp}
+              title="Track Progress"
+              description="Watch yourself evolve with detailed stats and progress tracking."
             />
           </div>
         </div>
@@ -155,13 +164,12 @@ export const Landing = () => {
       <SectionDivider />
 
       {/* Feature Grid */}
-      <section className="py-20" id="features">
+      <section className="py-20 relative" id="features">
+        <FloatingParticles count={30} />
         <div className="container mx-auto px-4">
-          <h2 className="font-pixel text-3xl text-rpg-brown text-center mb-12 flex items-center justify-center gap-3">
-            <Sparkles className="h-8 w-8 text-rpg-gold" />
-            Features
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <SectionTitle icon={Sparkles}>Features</SectionTitle>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <FeatureCard 
               icon={ScrollText}
               title="Quests"
@@ -209,14 +217,20 @@ export const Landing = () => {
       <SectionDivider />
 
       {/* Why Life Quest */}
-      <section className="bg-rpg-tan/30 py-20" id="why">
+      <section className="bg-rpg-tan/30 py-20 relative" id="why">
+        <FloatingParticles count={20} />
         <div className="container mx-auto px-4">
-          <h2 className="font-pixel text-3xl text-rpg-brown text-center mb-12 flex items-center justify-center gap-3">
-            <Heart className="h-8 w-8 text-rpg-gold" />
-            Why Life Quest?
-          </h2>
-          <div className="max-w-3xl mx-auto bg-rpg-cream rounded-lg p-8 shadow-[0_0_30px_rgba(var(--rpg-gold-rgb)/0.1)] transition-all hover:shadow-[0_0_40px_rgba(var(--rpg-gold-rgb)/0.15)]">
-            <ul className="space-y-6">
+          <SectionTitle icon={Heart}>Why Life Quest?</SectionTitle>
+          
+          <PixelCard className="max-w-3xl mx-auto shadow-[0_0_30px_rgba(var(--rpg-gold-rgb)/0.1)] bg-rpg-cream/90 
+                           transition-all hover:shadow-[0_0_40px_rgba(var(--rpg-gold-rgb)/0.15)]">
+            <div className="absolute -top-5 left-1/2 -translate-x-1/2">
+              <div className="bg-rpg-brown rounded-full p-3 shadow-md">
+                <Heart className="h-8 w-8 text-rpg-gold" />
+              </div>
+            </div>
+            
+            <ul className="space-y-6 mt-6">
               <li className="flex items-center gap-3">
                 <Sparkles className="h-6 w-6 text-rpg-gold flex-shrink-0" />
                 <span className="text-rpg-brown text-lg">Built by someone with no coding experience — truly for everyone</span>
@@ -234,31 +248,30 @@ export const Landing = () => {
                 <span className="text-rpg-brown text-lg">Fun-first productivity</span>
               </li>
             </ul>
-          </div>
+          </PixelCard>
         </div>
       </section>
 
       <SectionDivider />
 
       {/* Final CTA */}
-      <section className="py-20">
+      <section className="py-20 relative">
+        <FloatingParticles count={40} />
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-pixel text-3xl text-rpg-brown mb-8">
             Ready to Start Your Adventure?
           </h2>
-          <Button 
-            size="lg"
-            className="font-pixel text-lg px-8 py-6 relative overflow-hidden group"
+          <PixelButton 
             onClick={() => navigate("/signup")}
+            className="animate-pulse-gentle"
           >
-            <span className="relative z-10">Start Questing</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-rpg-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          </Button>
+            Start Questing
+          </PixelButton>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-rpg-brown/5 py-8">
+      <footer className="bg-rpg-brown/10 py-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -310,4 +323,4 @@ export const Landing = () => {
       </button>
     </div>
   );
-}; 
+};

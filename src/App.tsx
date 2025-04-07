@@ -38,6 +38,7 @@ import JournalEntryDetail from "./pages/JournalEntryDetail";
 import JournalEntryEdit from "./pages/JournalEntryEdit";
 import { validateThemeImplementation } from '@/utils/theme/themeValidator';
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { Button } from "@/components/ui/button";
 
 const queryClient = new QueryClient();
 
