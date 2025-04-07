@@ -1,9 +1,8 @@
-
-import { useState, useEffect } from "react";
-import { pingSupabase } from "@/services";
+import { useEffect, useState } from "react";
+import { supabase } from "@/services";
 import { toast } from "sonner";
 
-export function useConnectionStatus() {
+export const useConnectionStatus = () => {
   const [isOnline, setIsOnline] = useState(window.navigator.onLine);
   const [supabaseConnected, setSupabaseConnected] = useState(true);
 
@@ -22,6 +21,16 @@ export function useConnectionStatus() {
 
   useEffect(() => {
     let checkConnectionInterval: number;
+    
+    const pingSupabase = async () => {
+      try {
+        const { data } = await supabase.from("health_check").select("*").limit(1);
+        return data !== null;
+      } catch (error) {
+        console.error("Error pinging Supabase:", error);
+        return false;
+      }
+    };
     
     const checkSupabaseConnection = async () => {
       try {

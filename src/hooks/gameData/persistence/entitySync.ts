@@ -1,4 +1,7 @@
+
 // Re-export all sync functions from their respective modules
+import { supabase } from "@/integrations/supabase/client";
+
 export { syncCharacterData } from './syncCharacter';
 export { syncQuestsData } from './syncQuests';
 export { syncInventoryData } from './syncInventory';

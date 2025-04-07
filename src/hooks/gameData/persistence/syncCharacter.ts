@@ -1,7 +1,7 @@
 
 import { GameData } from '@/types/gameData';
-import { upsertCharacter } from "@/services";
 import { retrySyncOperation } from './syncUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 // Sync character data
 export const syncCharacterData = async (gameData: GameData, changedFields: Set<string>): Promise<boolean> => {
@@ -9,8 +9,19 @@ export const syncCharacterData = async (gameData: GameData, changedFields: Set<s
   
   const success = await retrySyncOperation(
     async () => {
-      // Await the character upsert but don't return its result, just let it complete
-      await upsertCharacter(gameData.character);
+      const { data, error } = await supabase
+        .from('characters')
+        .upsert({
+          id: gameData.character.id,
+          username: gameData.character.name,
+          level: gameData.character.level,
+          experience: gameData.character.experience,
+          stats: gameData.character.stats,
+          login_streak: gameData.character.loginStreak,
+        });
+        
+      if (error) throw error;
+      return data;
     }, 
     'character'
   );

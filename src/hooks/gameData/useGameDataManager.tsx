@@ -1,36 +1,24 @@
-import { useState, useCallback, useEffect } from "react";
-// import { loadInitialData } from "@/utils/loadInitialData";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { GameData } from "@/types/gameData";
-import { toast } from "sonner";
-import { useDataPersistence } from "./useDataPersistence";
-import { useCharacterProgression } from "./useCharacterProgression";
-import { supabase } from "@/integrations/supabase/client";
-import { isAuthenticated } from "@/utils/auth";
-import { loadAllGameData } from "@/services";
 import { DEFAULT_GAME_DATA } from "@/utils/defaultGameData";
+import { useDataStatus } from "../useDataStatus";
+import { useSupabaseSync } from "../useSupabaseSync";
+import { useDataEffects } from "../useDataEffects";
+import { loadGameData } from "@/services";
+import { createDataSetterMethod } from "./changeDetectionUtils";
 
 export function useGameDataManager() {
   const [gameData, setGameData] = useState<GameData>(DEFAULT_GAME_DATA);
-  // () => {
-  // Always start with empty state, will be populated properly in useEffect
-  // const initialData = loadInitialData();
-  // console.log("Initial game data loaded:", initialData);
-  // return initialData as GameData;
-  // }
-
   const [isLoading, setIsLoading] = useState(true);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loadAttempts, setLoadAttempts] = useState(0);
 
-  // Set up data persistence (local storage and Supabase)
-  useDataPersistence(gameData);
+  useDataStatus(gameData);
+  useSupabaseSync(gameData);
+  useDataEffects(gameData);
 
-  // Set up character progression (level up logic)
-  useCharacterProgression(gameData, setGameData);
-
-  // Load data when authenticated and handle auth state changes
   useEffect(() => {
     let isMounted = true;
     let unsubscribe: (() => void) | null = null;
@@ -56,25 +44,11 @@ export function useGameDataManager() {
 
         setLoadingProgress(10);
         
-        // Load all game data at once with a timeout
-        const serverData = await Promise.race([
-          loadAllGameData(),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Loading timeout')), 15000)
-          )
-        ]).catch(error => {
-          console.error("Data loading failed or timed out:", error);
-          // Only increment attempts for timeout errors
-          if (error.message === 'Loading timeout') {
-            setLoadAttempts(prev => prev + 1);
-          }
-          return null;
-        });
+        const serverData = await loadGameData();
         
         if (!isMounted) return;
 
         if (serverData === null) {
-          // If we've tried 3 times and failed, use default data
           if (loadAttempts >= 2) {
             setGameData(DEFAULT_GAME_DATA);
             setError("Failed to load data after multiple attempts. Using default data.");
@@ -97,7 +71,6 @@ export function useGameDataManager() {
         console.error("Error loading data:", error);
         if (isMounted) {
           setError(error instanceof Error ? error.message : "Failed to load game data");
-          // Only use default data after multiple attempts or for non-timeout errors
           if (loadAttempts >= 2 || !(error instanceof Error) || error.message !== 'Failed to load data') {
             setGameData(DEFAULT_GAME_DATA);
             toast.error("Failed to load game data. Using default data.");
@@ -111,12 +84,10 @@ export function useGameDataManager() {
       }
     };
 
-    // Set up auth state change listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
-        // Small delay to ensure auth state is fully updated
         setTimeout(loadData, 500);
       } else if (event === 'SIGNED_OUT') {
         if (isMounted) {
@@ -130,7 +101,6 @@ export function useGameDataManager() {
 
     unsubscribe = subscription.unsubscribe;
 
-    // Initial data load
     loadData();
 
     return () => {
@@ -139,9 +109,8 @@ export function useGameDataManager() {
         unsubscribe();
       }
     };
-  }, [loadAttempts]); // Add loadAttempts as dependency
+  }, [loadAttempts]);
 
-  // Force refresh data from server
   const refreshData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -153,7 +122,7 @@ export function useGameDataManager() {
         return;
       }
 
-      const serverData = await loadAllGameData();
+      const serverData = await loadGameData();
       if (Object.keys(serverData).length > 0) {
         setGameData((prevData) => ({
           ...DEFAULT_GAME_DATA,

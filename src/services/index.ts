@@ -2,39 +2,43 @@
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCharacter } from "./characterService";
 import { fetchQuests } from "./questService";
-import { fetchInventoryItems, fetchShopItems } from "./inventoryService";
+import { fetchInventory, fetchShopItems } from "./inventoryService";
 import { fetchSkillTree } from "./skillTreeService";
 import { fetchHabits } from "./habitService";
 import { fetchMoodEntries } from "./moodService";
 import { fetchAchievements } from "./achievementService";
-import { fetchChallenges } from "./challengeService";
 import { ensureValidSession } from "@/utils/auth";
-import { ChallengeFrequency, ChallengeStatus } from "@/types/challenges";
 import { StatName } from "@/types/character";
 
+// Function to load all game data
 export const loadGameData = async () => {
   ensureValidSession();
   return {
     character: await fetchCharacter(),
     quests: await fetchQuests(),
-    inventory: await fetchInventoryItems(),
+    inventory: await fetchInventory(),
     shopItems: await fetchShopItems(),
     skillTree: await fetchSkillTree(),
     habits: await fetchHabits(),
     moods: await fetchMoodEntries(),
     achievements: await fetchAchievements(),
-    challenges: await fetchChallenges()
+    challenges: [] // Empty array since challenges feature was removed
   };
 };
 
+// Re-export all services
 export { supabase };
 export { fetchCharacter };
 export { fetchQuests };
-export { fetchInventoryItems, fetchShopItems };
+export { fetchInventory, fetchShopItems };
 export { fetchSkillTree };
 export { fetchHabits };
 export { fetchMoodEntries };
 export { fetchAchievements };
-export { fetchChallenges };
-export type { ChallengeFrequency, ChallengeStatus };
 export type { StatName };
+
+// Export a placeholder for fetchChallenges
+export const fetchChallenges = async () => {
+  console.log("Challenges feature has been removed");
+  return [];
+};

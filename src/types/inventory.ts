@@ -1,5 +1,5 @@
 
-export type GearType = "weapon" | "armor" | "accessory" | "consumable" | "special" | "shield";
+export type GearType = "weapon" | "armor" | "accessory" | "consumable" | "special" | "shield" | "real-life";
 export type GearRarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
 
 export interface GearItem {

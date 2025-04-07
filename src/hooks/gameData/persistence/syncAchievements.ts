@@ -1,7 +1,7 @@
 
 import { GameData } from '@/types/gameData';
-import { upsertAchievement } from "@/services";
 import { retrySyncOperation, validateEntity } from './syncUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 // Sync achievements data
 export const syncAchievementsData = async (gameData: GameData, changedFields: Set<string>): Promise<boolean> => {
@@ -26,7 +26,27 @@ export const syncAchievementsData = async (gameData: GameData, changedFields: Se
     }
     
     const success = await retrySyncOperation(
-      async () => await upsertAchievement(achievement),
+      async () => {
+        const { data, error } = await supabase
+          .from('achievements')
+          .upsert({
+            id: achievement.id,
+            title: achievement.title,
+            description: achievement.description,
+            category: achievement.category,
+            icon: achievement.icon,
+            xp_reward: achievement.xpReward,
+            coin_reward: achievement.coinReward,
+            special_reward: achievement.specialReward,
+            unlocked: achievement.unlocked,
+            date_unlocked: achievement.dateUnlocked,
+            goal: achievement.goal,
+            progress: achievement.progress,
+          });
+          
+        if (error) throw error;
+        return data;
+      },
       `achievement-${achievement.id}`
     );
     

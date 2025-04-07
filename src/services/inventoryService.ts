@@ -1,6 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { GearItem } from "@/types/inventory";
+import { GearItem, GearType, GearRarity } from "@/types/inventory";
 
 // Inventory methods
 export const fetchInventory = async (): Promise<GearItem[]> => {
@@ -20,17 +21,17 @@ export const fetchInventory = async (): Promise<GearItem[]> => {
 
     return data.map(item => {
       // Map shield type to armor type for consistency
-      const mappedType = item.type === "shield" ? "armor" : item.type;
+      const mappedType = item.type as GearType;
       
       return {
         id: item.id,
         name: item.name,
         description: item.description || "",
-        type: mappedType as GearType,
-        rarity: item.rarity,
+        type: mappedType,
+        rarity: item.rarity as GearRarity,
         icon: item.icon || "",
         cost: item.cost,
-        statBonuses: item.stat_bonuses as any,
+        statBonuses: item.stat_bonuses as any || {},
         equipped: item.equipped,
         levelRequired: item.level_required || 1
       } as GearItem;

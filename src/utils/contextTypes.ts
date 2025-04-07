@@ -1,89 +1,93 @@
-
-import { Character, StatName } from "../types/character";
-import { Quest } from "../types/quests";
-import { GearItem } from "../types/inventory";
+import { StatName, Stats } from "../types/character";
+import { GearItem, GearRarity, GearType } from "../types/inventory";
+import { MoodEntry, MoodType } from "../types/mood";
+import { Quest, QuestStatus, QuestType } from "../types/quests";
 import { SkillNode } from "../types/skills";
-import { Challenge } from "../types/challenges";
-import { Habit } from "../types/habits";
-import { MoodEntry } from "../types/mood";
-import { Achievement } from "../types/achievements";
+import { Achievement, AchievementCategory } from "../types/achievements";
 
-// Common Context State Updater Type
-export type GameDataUpdater = React.Dispatch<React.SetStateAction<any>>;
+// Remove Challenge related imports and types
 
-// Character Context Types
-export interface CharacterContextType {
-  character: Character;
+// Character Context
+export interface CharacterContextValue {
+  character: Character | null;
   setCharacter: (character: Character) => void;
   updateCharacterStat: (stat: StatName, value: number) => void;
-  checkDailyLogin: () => void;
-  claimDailyBonus: () => void;
 }
 
-// Quest Context Types
-export interface QuestContextType {
+// Quest Context
+export interface QuestContextValue {
   quests: Quest[];
-  addQuest: (quest: Omit<Quest, "id">) => void;
+  addQuest: (quest: Omit<Quest, "id" | "status">) => void;
   updateQuest: (quest: Quest) => void;
-  deleteQuest: (questId: string) => void;
-  completeQuestStep: (questId: string, stepId: string) => void;
+  deleteQuest: (id: string) => void;
+  completeQuestStep: (questId: string, stepIndex: number) => void;
   completeQuest: (questId: string) => void;
 }
 
-// Inventory Context Types
-export interface InventoryContextType {
+// Inventory Context
+export interface InventoryContextValue {
   inventory: GearItem[];
   shopItems: GearItem[];
   addToInventory: (item: GearItem) => void;
-  removeFromInventory: (itemId: string) => void;
-  equipItem: (itemId: string) => void;
-  unequipItem: (itemId: string) => void;
-  purchaseItem: (itemId: string) => boolean;
+  removeFromInventory: (id: string) => void;
+  equipItem: (id: string) => void;
+  unequipItem: (id: string) => void;
+  purchaseItem: (item: GearItem) => boolean;
+  addShopItem: (item: Omit<GearItem, "id">) => void;
+  updateShopItem: (item: GearItem) => void;
+  deleteShopItem: (id: string) => void;
 }
 
-// Skill Tree Context Types
-export interface SkillTreeContextType {
+// SkillTree Context
+export interface SkillTreeContextValue {
   skillTree: SkillNode[];
   addSkillNode: (node: Omit<SkillNode, "id">) => string;
   updateSkillNode: (node: SkillNode) => void;
-  deleteSkillNode: (nodeId: string) => void;
-  unlockSkillNode: (nodeId: string) => void;
+  deleteSkillNode: (id: string) => void;
+  unlockSkillNode: (id: string) => void;
 }
 
-// Challenge Context Types
-export interface ChallengeContextType {
-  challenges: Challenge[];
-  addChallenge: (challenge: Omit<Challenge, "id">) => void;
-  updateChallenge: (challenge: Challenge) => void;
-  deleteChallenge: (challengeId: string) => void;
-  incrementChallengeProgress: (challengeId: string) => void;
-  resetChallenges: () => void;
-  completeChallenge: (challengeId: string) => void;
-}
-
-// Habit Context Types
-export interface HabitContextType {
+// Habit Context
+export interface HabitContextValue {
   habits: Habit[];
-  addHabit: (habit: Omit<Habit, "id" | "completionHistory" | "streak">) => void;
+  addHabit: (habit: Omit<Habit, "id">) => void;
   updateHabit: (habit: Habit) => void;
-  deleteHabit: (habitId: string) => void;
-  completeHabit: (habitId: string, date: string) => void;
-  uncompleteHabit: (habitId: string, date: string) => void;
+  deleteHabit: (id: string) => void;
+  completeHabit: (id: string) => void;
+  uncompleteHabit: (id: string) => void;
 }
 
-// Mood Context Types
-export interface MoodContextType {
+// Mood Context
+export interface MoodContextValue {
   moods: MoodEntry[];
-  addMoodEntry: (entry: Omit<MoodEntry, "id">) => void;
-  updateMoodEntry: (entry: MoodEntry) => void;
-  deleteMoodEntry: (entryId: string) => void;
+  addMoodEntry: (mood: Omit<MoodEntry, "id">) => void;
+  updateMoodEntry: (mood: MoodEntry) => void;
+  deleteMoodEntry: (id: string) => void;
 }
 
-// Achievement Context Types
-export interface AchievementContextType {
+// Achievement Context
+export interface AchievementContextValue {
   achievements: Achievement[];
-  addAchievement: (achievement: Omit<Achievement, "id" | "unlocked" | "dateUnlocked">) => void;
+  addAchievement: (achievement: Omit<Achievement, "id">) => void;
   updateAchievement: (achievement: Achievement) => void;
-  deleteAchievement: (achievementId: string) => void;
+  deleteAchievement: (id: string) => void;
   checkAndUnlockAchievement: (achievementId: string) => boolean;
+}
+
+export interface Character {
+  id: string;
+  name: string;
+  level: number;
+  experience: number;
+  stats: Stats;
+  loginStreak: number;
+}
+
+export interface Habit {
+    id: string;
+    name: string;
+    description: string;
+    frequency: string;
+    streak: number;
+    completionHistory: string[];
 }
