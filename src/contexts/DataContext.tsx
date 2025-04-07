@@ -1,4 +1,3 @@
-
 import { createContext, useContext } from "react";
 import { CombinedProvider } from "./CombinedProvider";
 import { useGameDataManager } from "../hooks/gameData";
@@ -7,10 +6,6 @@ import { useDataEffects } from "../hooks/useDataEffects";
 import { GameData } from "../types/gameData";
 
 // Create context providers
-import {
-  createCharacterContextValue,
-  CharacterContext,
-} from "./CharacterContext";
 import { createQuestContextValue, QuestContext } from "./QuestContext";
 import {
   createInventoryContextValue,
@@ -34,10 +29,6 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const { gameData, setGameData } = useGameDataManager();
 
   // Create contexts
-  const characterContextValue = createCharacterContextValue(
-    gameData.character,
-    setGameData
-  );
   const questContextValue = createQuestContextValue(
     gameData.quests,
     setGameData
@@ -61,13 +52,12 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     setGameData
   );
 
-  // Handle side effects by explicitly passing the character context value
-  useDataEffects(characterContextValue);
+  // Handle side effects
+  useDataEffects(gameData);
 
   // Combined context value
   const contextValue: GameData = {
     ...gameData,
-    ...characterContextValue,
     ...questContextValue,
     ...inventoryContextValue,
     ...skillTreeContextValue,
@@ -82,7 +72,6 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     <DataContext.Provider value={contextValue}>
       <CombinedProvider
         contextValue={contextValue}
-        characterContextValue={characterContextValue}
         questContextValue={questContextValue}
         inventoryContextValue={inventoryContextValue}
         skillTreeContextValue={skillTreeContextValue}

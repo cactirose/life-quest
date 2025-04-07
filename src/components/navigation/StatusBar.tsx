@@ -1,11 +1,9 @@
-
-import { useGameData } from "@/contexts/DataContext";
+import { useCharacter } from "@/contexts/CharacterContext";
 
 const StatusBar = () => {
-  const { character } = useGameData();
+  const { character, isLoading } = useCharacter();
   
-  // Make sure character data is available
-  if (!character || !character.level) {
+  if (isLoading || !character) {
     return (
       <div className="flex items-center gap-4 text-[hsl(var(--nav-text))] font-pixel animate-pulse">
         <span>Loading...</span>

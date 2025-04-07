@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { CharacterContext } from "./CharacterContext";
 import { QuestContext } from "./QuestContext";
 import { InventoryContext } from "./InventoryContext";
 import { SkillTreeContext } from "./SkillTreeContext";
@@ -11,7 +10,6 @@ import { DataContext, GameData } from "./DataContext";
 interface CombinedProviderProps {
   children: ReactNode;
   contextValue: GameData;
-  characterContextValue: any;
   questContextValue: any;
   inventoryContextValue: any;
   skillTreeContextValue: any;
@@ -23,7 +21,6 @@ interface CombinedProviderProps {
 export const CombinedProvider = ({
   children,
   contextValue,
-  characterContextValue,
   questContextValue,
   inventoryContextValue,
   skillTreeContextValue,
@@ -33,21 +30,19 @@ export const CombinedProvider = ({
 }: CombinedProviderProps) => {
   return (
     <DataContext.Provider value={contextValue}>
-      <CharacterContext.Provider value={characterContextValue}>
-        <QuestContext.Provider value={questContextValue}>
-          <InventoryContext.Provider value={inventoryContextValue}>
-            <SkillTreeContext.Provider value={skillTreeContextValue}>
-              <HabitContext.Provider value={habitContextValue}>
-                <MoodContext.Provider value={moodContextValue}>
-                  <AchievementContext.Provider value={achievementContextValue}>
-                    {children}
-                  </AchievementContext.Provider>
-                </MoodContext.Provider>
-              </HabitContext.Provider>
-            </SkillTreeContext.Provider>
-          </InventoryContext.Provider>
-        </QuestContext.Provider>
-      </CharacterContext.Provider>
+      <QuestContext.Provider value={questContextValue}>
+        <InventoryContext.Provider value={inventoryContextValue}>
+          <SkillTreeContext.Provider value={skillTreeContextValue}>
+            <HabitContext.Provider value={habitContextValue}>
+              <MoodContext.Provider value={moodContextValue}>
+                <AchievementContext.Provider value={achievementContextValue}>
+                  {children}
+                </AchievementContext.Provider>
+              </MoodContext.Provider>
+            </HabitContext.Provider>
+          </SkillTreeContext.Provider>
+        </InventoryContext.Provider>
+      </QuestContext.Provider>
     </DataContext.Provider>
   );
 };

@@ -1,15 +1,16 @@
-
 import { useState, useCallback } from "react";
 import { Character } from "@/types/character";
+import { GameDataUpdater } from "@/utils/contextTypes";
 import { toast } from "sonner";
-import { upsertCharacter } from "@/services/characterService";
+import { calculateDailyBonus } from "@/utils/bonusCalculator";
+import { createStreakTrophy } from "@/utils/itemGenerator";
 import { upsertInventoryItem } from "@/services/inventoryService";
-import { createStreakTrophy, calculateDailyBonus } from "@/features/character/utils/dailyLoginUtils";
+import { updateCharacterStats } from "@/services/characterService";
 import { startOfDay } from "date-fns"; // Added missing import
 
 interface UseDailyBonusProps {
-  character: Character | null;
-  setGameData: React.Dispatch<React.SetStateAction<any>>;
+  character: Character;
+  setGameData: GameDataUpdater;
 }
 
 export const useDailyBonus = ({ 
@@ -19,7 +20,7 @@ export const useDailyBonus = ({
   const [isClaimingBonus, setIsClaimingBonus] = useState(false);
 
   const claimDailyBonus = useCallback(async () => {
-    if (!character || character.dailyBonusClaimed || isClaimingBonus) {
+    if (!character?.id || !character || character.dailyBonusClaimed || isClaimingBonus) {
       if (character?.dailyBonusClaimed) {
         toast.error("You've already claimed today's bonus!");
       }
@@ -45,18 +46,17 @@ export const useDailyBonus = ({
         }
       }
       
-      // Update character
-      const updatedCharacter = {
-        ...character,
+      // Update character stats in Supabase first
+      const updatedChar = await updateCharacterStats(character.id, {
         xp: character.xp + xpBonus,
-        coins: character.coins + coinBonus,
-        dailyBonusClaimed: true
-      };
+        coins: character.coins + coinBonus
+      });
       
-      // Sync with Supabase
-      await upsertCharacter(updatedCharacter);
+      if (!updatedChar) {
+        throw new Error('Failed to update character stats');
+      }
       
-      // Update local state
+      // Update local state only after successful Supabase update
       setGameData(prevData => {
         // Update inventory if special item
         const updatedInventory = specialItem
@@ -65,15 +65,18 @@ export const useDailyBonus = ({
         
         return {
           ...prevData,
-          character: updatedCharacter,
+          character: {
+            ...updatedChar,
+            dailyBonusClaimed: true // Add this since it's not part of updateCharacterStats
+          },
           inventory: updatedInventory
         };
       });
       
       toast.success(`Daily bonus claimed! +${xpBonus} XP, +${coinBonus} coins`);
     } catch (error) {
-      console.error("Error claiming daily bonus:", error);
-      toast.error("Failed to claim daily bonus. Please try again.");
+      console.error('Error claiming daily bonus:', error);
+      toast.error('Failed to claim daily bonus. Please try again.');
     } finally {
       setIsClaimingBonus(false);
     }

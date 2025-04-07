@@ -1,31 +1,35 @@
-
 import { useEffect } from "react";
-import { GameData } from "@/types/gameData";
+import { useCharacter } from "@/contexts/CharacterContext";
 import { toast } from "sonner";
 
-export function useCharacterProgression(
-  gameData: GameData, 
-  setGameData: React.Dispatch<React.SetStateAction<GameData>>
-) {
+export function useCharacterProgression() {
+  const { character, updateStats } = useCharacter();
+
   useEffect(() => {
-    const { character } = gameData;
-    if (character && character.xp >= character.nextLevelXp) {
-      // Level up!
-      setGameData(prevData => ({
-        ...prevData,
-        character: {
-          ...prevData.character,
-          level: prevData.character.level + 1,
-          xp: prevData.character.xp - prevData.character.nextLevelXp,
-          nextLevelXp: Math.floor(prevData.character.nextLevelXp * 1.5),
-          coins: prevData.character.coins + 25 // Level up bonus
-        }
-      }));
+    if (!character?.id || !character || character.xp < character.nextLevelXp) {
+      return;
+    }
+
+    const handleLevelUp = () => {
+      const newLevel = character.level + 1;
+      const remainingXp = character.xp - character.nextLevelXp;
+      const newCoins = character.coins + 25; // Level up bonus
+
+      // Update local state with optimistic update
+      updateStats({
+        level: newLevel,
+        xp: remainingXp,
+        coins: newCoins
+      });
       
       // Display level up notification
-      toast(`You've reached level ${character.level + 1}!`);
-    }
-  }, [gameData.character?.xp, setGameData]);
+      toast.success(`You've reached level ${newLevel}!`, {
+        description: `+25 coins bonus!`
+      });
+    };
+
+    handleLevelUp();
+  }, [character?.xp]);
 
   return null;
 }

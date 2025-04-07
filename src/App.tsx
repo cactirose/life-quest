@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ReactNode, useEffect, useState } from "react";
 import { DataProvider } from "./contexts/DataContext";
 import { AuthProvider } from "./features/auth/context/AuthContext";
+import { CharacterProvider } from "./contexts/CharacterContext";
 import Navbar from "./components/Navbar";
 import { Landing } from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
@@ -25,18 +26,6 @@ import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useSupabaseSync } from "./hooks/useSupabaseSync";
-import { useDataSync } from "./hooks/useDataSync";
-import { useGameDataManager } from "./hooks/gameData";
-import ShoppingList from "./pages/ShoppingList";
-import ShoppingListForm from "./pages/ShoppingListForm";
-import ShoppingListDetail from "./pages/ShoppingListDetail";
-import ShoppingListEdit from "./pages/ShoppingListEdit";
-import Journal from "./pages/Journal";
-import JournalEntryForm from "./pages/JournalEntryForm";
-import JournalEntryDetail from "./pages/JournalEntryDetail";
-import JournalEntryEdit from "./pages/JournalEntryEdit";
-import { validateThemeImplementation } from '@/utils/theme/themeValidator';
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { Button } from "@/components/ui/button";
 
@@ -47,7 +36,7 @@ initializeTheme();
 
 // Layout component that includes the navbar
 const Layout = ({ children }: { children: ReactNode }) => {
-  const { isLoading, loadingProgress, error } = useGameDataManager();
+  const { isLoading, error } = useAuth();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   
   // Add timeout detection
@@ -73,13 +62,13 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen relative">
+      <div className="flex flex-col min-h-screen bg-background">
         <Navbar />
         <main className="flex-grow flex items-center justify-center">
           <div className="text-center">
-            <div className="mb-4">Loading your game data... {loadingProgress}%</div>
+            <div className="mb-4">Loading your game data...</div>
             {loadingTimeout && (
-              <Button onClick={handleRetry}>
+              <Button onClick={handleRetry} className="pixel-button">
                 Taking too long? Click to retry
               </Button>
             )}
@@ -91,12 +80,12 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   if (error) {
     return (
-      <div className="flex flex-col min-h-screen relative">
+      <div className="flex flex-col min-h-screen bg-background">
         <Navbar />
         <main className="flex-grow flex items-center justify-center">
           <div className="text-center">
             <div className="mb-4">Error loading game data</div>
-            <Button onClick={handleRetry}>
+            <Button onClick={handleRetry} className="pixel-button">
               Retry
             </Button>
           </div>
@@ -106,7 +95,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen relative">
+    <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
       <main className="flex-grow px-4 pb-16 pt-20">{children}</main>
     </div>
@@ -115,7 +104,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
 // Public Layout - similar to Layout but for public pages
 const PublicLayout = ({ children }: { children: ReactNode }) => (
-  <div className="flex flex-col min-h-screen relative">
+  <div className="flex flex-col min-h-screen bg-background">
     <Navbar />
     <main className="flex-grow">{children}</main>
   </div>
@@ -128,218 +117,130 @@ const AuthenticatedRoute = ({ children }: { children: ReactNode }) => {
 };
 
 const App = () => {
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      validateThemeImplementation();
-    }
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <DataProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                {/* Public Routes */}
-                <Route
-                  path="/"
-                  element={
-                    <AuthenticatedRoute>
-                      <PublicLayout>
-                        <Landing />
-                      </PublicLayout>
-                    </AuthenticatedRoute>
-                  }
-                />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/update-password" element={<UpdatePassword />} />
+          <CharacterProvider>
+            <TooltipProvider>
+              <div className="app-background">
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Routes>
+                    {/* Public Routes */}
+                    <Route
+                      path="/"
+                      element={
+                        <AuthenticatedRoute>
+                          <PublicLayout>
+                            <Landing />
+                          </PublicLayout>
+                        </AuthenticatedRoute>
+                      }
+                    />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/update-password" element={<UpdatePassword />} />
 
-                {/* Protected Routes */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Dashboard />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/quests"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Quests />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/character"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Character />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/skills"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <SkillTree />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/shop"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Shop />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/inventory"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Inventory />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/habits"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Habits />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/mood"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Mood />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/achievements"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Achievements />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                
-                {/* Shopping List Routes */}
-                <Route
-                  path="/shopping-list"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ShoppingList />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/shopping-list/new"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ShoppingListForm />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/shopping-list/:id"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ShoppingListDetail />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/shopping-list/:id/edit"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ShoppingListEdit />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                
-                {/* Journal Routes */}
-                <Route
-                  path="/journal"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Journal />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/journal/new"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <JournalEntryForm />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/journal/:id"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <JournalEntryDetail />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/journal/:id/edit"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <JournalEntryEdit />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-
-                {/* Not Found Route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
+                    {/* Protected Routes */}
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Dashboard />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/quests"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Quests />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/character"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Character />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/skills"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <SkillTree />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/shop"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Shop />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/inventory"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Inventory />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/habits"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Habits />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/mood"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Mood />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/achievements"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Achievements />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </div>
+            </TooltipProvider>
+          </CharacterProvider>
         </DataProvider>
       </AuthProvider>
     </QueryClientProvider>
