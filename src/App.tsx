@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ReactNode, useEffect, useState } from "react";
-import { DataProvider } from "./contexts/DataContext";
+import { DataProvider, useGameData } from "./contexts/DataContext";
 import { AuthProvider } from "./features/auth/context/AuthContext";
 import { CharacterProvider } from "./contexts/CharacterContext";
 import Navbar from "./components/Navbar";
@@ -28,13 +28,52 @@ import UpdatePassword from "./pages/UpdatePassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { DataSyncingIndicator } from "@/components/auth/DataSyncingIndicator";
+import { useConnectionStatus } from "@/hooks/sync/useConnectionStatus";
 
 const queryClient = new QueryClient();
 
 // Initialize theme when app loads
 initializeTheme();
 
-// Layout component that includes the navbar
+// DataSync component that handles the syncing indicator
+const DataSync = () => {
+  const gameData = useGameData();
+  const { isOnline, supabaseConnected } = useConnectionStatus();
+
+  // Early return if gameData or required properties are not available
+  if (!gameData || !gameData.saveState) {
+    return (
+      <DataSyncingIndicator
+        isLoading={false}
+        isSyncing={false}
+        isOnline={isOnline}
+        supabaseConnected={supabaseConnected}
+        onRetry={() => {}}
+        isSaving={false}
+        lastSaveTime={null}
+        onSave={() => {}}
+      />
+    );
+  }
+
+  const { isLoading, refreshData, saveState, manualSave } = gameData;
+
+  return (
+    <DataSyncingIndicator
+      isLoading={isLoading || false}
+      isSyncing={false}
+      isOnline={isOnline}
+      supabaseConnected={supabaseConnected}
+      onRetry={refreshData || (() => {})}
+      isSaving={Boolean(saveState?.isSaving)}
+      lastSaveTime={saveState?.lastSaveTime || null}
+      onSave={manualSave || (() => {})}
+    />
+  );
+};
+
+// Layout component that includes the navbar and DataSync
 const Layout = ({ children }: { children: ReactNode }) => {
   const { isLoading, user } = useAuth();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
@@ -98,7 +137,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
-      <main className="flex-grow px-4 pb-16 pt-20">{children}</main>
+      <main className="flex-grow px-4 pb-16 pt-20">
+        {children}
+      </main>
+      <DataSync />
     </div>
   );
 };
@@ -117,6 +159,127 @@ const AuthenticatedRoute = ({ children }: { children: ReactNode }) => {
   return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
 };
 
+const AppContent = () => {
+  return (
+    <div className="app-background">
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          {/* Public Routes */}
+          <Route
+            path="/"
+            element={
+              <AuthenticatedRoute>
+                <PublicLayout>
+                  <Landing />
+                </PublicLayout>
+              </AuthenticatedRoute>
+            }
+          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/update-password" element={<UpdatePassword />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quests"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Quests />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/character"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Character />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/skills"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <GrowthTree />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/shop"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Shop />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/inventory"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Inventory />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/habits"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Habits />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mood"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Mood />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/achievements"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Achievements />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </div>
+  );
+};
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -124,122 +287,7 @@ const App = () => {
         <DataProvider>
           <CharacterProvider>
             <TooltipProvider>
-              <div className="app-background">
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <Routes>
-                    {/* Public Routes */}
-                    <Route
-                      path="/"
-                      element={
-                        <AuthenticatedRoute>
-                          <PublicLayout>
-                            <Landing />
-                          </PublicLayout>
-                        </AuthenticatedRoute>
-                      }
-                    />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/update-password" element={<UpdatePassword />} />
-
-                    {/* Protected Routes */}
-                    <Route
-                      path="/dashboard"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Dashboard />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/quests"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Quests />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/character"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Character />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/skills"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <GrowthTree />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/shop"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Shop />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/inventory"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Inventory />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/habits"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Habits />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/mood"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Mood />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/achievements"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Achievements />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              </div>
+              <AppContent />
             </TooltipProvider>
           </CharacterProvider>
         </DataProvider>
