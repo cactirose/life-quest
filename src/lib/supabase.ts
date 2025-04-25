@@ -1,7 +1,6 @@
 
 // Re-export the supabase client from the main client file with hardcoded values for the client
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
 import { toast } from 'sonner';
 
 // Use hardcoded values instead of process.env
@@ -36,7 +35,7 @@ supabase.auth.onAuthStateChange((event, session) => {
   const timestamp = new Date().toISOString();
   console.log(`[${timestamp}] Auth state changed:`, event, 'Session:', session ? 'exists' : 'null');
   
-  // Handle authentication errors
+  // Handle authentication events
   if (event === 'SIGNED_OUT') {
     // Clear any cached data
     localStorage.removeItem('gameDataCache');

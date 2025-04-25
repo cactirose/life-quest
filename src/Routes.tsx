@@ -3,28 +3,39 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes as RouterRoutes, Route, Navigate } from "react-router-dom";
 import Loadable from "./components/ui/Loadable";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Layout from "./components/Layout";
+import { Layout } from "./components/layout/Layout";
+
+// Helper placeholder components for missing pages
+const PlaceholderPage = ({ title }: { title: string }) => (
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <h1 className="text-2xl font-bold">{title} Page</h1>
+  </div>
+);
 
 // Lazy load pages
-const Dashboard = Loadable({ children: lazy(() => import("./pages/Dashboard")) });
-const Character = Loadable({ children: lazy(() => import("./pages/Character")) });
-const Shop = Loadable({ children: lazy(() => import("./pages/Shop")) });
-const Quests = Loadable({ children: lazy(() => import("./pages/Quests")) });
-const Skills = Loadable({ children: lazy(() => import("./pages/Skills")) });
-const Achievements = Loadable({ children: lazy(() => import("./pages/Achievements")) });
-const Habits = Loadable({ children: lazy(() => import("./pages/Habits")) });
-const Mood = Loadable({ children: lazy(() => import("./pages/Mood")) });
-const GrowthTree = Loadable({ children: lazy(() => import("./pages/GrowthTree")) });
-const Friends = Loadable({ children: lazy(() => import("./pages/Friends")) });
-const Community = Loadable({ children: lazy(() => import("./pages/Community")) });
-const Settings = Loadable({ children: lazy(() => import("./pages/Settings")) });
-const Help = Loadable({ children: lazy(() => import("./pages/Help")) });
-const Inventory = Loadable({ children: lazy(() => import("./pages/Inventory")) });
-const ShoppingList = Loadable({ children: lazy(() => import("./pages/ShoppingList")) });
-const Login = Loadable({ children: lazy(() => import("./pages/auth/Login")) });
-const Signup = Loadable({ children: lazy(() => import("./pages/auth/Signup")) });
-const ForgotPassword = Loadable({ children: lazy(() => import("./pages/auth/ForgotPassword")) });
-const NotFound = Loadable({ children: lazy(() => import("./pages/NotFound")) });
+const Dashboard = Loadable(lazy(() => import("./pages/Dashboard")));
+const Character = Loadable(lazy(() => import("./pages/Character")));
+const Shop = Loadable(lazy(() => import("./pages/Shop")));
+const Quests = Loadable(lazy(() => import("./pages/Quests")));
+const Achievements = Loadable(lazy(() => import("./pages/Achievements")));
+const Habits = Loadable(lazy(() => import("./pages/Habits")));
+const Mood = Loadable(lazy(() => import("./pages/Mood")));
+const Inventory = Loadable(lazy(() => import("./pages/Inventory")));
+const ShoppingList = Loadable(lazy(() => import("./pages/ShoppingList")));
+const NotFound = Loadable(lazy(() => import("./pages/NotFound")));
+
+// Placeholder pages for missing components
+const Skills = () => <PlaceholderPage title="Skills" />;
+const GrowthTree = () => <PlaceholderPage title="Growth Tree" />;
+const Friends = () => <PlaceholderPage title="Friends" />;
+const Community = () => <PlaceholderPage title="Community" />;
+const Settings = () => <PlaceholderPage title="Settings" />;
+const Help = () => <PlaceholderPage title="Help" />;
+
+// Auth pages
+const Login = () => <PlaceholderPage title="Login" />;
+const Signup = () => <PlaceholderPage title="Signup" />;
+const ForgotPassword = () => <PlaceholderPage title="Forgot Password" />;
 
 export const Routes = () => {
   return (

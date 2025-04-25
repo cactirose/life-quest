@@ -6,11 +6,11 @@ import { SkillTreeContext } from "./SkillTreeContext";
 import { HabitContext } from "./HabitContext";
 import { MoodContext } from "./MoodContext";
 import { AchievementContext } from "./AchievementContext";
-import { DataContext } from "./DataContext";
+import { DataContext, DataContextType } from "./DataContext";
 
 interface CombinedProviderProps {
   children: ReactNode;
-  contextValue: any; // Using any to avoid circular dependency issues
+  contextValue: DataContextType;
   questContextValue: any;
   inventoryContextValue: any;
   skillTreeContextValue: any;
