@@ -1,6 +1,6 @@
 
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes as RouterRoutes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes as RouterRoutes, Route, Navigate, Outlet } from "react-router-dom";
 import Loadable from "./components/ui/Loadable";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Layout } from "./components/layout/Layout";
@@ -41,7 +41,7 @@ export const Routes = () => {
   return (
     <BrowserRouter>
       <RouterRoutes>
-        <Route path="/" element={<Layout />}>
+        <Route path="/" element={<Layout><Outlet /></Layout>}>
           {/* Auth routes */}
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />

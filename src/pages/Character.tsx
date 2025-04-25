@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +23,7 @@ import {
 } from "lucide-react";
 import { CharacterResetDialog } from "@/components/CharacterResetDialog";
 import { StatName } from "@/types/character";
+import { Character as CharacterType, Stats } from '@/types/character';
 
 const StatDisplay = ({ 
   name, 

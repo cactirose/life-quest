@@ -25,9 +25,6 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       eventsPerSecond: 2,
     },
   },
-  db: {
-    schema: 'public',
-  },
 });
 
 // Add auth state change listener with integrated error handling

@@ -1,4 +1,3 @@
-
 import { Link, useNavigate } from "react-router-dom";
 import { useGameData } from "@/contexts/DataContext";
 import { 
@@ -112,16 +111,13 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await logout(navigate);
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
+      toast.success("Logged out", {
+        description: "You have been successfully logged out."
       });
     } catch (error) {
       console.error("Logout error:", error);
-      toast({
-        title: "Logout error",
-        description: "An error occurred while logging out. Please try again.",
-        variant: "destructive",
+      toast.error("Logout error", {
+        description: "An error occurred while logging out. Please try again."
       });
     }
   };

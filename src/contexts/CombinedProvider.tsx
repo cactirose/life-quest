@@ -6,7 +6,8 @@ import { SkillTreeContext } from "./SkillTreeContext";
 import { HabitContext } from "./HabitContext";
 import { MoodContext } from "./MoodContext";
 import { AchievementContext } from "./AchievementContext";
-import { DataContext, DataContextType } from "./DataContext";
+import { DataContext } from "./DataContext";
+import { DataContextType } from "@/types/gameData";
 
 interface CombinedProviderProps {
   children: ReactNode;

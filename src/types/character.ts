@@ -1,14 +1,17 @@
 
-// Character stats types
-export type StatName = "strength" | "dexterity" | "constitution" | "intelligence" | "wisdom" | "charisma";
+export interface Stats {
+  strength: number;
+  dexterity: number;
+  constitution: number;
+  intelligence: number;
+  wisdom: number;
+  charisma: number;
+}
 
-export type Stats = {
-  [key in StatName]: number;
-};
+export type StatName = keyof Stats;
 
-// Character type
 export interface Character {
-  id?: string; // Added id property, optional for compatibility
+  id?: string;
   name: string;
   level: number;
   xp: number;
@@ -22,18 +25,8 @@ export interface Character {
   dailyBonusClaimed: boolean;
 }
 
-// Initial Stats
-export const DEFAULT_STATS: Stats = {
-  strength: 10,
-  dexterity: 10,
-  constitution: 10,
-  intelligence: 10,
-  wisdom: 10,
-  charisma: 10
-};
-
-// Initial Character
 export const DEFAULT_CHARACTER: Character = {
+  id: undefined,
   name: "Adventurer",
   level: 1,
   xp: 0,
@@ -41,7 +34,14 @@ export const DEFAULT_CHARACTER: Character = {
   coins: 50,
   portrait: "/placeholder.svg",
   bio: "A brave adventurer ready to conquer life's challenges.",
-  stats: { ...DEFAULT_STATS },
+  stats: {
+    strength: 10,
+    dexterity: 10,
+    constitution: 10,
+    intelligence: 10,
+    wisdom: 10,
+    charisma: 10
+  },
   lastLoginDate: null,
   loginStreak: 0,
   dailyBonusClaimed: false

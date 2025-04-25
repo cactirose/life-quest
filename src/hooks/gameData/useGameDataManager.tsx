@@ -42,6 +42,7 @@ export function useGameDataManager() {
   const { saveState, manualSave, trackChanges, immediateSave } = useSaveManager(gameData);
   const { syncFromSupabase } = useSupabaseSync(handleDataChange);
   
+  // Call useDataEffects without arguments
   useDataEffects();
 
   // Load initial data
