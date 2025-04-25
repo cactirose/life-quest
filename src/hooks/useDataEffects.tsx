@@ -1,19 +1,18 @@
+
 import { useEffect } from "react";
 import { useAchievements } from "../contexts/AchievementContext";
-import { GameData } from "@/types/gameData";
+import { useGameData } from "../contexts/DataContext";
 import { CharacterContextValue } from "../utils/contextTypes";
 import { toast } from "sonner";
-import { DEFAULT_CHARACTER } from "@/types/character";
 
 export const useDataEffects = (
-  gameData: GameData,
-  setGameData: (newData: Partial<GameData>, changedFields: Set<string>) => void,
   characterContext?: CharacterContextValue
 ) => {
   const { achievements, checkAndUnlockAchievement } = useAchievements();
+  const { setGameData, character } = useGameData();
 
-  // Use the character from the context if provided, otherwise use the one from GameData, falling back to DEFAULT_CHARACTER
-  const characterData = characterContext?.character || gameData?.character || DEFAULT_CHARACTER;
+  // Use the character from the context if provided, otherwise use the one from GameData
+  const characterData = characterContext?.character || character;
 
   // Check daily login only once when the component mounts
   useEffect(() => {
@@ -38,7 +37,12 @@ export const useDataEffects = (
           };
           
           // Update the game data with the new character information
-          setGameData({ character: updatedCharacter }, new Set(['character']));
+          if (setGameData) {
+            setGameData(prevData => ({
+              ...prevData,
+              character: updatedCharacter
+            }));
+          }
         }
       };
       

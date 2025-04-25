@@ -1,11 +1,15 @@
+
 import { useRef, useCallback, useEffect } from "react";
+import { useGameData } from "@/contexts/DataContext";
 import { useDataSync } from "./useDataSync";
 import { useConnectionStatus } from "./sync/useConnectionStatus";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { toast } from "sonner";
-import { GameData } from "@/types/gameData";
 
-export function useSupabaseSync(setGameData: (data: Partial<GameData>, changedFields: Set<string>) => void) {
+export function useSupabaseSync() {
+  // Always initialize all hooks at the top level
+  const gameContext = useGameData();
+  const { setGameData } = gameContext;
   const { session, isAuthenticated } = useAuth();
 
   const {

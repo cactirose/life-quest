@@ -1,10 +1,9 @@
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext } from "react";
 import { CombinedProvider } from "./CombinedProvider";
-import { useGameDataManager } from "@/hooks/gameData/useGameDataManager";
+import { useGameDataManager } from "../hooks/gameData";
 import { DEFAULT_GAME_DATA } from "../utils/defaultGameData";
 import { useDataEffects } from "../hooks/useDataEffects";
-import { GameData } from "@/types/gameData";
-import { DEFAULT_CHARACTER } from "@/types/character";
+import { GameData } from "../types/gameData";
 
 // Create context providers
 import { createQuestContextValue, QuestContext } from "./QuestContext";
@@ -23,87 +22,56 @@ import {
   AchievementContext,
 } from "./AchievementContext";
 
-interface DataContextType {
-  gameData: GameData;
-  setGameData: (newData: Partial<GameData>, changedFields: Set<string>) => void;
-  isLoading: boolean;
-  loadingProgress: number;
-  error: string | null;
-  refreshData: () => Promise<void>;
-  saveState: {
-    isSaving: boolean;
-    lastSaveTime: Date | null;
-    pendingChanges: Set<string>;
-  };
-  manualSave: () => Promise<void>;
-}
+// Create context
+export const DataContext = createContext<GameData>(DEFAULT_GAME_DATA);
 
-export const DataContext = createContext<DataContextType | undefined>(undefined);
-
-export function DataProvider({ children }: { children: ReactNode }) {
-  const {
-    gameData,
-    setGameData,
-    isLoading,
-    loadingProgress,
-    error,
-    refreshData,
-    saveState,
-    manualSave
-  } = useGameDataManager();
-
-  // Ensure gameData has all required properties with defaults
-  const safeGameData = {
-    ...DEFAULT_GAME_DATA,
-    ...gameData,
-    character: {
-      ...DEFAULT_CHARACTER,
-      ...(gameData?.character || {})
-    }
-  };
+export const DataProvider = ({ children }: { children: React.ReactNode }) => {
+  const { gameData, setGameData } = useGameDataManager();
 
   // Create contexts
   const questContextValue = createQuestContextValue(
-    safeGameData.quests,
+    gameData.quests,
     setGameData
   );
   const inventoryContextValue = createInventoryContextValue(
-    safeGameData.inventory,
-    safeGameData.shopItems,
+    gameData.inventory,
+    gameData.shopItems,
     setGameData
   );
   const skillTreeContextValue = createSkillTreeContextValue(
-    safeGameData.skillTree,
+    gameData.skillTree,
     setGameData
   );
   const habitContextValue = createHabitContextValue(
-    safeGameData.habits,
+    gameData.habits,
     setGameData
   );
-  const moodContextValue = createMoodContextValue(safeGameData.moods, setGameData);
+  const moodContextValue = createMoodContextValue(gameData.moods, setGameData);
   const achievementContextValue = createAchievementContextValue(
-    safeGameData.achievements,
+    gameData.achievements,
     setGameData
   );
 
   // Handle side effects
-  useDataEffects(safeGameData, setGameData);
+  useDataEffects(gameData);
 
-  const contextValue: DataContextType = {
-    gameData: safeGameData,
-    setGameData,
-    isLoading,
-    loadingProgress,
-    error,
-    refreshData,
-    saveState,
-    manualSave
+  // Combined context value
+  const contextValue: GameData = {
+    ...gameData,
+    ...questContextValue,
+    ...inventoryContextValue,
+    ...skillTreeContextValue,
+    ...habitContextValue,
+    ...moodContextValue,
+    ...achievementContextValue,
+    setGameData: setGameData,
   };
 
+  // Use combined provider pattern
   return (
     <DataContext.Provider value={contextValue}>
       <CombinedProvider
-        contextValue={safeGameData}
+        contextValue={contextValue}
         questContextValue={questContextValue}
         inventoryContextValue={inventoryContextValue}
         skillTreeContextValue={skillTreeContextValue}
@@ -115,15 +83,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
       </CombinedProvider>
     </DataContext.Provider>
   );
-}
+};
 
-export function useGameData() {
+// Custom hook for using the context
+export const useGameData = () => {
   const context = useContext(DataContext);
   if (context === undefined) {
     throw new Error("useGameData must be used within a DataProvider");
   }
   return context;
-}
+};
 
 // Re-export types
 export type { Character, StatName, Stats } from "../types/character";
