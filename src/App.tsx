@@ -15,7 +15,6 @@ import SkillTree from "./pages/SkillTree";
 import Shop from "./pages/Shop";
 import Inventory from "./pages/Inventory";
 import NotFound from "./pages/NotFound";
-import Challenges from "./pages/Challenges";
 import Habits from "./pages/Habits";
 import Mood from "./pages/Mood";
 import Achievements from "./pages/Achievements";
@@ -38,8 +37,6 @@ import JournalEntryForm from "./pages/JournalEntryForm";
 import JournalEntryDetail from "./pages/JournalEntryDetail";
 import JournalEntryEdit from "./pages/JournalEntryEdit";
 import { validateThemeImplementation } from '@/utils/theme/themeValidator';
-
-const queryClient = new QueryClient();
 
 // Initialize theme when app loads
 initializeTheme();
@@ -205,16 +202,6 @@ const App = () => {
                     <ProtectedRoute>
                       <Layout>
                         <Inventory />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/challenges"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Challenges />
                       </Layout>
                     </ProtectedRoute>
                   }
