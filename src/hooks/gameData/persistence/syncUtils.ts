@@ -1,42 +1,56 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-// Function to retry sync operations with exponential backoff
-export const retrySyncOperation = async <T>(
-  operation: () => Promise<T>,
+/**
+ * Try to perform a sync operation with automatic retries
+ * @param operation The async operation to perform
+ * @param operationName Name of the operation for logging
+ * @param maxRetries Maximum number of retries (default: 3)
+ * @param baseDelay Base delay between retries in ms (default: 1000)
+ * @returns Promise resolving to true if successful, false if all retries failed
+ */
+export const retrySyncOperation = async (
+  operation: () => Promise<any>, 
   operationName: string,
-  maxRetries = 3
+  maxRetries = 3,
+  baseDelay = 1000
 ): Promise<boolean> => {
-  let retryCount = 0;
+  let retries = 0;
   
-  while (retryCount < maxRetries) {
+  while (retries <= maxRetries) {
     try {
+      console.log(`Attempt ${retries + 1}/${maxRetries + 1} to sync ${operationName}`);
       await operation();
+      console.log(`Successfully synced ${operationName}`);
       return true;
     } catch (error) {
-      retryCount++;
-      console.error(`Attempt ${retryCount} for ${operationName} failed:`, error);
+      retries++;
       
-      if (retryCount >= maxRetries) {
-        console.error(`All ${maxRetries} attempts for ${operationName} failed.`);
+      if (retries > maxRetries) {
+        console.error(`Failed to sync ${operationName} after ${maxRetries + 1} attempts:`, error);
         return false;
       }
       
-      // Exponential backoff: 100ms, 200ms, 400ms, etc.
-      const backoffTime = Math.pow(2, retryCount) * 100;
-      await new Promise(resolve => setTimeout(resolve, backoffTime));
+      console.warn(`Retrying ${operationName} sync in ${baseDelay * retries}ms...`);
+      await new Promise(resolve => setTimeout(resolve, baseDelay * retries));
     }
   }
   
   return false;
 };
 
-// Validate if an entity has all required fields
+/**
+ * Validate that an entity has all required fields
+ * @param entity The entity to validate
+ * @param requiredFields Array of required field names
+ * @returns True if valid, false otherwise
+ */
 export const validateEntity = (entity: any, requiredFields: string[]): boolean => {
   if (!entity) return false;
   
   for (const field of requiredFields) {
     if (entity[field] === undefined || entity[field] === null) {
+      console.error(`Missing required field ${field} in entity:`, entity);
       return false;
     }
   }
@@ -44,50 +58,40 @@ export const validateEntity = (entity: any, requiredFields: string[]): boolean =
   return true;
 };
 
-// Safely check for valid user session
-export const ensureValidSession = async (): Promise<boolean> => {
-  try {
-    const { data, error } = await supabase.auth.getSession();
-    if (error) {
-      console.error("Error checking session:", error);
-      return false;
-    }
-    
-    return !!data.session;
-  } catch (error) {
-    console.error("Failed to check session:", error);
-    return false;
-  }
-};
-
-// Helper to safely stringify objects for error messages
+/**
+ * Safely stringify an object, handling circular references
+ */
 export const safeStringify = (obj: any): string => {
   try {
     return JSON.stringify(obj, (key, value) => {
-      if (value instanceof Error) {
-        return {
-          name: value.name,
-          message: value.message,
-          stack: value.stack
-        };
+      if (typeof value === 'object' && value !== null) {
+        if (key && seenObjects.has(value)) return '[Circular]';
+        seenObjects.add(value);
       }
       return value;
-    }, 2);
+    });
   } catch (error) {
-    return `[Unable to stringify: ${error}]`;
+    return '[Object cannot be stringified]';
+  } finally {
+    seenObjects.clear();
   }
 };
 
-// Wrapper to safely handle async operations
+// Set to track objects for circular reference detection
+const seenObjects = new Set();
+
+/**
+ * Safely execute an async function and provide detailed error information
+ */
 export const safeAsync = async <T>(
-  operation: () => Promise<T>,
-  fallback: T,
-  errorMsg: string
+  fn: () => Promise<T>, 
+  errorMessage: string
 ): Promise<T> => {
   try {
-    return await operation();
+    return await fn();
   } catch (error) {
-    console.error(errorMsg, error);
-    return fallback;
+    console.error(`${errorMessage}:`, error);
+    toast.error(errorMessage);
+    throw error;
   }
 };

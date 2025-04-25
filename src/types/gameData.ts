@@ -1,9 +1,7 @@
-
 import { Character, StatName } from "./character";
 import { Quest } from "./quests";
 import { GearItem } from "./inventory";
 import { SkillNode } from "./skills";
-import { Challenge } from "./challenges";
 import { Habit } from "./habits";
 import { MoodEntry } from "./mood";
 import { Achievement } from "./achievements";
@@ -17,7 +15,6 @@ export interface GameData {
   inventory: GearItem[];
   shopItems: GearItem[];
   skillTree: SkillNode[];
-  challenges: Challenge[];
   habits: Habit[];
   moods: MoodEntry[];
   achievements: Achievement[];
@@ -33,7 +30,7 @@ export interface GameData {
   updateQuest: (quest: Quest) => void;
   deleteQuest: (questId: string) => void;
   completeQuestStep: (questId: string, stepId: string) => void;
-  completeQuest: (questId: string) => void;
+  completeQuest: (questId: string) => Promise<void>;
   
   // Inventory methods
   addToInventory: (item: GearItem) => void;
@@ -52,14 +49,6 @@ export interface GameData {
   updateSkillNode: (node: SkillNode) => void;
   deleteSkillNode: (nodeId: string) => void;
   unlockSkillNode: (nodeId: string) => void;
-  
-  // Challenge methods
-  addChallenge: (challenge: Omit<Challenge, "id">) => void;
-  updateChallenge: (challenge: Challenge) => void;
-  deleteChallenge: (challengeId: string) => void;
-  incrementChallengeProgress: (challengeId: string) => void;
-  resetChallenges: () => void;
-  completeChallenge: (challengeId: string) => void;
   
   // Habit methods
   addHabit: (habit: Omit<Habit, "id" | "completionHistory" | "streak">) => void;

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { QuestStep, Quest, QuestType } from "@/types/quests";
@@ -72,7 +71,13 @@ export const QuestCard = ({
   };
   
   const handleComplete = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
+    
+    if (quest.status === "completed") {
+      return;
+    }
+    
     onComplete(quest.id);
   };
   
@@ -96,7 +101,7 @@ export const QuestCard = ({
         "parchment flex flex-col rounded-md overflow-hidden shadow-md", 
         isCompleted ? "opacity-80" : ""
       )}
-      style={{ borderTop: 'none' }} // Remove white line at top
+      style={{ borderTop: 'none' }}
     >
       <div 
         className="px-4 py-3 cursor-pointer flex justify-between items-start"
@@ -175,7 +180,6 @@ export const QuestCard = ({
             <span>{progress}% complete</span>
           </div>
           
-          {/* Add Complete Quest button for quests with no steps */}
           {!isCompleted && hasNoSteps && (
             <div className="mt-4">
               <Button 

@@ -128,11 +128,13 @@ const Quests = () => {
   
   const handleCompleteQuest = useCallback(async (questId: string) => {
     try {
+      setIsProcessing(true);
       await completeQuest(questId);
-      toast.success("Quest completed! Rewards have been added to your character.");
     } catch (error) {
       console.error("Failed to complete quest:", error);
       toast.error("Failed to complete quest. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
   }, [completeQuest]);
   
@@ -166,9 +168,9 @@ const Quests = () => {
         activeQuests={filteredActiveQuests}
         completedQuests={filteredCompletedQuests}
         onEdit={setEditingQuest}
-        onDelete={deleteQuest}
-        onStepToggle={completeQuestStep}
-        onComplete={completeQuest}
+        onDelete={handleDeleteQuest}
+        onStepToggle={handleStepToggle}
+        onComplete={handleCompleteQuest}
         onCreateQuest={() => setShowAddDialog(true)}
       />
     </div>
