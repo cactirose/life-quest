@@ -1,184 +1,174 @@
 
-import { useParams, useNavigate } from "react-router-dom";
-import { useGameData } from "@/contexts/DataContext";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Trash, Edit, ArrowLeft, Star, Lock, Calendar } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useState } from "react";
-import { format } from "date-fns";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { JournalEntry } from "@/types/journal";
-import { MoodType } from "@/types/mood";
-
-const MOOD_COLORS: Record<MoodType | string, string> = {
-  happy: "bg-green-500",
-  sad: "bg-blue-500",
-  angry: "bg-red-500",
-  anxious: "bg-yellow-500",
-  calm: "bg-teal-500",
-  excited: "bg-purple-500",
-  bored: "bg-gray-500",
-  proud: "bg-amber-500",
-  stressed: "bg-orange-500",
-  neutral: "bg-slate-500",
-  default: "bg-slate-500",
-};
-
-const MOOD_EMOJIS: Record<MoodType | string, string> = {
-  happy: "😊",
-  sad: "😢",
-  angry: "😠",
-  anxious: "😰",
-  calm: "😌",
-  excited: "🤩",
-  bored: "😒",
-  proud: "😎",
-  stressed: "😩",
-  neutral: "😐",
-  default: "😐",
-};
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Pencil, Trash2, Heart, Calendar, Clock, ArrowLeft, Lock, Star } from 'lucide-react';
+import { JournalEntry } from '@/types/journal';
+import { useGameData } from '@/contexts/DataContext';
+import { toast } from 'sonner';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { MOOD_OPTIONS } from '@/components/journal/JournalFormSchema';
 
 export default function JournalEntryDetail() {
   const { id } = useParams<{ id: string }>();
-  const { gameData, setGameData } = useGameData();
   const navigate = useNavigate();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  const journalEntries = gameData.journalEntries || [];
-  const entry = journalEntries.find((e) => e.id === id);
-
+  const { gameData, setGameData } = useGameData();
+  const [entry, setEntry] = useState<JournalEntry | null>(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    if (id && gameData.journalEntries) {
+      const foundEntry = gameData.journalEntries.find(e => e.id === id);
+      setEntry(foundEntry || null);
+    }
+    setLoading(false);
+  }, [id, gameData.journalEntries]);
+  
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-10 bg-gray-300 rounded-md w-3/4 mb-4"></div>
+            <div className="h-6 bg-gray-300 rounded-md w-1/2 mb-8"></div>
+            <div className="h-40 bg-gray-300 rounded-md mb-4"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   if (!entry) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col items-center justify-center min-h-[50vh]">
-          <h2 className="text-2xl font-semibold mb-2">Entry Not Found</h2>
-          <p className="text-muted-foreground mb-4">
-            The journal entry you're looking for doesn't exist.
-          </p>
-          <Button onClick={() => navigate("/journal")}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-2xl font-bold mb-4">Entry Not Found</h1>
+          <p className="mb-6">The journal entry you're looking for doesn't exist.</p>
+          <Button onClick={() => navigate('/journal')}>
+            <ArrowLeft size={16} className="mr-2" />
             Back to Journal
           </Button>
         </div>
       </div>
     );
   }
-
+  
   const handleDelete = () => {
-    const updatedEntries = journalEntries.filter((e) => e.id !== id);
-    setGameData({ journalEntries: updatedEntries }, new Set(["journalEntries"]));
+    const updatedEntries = gameData.journalEntries?.filter(e => e.id !== id) || [];
+    setGameData({ journalEntries: updatedEntries }, new Set(['journalEntries']));
     toast.success("Journal entry deleted");
-    navigate("/journal");
+    navigate('/journal');
+  };
+  
+  const toggleFavorite = () => {
+    const updatedEntries = gameData.journalEntries?.map(e => 
+      e.id === id ? { ...e, isFavorite: !e.isFavorite } : e
+    ) || [];
+    
+    setGameData({ journalEntries: updatedEntries }, new Set(['journalEntries']));
+    toast.success(entry.isFavorite ? "Removed from favorites" : "Added to favorites");
+    setEntry(prev => prev ? { ...prev, isFavorite: !prev.isFavorite } : null);
   };
 
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return "";
-    try {
-      return format(new Date(dateString), "PPpp");
-    } catch (error) {
-      console.error("Invalid date:", dateString);
-      return "Invalid date";
-    }
-  };
+  const moodLabel = entry.mood ? 
+    MOOD_OPTIONS.find(m => m.value === entry.mood)?.label || entry.mood 
+    : 'No mood recorded';
+  
+  const formattedCreatedDate = entry.created_at ? 
+    format(new Date(entry.created_at), 'PPP') : 'Unknown date';
+  
+  const formattedUpdatedDate = entry.updated_at ? 
+    format(new Date(entry.updated_at), 'PPP') : 'Unknown date';
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <Button variant="outline" onClick={() => navigate("/journal")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Journal
-        </Button>
-        <div className="space-x-2">
-          <Button variant="outline" onClick={() => navigate(`/journal/edit/${id}`)}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-6">
+          <Button variant="outline" onClick={() => navigate('/journal')}>
+            <ArrowLeft size={16} className="mr-2" />
+            Back to Journal
           </Button>
-          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="destructive">
-                <Trash className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Are you sure you want to delete this entry?</DialogTitle>
-                <DialogDescription>
-                  This action cannot be undone. This will permanently delete your
-                  journal entry.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button variant="destructive" onClick={handleDelete}>
-                  Delete
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </div>
-      </div>
-
-      <Card className="mb-8 border-t-4 border-t-primary">
-        <CardContent className="pt-6">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <div className="flex-grow">
-              <h1 className="text-3xl font-bold">{entry.title}</h1>
+        
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle className="text-2xl mb-2">{entry.title}</CardTitle>
+                <div className="text-lg text-muted-foreground">{moodLabel}</div>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="icon" onClick={toggleFavorite} title={entry.isFavorite ? "Remove from favorites" : "Add to favorites"}>
+                  <Star className={entry.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-gray-400"} />
+                </Button>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link to={`/journal/edit/${id}`}>
+                    <Pencil size={18} />
+                  </Link>
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-red-500">
+                      <Trash2 size={18} />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Journal Entry</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this journal entry? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
+          </CardHeader>
+          
+          <CardContent>
+            <div className="prose max-w-none">
+              {entry.content.split('\n').map((paragraph, i) => (
+                paragraph ? <p key={i}>{paragraph}</p> : <br key={i} />
+              ))}
+            </div>
+          </CardContent>
+          
+          <CardFooter className="flex flex-col items-start gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-4">
               {entry.isPrivate && (
-                <Badge variant="outline" className="gap-1 border-amber-500 text-amber-500">
-                  <Lock className="h-3 w-3" />
-                  Private
-                </Badge>
+                <div className="flex items-center">
+                  <Lock size={14} className="mr-1" />
+                  <span>Private</span>
+                </div>
               )}
               {entry.isFavorite && (
-                <Badge variant="outline" className="gap-1 border-yellow-500 text-yellow-500">
-                  <Star className="h-3 w-3" />
-                  Favorite
-                </Badge>
-              )}
-              {entry.mood && (
-                <Badge
-                  className={`${
-                    MOOD_COLORS[entry.mood] || MOOD_COLORS.default
-                  } text-white`}
-                >
-                  {MOOD_EMOJIS[entry.mood] || MOOD_EMOJIS.default} {entry.mood}
-                </Badge>
+                <div className="flex items-center text-yellow-600">
+                  <Star size={14} className="mr-1 fill-yellow-600" />
+                  <span>Favorite</span>
+                </div>
               )}
             </div>
-          </div>
-
-          <div className="mb-6 text-sm text-muted-foreground flex items-center">
-            <Calendar className="h-3 w-3 mr-1" />
-            {entry.updatedAt !== entry.createdAt
-              ? `Updated ${formatDate(entry.updatedAt)}`
-              : `Created ${formatDate(entry.createdAt)}`}
-          </div>
-
-          <Separator className="mb-4" />
-
-          <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none">
-            {entry.content.split("\n").map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            <div className="flex flex-wrap items-center gap-4 mt-2">
+              <div className="flex items-center">
+                <Calendar size={14} className="mr-1" />
+                <span>Created: {formattedCreatedDate}</span>
+              </div>
+              {entry.updated_at !== entry.created_at && (
+                <div className="flex items-center">
+                  <Clock size={14} className="mr-1" />
+                  <span>Updated: {formattedUpdatedDate}</span>
+                </div>
+              )}
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }

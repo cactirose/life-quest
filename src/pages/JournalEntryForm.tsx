@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { FormProvider, useForm } from "react-hook-form";
 import { JournalFormData } from "@/components/journal/JournalFormSchema";
-import { JournalFormFields } from "@/components/journal/JournalFormFields";
+import JournalFormFields from "@/components/journal/JournalFormFields";
 import { JournalFormOptions } from "@/components/journal/JournalFormOptions";
 import { useJournalForm } from "@/hooks/useJournalForm";
 

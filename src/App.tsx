@@ -18,10 +18,8 @@ const App = () => {
     <>
       <AuthProvider>
         <DataProvider>
-          <CharacterProvider>
-            {mounted && <Routes />}
-            <Toaster position="top-right" richColors closeButton />
-          </CharacterProvider>
+          {mounted && <Routes />}
+          <Toaster position="top-right" richColors closeButton />
         </DataProvider>
       </AuthProvider>
     </>

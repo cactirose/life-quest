@@ -7,6 +7,7 @@ import { useDataEffects } from "../hooks/useDataEffects";
 import { GameData, DataContextType } from "@/types/gameData";
 import { DEFAULT_CHARACTER } from "@/types/character";
 import { SaveButton } from "@/components/ui/SaveButton";
+import { CharacterProvider } from "./CharacterContext";
 
 // Create context providers
 import { createQuestContextValue, QuestContext } from "./QuestContext";
@@ -106,8 +107,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     // Add methods from context values
     ...questContextValue,
     ...inventoryContextValue,
-    equipItem: inventoryContextValue.toggleEquipped,  // Use the correct property name
-    unequipItem: inventoryContextValue.toggleEquipped, // Use the correct property name
+    equipItem: inventoryContextValue.toggleEquipped,
+    unequipItem: inventoryContextValue.toggleEquipped,
     ...habitContextValue,
     ...moodContextValue,
     ...achievementContextValue
@@ -120,25 +121,27 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   return (
     <DataContext.Provider value={contextValue}>
-      <CombinedProvider
-        contextValue={contextValue}
-        questContextValue={questContextValue}
-        inventoryContextValue={inventoryContextValue}
-        skillTreeContextValue={skillTreeContextValue}
-        habitContextValue={habitContextValue}
-        moodContextValue={moodContextValue}
-        achievementContextValue={achievementContextValue}
-      >
-        {children}
-        
-        {/* Global Save Button */}
-        <SaveButton 
-          isSaving={saveState.isSaving}
-          lastSaveTime={saveState.lastSaveTime}
-          onSave={manualSave}
-          pendingChanges={saveState.pendingChanges}
-        />
-      </CombinedProvider>
+      <CharacterProvider>
+        <CombinedProvider
+          contextValue={contextValue}
+          questContextValue={questContextValue}
+          inventoryContextValue={inventoryContextValue}
+          skillTreeContextValue={skillTreeContextValue}
+          habitContextValue={habitContextValue}
+          moodContextValue={moodContextValue}
+          achievementContextValue={achievementContextValue}
+        >
+          {children}
+          
+          {/* Global Save Button */}
+          <SaveButton 
+            isSaving={saveState.isSaving}
+            lastSaveTime={saveState.lastSaveTime}
+            onSave={manualSave}
+            pendingChanges={saveState.pendingChanges}
+          />
+        </CombinedProvider>
+      </CharacterProvider>
     </DataContext.Provider>
   );
 }

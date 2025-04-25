@@ -10,3 +10,16 @@ export const journalFormSchema = z.object({
 });
 
 export type JournalFormData = z.infer<typeof journalFormSchema>;
+export type JournalFormValues = z.infer<typeof journalFormSchema>;
+
+// Define mood options for the journal
+export const MOOD_OPTIONS = [
+  { value: "happy", label: "Happy 😊" },
+  { value: "excited", label: "Excited 🤩" },
+  { value: "content", label: "Content 😌" },
+  { value: "neutral", label: "Neutral 😐" },
+  { value: "anxious", label: "Anxious 😰" },
+  { value: "sad", label: "Sad 😢" },
+  { value: "angry", label: "Angry 😠" },
+  { value: "frustrated", label: "Frustrated 😤" },
+];

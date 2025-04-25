@@ -43,7 +43,7 @@ export const useJournalForm = (entryId?: string) => {
             ? {
                 ...entry,
                 ...data,
-                updatedAt: now.toISOString()
+                updated_at: now.toISOString()
               }
             : entry
         );
@@ -56,8 +56,8 @@ export const useJournalForm = (entryId?: string) => {
         const newEntry: JournalEntry = {
           id: generateId(),
           ...data,
-          createdAt: now.toISOString(),
-          updatedAt: now.toISOString()
+          created_at: now.toISOString(),
+          updated_at: now.toISOString()
         };
         
         const updatedEntries = [...journalEntries, newEntry];
