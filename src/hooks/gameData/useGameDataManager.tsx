@@ -1,159 +1,125 @@
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { GameData } from "@/types/gameData";
 import { DEFAULT_GAME_DATA } from "@/utils/defaultGameData";
-import { useDataStatus } from "../useDataStatus";
-import { useSupabaseSync } from "../useSupabaseSync";
-import { useDataEffects } from "../useDataEffects";
-import { loadGameData } from "@/services";
-import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/features/auth/context/AuthContext";
+import { useDataPersistence } from "./useDataPersistence";
 import { useSaveManager } from "./useSaveManager";
+import { useCharacterProgression } from "./useCharacterProgression";
 
 export function useGameDataManager() {
-  const [gameData, setGameData] = useState<GameData>(DEFAULT_GAME_DATA);
+  // Default state
+  const [gameData, setGameDataInternal] = useState<GameData>(DEFAULT_GAME_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [loadAttempts, setLoadAttempts] = useState(0);
-  
-  const { isAuthenticated } = useAuth();
-  const { dataStatus, updateStatus } = useDataStatus();
-  
-  // Handle data change
-  const handleDataChange = useCallback((newData: Partial<GameData>, changedFields: Set<string> = new Set()) => {
-    setGameData(prev => ({ ...prev, ...newData }));
-    
-    // Use provided changedFields or create a new set with keys from newData
-    const fieldsToTrack = changedFields || new Set(Object.keys(newData));
-    
-    // Determine if this is a critical change that needs immediate save
-    const criticalFields = new Set(['character', 'quests', 'inventory']);
-    const hasCriticalChanges = Array.from(fieldsToTrack).some(field => criticalFields.has(field));
-    
-    if (hasCriticalChanges) {
-      immediateSave(fieldsToTrack);
-    } else {
-      trackChanges(fieldsToTrack);
-    }
-  }, []);
 
-  const { saveState, manualSave, trackChanges, immediateSave } = useSaveManager(gameData);
-  const { syncFromSupabase } = useSupabaseSync(handleDataChange);
-  
-  // Call useDataEffects with proper arguments
-  useDataEffects(gameData, handleDataChange);
+  // Load data from persistence
+  const {
+    loadData,
+    saveData,
+    isSaving,
+    lastSaveTime,
+    pendingChanges,
+  } = useDataPersistence();
+
+  const {
+    handleGameDataChange,
+    saveImmediately
+  } = useSaveManager({ saveData, gameData });
+
+  // Character progression system
+  const { processCharacterProgression } = useCharacterProgression();
 
   // Load initial data
-  const loadData = useCallback(async () => {
-    if (!isAuthenticated) return;
-
-    setIsLoading(true);
-    setError(null);
+  const loadInitialData = useCallback(async () => {
     try {
-      const serverData = await loadGameData();
-      if (Object.keys(serverData).length > 0) {
-        setGameData(prevData => ({
-          ...DEFAULT_GAME_DATA,
-          ...prevData,
-          ...serverData,
-        }));
-        updateStatus('loaded');
+      setIsLoading(true);
+      setError(null);
+      setLoadingProgress(10);
+
+      // Load data from storage
+      const loadedData = await loadData();
+      setLoadingProgress(80);
+
+      if (loadedData) {
+        // Process any character progression logic
+        const processedData = processCharacterProgression(loadedData);
+        setGameDataInternal(processedData);
       } else {
-        setError("No data received from server");
-        updateStatus('error');
+        // Use default data if nothing is loaded
+        setGameDataInternal(DEFAULT_GAME_DATA);
       }
-    } catch (error) {
-      console.error("Error loading data:", error);
-      setError(error instanceof Error ? error.message : "Failed to load data");
-      updateStatus('error');
-    } finally {
+
+      setLoadingProgress(100);
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Error loading game data:", err);
+      setError("Failed to load game data. Please refresh the page.");
       setIsLoading(false);
     }
-  }, [isAuthenticated, updateStatus]);
+  }, [loadData, processCharacterProgression]);
 
-  // Auth state change handler
+  // Initialize data on mount
   useEffect(() => {
-    let isMounted = true;
-    let unsubscribe: (() => void) | undefined;
+    loadInitialData();
+  }, [loadInitialData]);
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN') {
-        setTimeout(loadData, 500);
-      } else if (event === 'SIGNED_OUT') {
-        if (isMounted) {
-          setGameData(DEFAULT_GAME_DATA);
-          setError(null);
-          setLoadAttempts(0);
-        }
-      }
-    });
-
-    unsubscribe = subscription.unsubscribe;
-    loadData();
-
-    return () => {
-      isMounted = false;
-      if (unsubscribe) {
-        unsubscribe();
-      }
+  // Handle force reloads
+  useEffect(() => {
+    const handleForceReload = () => {
+      loadInitialData();
     };
-  }, [loadAttempts, isAuthenticated, loadData]);
 
-  // Refresh data function
+    window.addEventListener('force-data-reload', handleForceReload);
+    return () => {
+      window.removeEventListener('force-data-reload', handleForceReload);
+    };
+  }, [loadInitialData]);
+
+  // Wrapped setter function to handle saving
+  const setGameData = useCallback(
+    (newData: Partial<GameData>, changedFields?: Set<string>) => {
+      // Process character progression on updates
+      const updateWithProcessing = (prevData: GameData): GameData => {
+        // Start with a merged state
+        const mergedData = { ...prevData, ...newData };
+        // Process character progression
+        return processCharacterProgression(mergedData);
+      };
+
+      // Update state and trigger save
+      setGameDataInternal((prevData) => {
+        const newState = updateWithProcessing(prevData);
+        // Schedule save with debounce
+        handleGameDataChange(newState, changedFields);
+        return newState;
+      });
+    },
+    [handleGameDataChange, processCharacterProgression]
+  );
+
+  // Manual save handler
+  const manualSave = useCallback(async () => {
+    return await saveImmediately();
+  }, [saveImmediately]);
+
+  // Refresh data handler
   const refreshData = useCallback(async () => {
-    if (!isAuthenticated) {
-      toast.error("You must be logged in to refresh data");
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const serverData = await loadGameData();
-      if (Object.keys(serverData).length > 0) {
-        setGameData(prevData => ({
-          ...DEFAULT_GAME_DATA,
-          ...prevData,
-          ...serverData,
-        }));
-        toast.success("Your game data has been refreshed");
-      } else {
-        setError("No data received from server");
-        toast.error("Failed to refresh data from server");
-      }
-    } catch (error) {
-      console.error("Error refreshing data:", error);
-      setError(error instanceof Error ? error.message : "Failed to refresh data");
-      toast.error("Error refreshing data from server");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isAuthenticated]);
-
-  // Create a merged object with both the game data and the methods
-  const gameDataWithMethods = {
-    ...gameData,
-    character: gameData.character,
-    quests: gameData.quests,
-    inventory: gameData.inventory,
-    shopItems: gameData.shopItems,
-    habits: gameData.habits,
-    moods: gameData.moods,
-    achievements: gameData.achievements
-  };
+    await loadInitialData();
+  }, [loadInitialData]);
 
   return {
-    gameData: gameDataWithMethods,
-    setGameData: handleDataChange,
+    gameData,
+    setGameData,
     isLoading,
     loadingProgress,
     error,
     refreshData,
-    saveState,
-    manualSave
+    saveState: {
+      isSaving,
+      lastSaveTime,
+      pendingChanges,
+    },
+    manualSave,
   };
 }

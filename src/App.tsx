@@ -4,6 +4,7 @@ import { Routes } from './Routes';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/features/auth/context/AuthContext';
 import { DataProvider } from '@/contexts/DataContext';
+import { CharacterProvider } from '@/contexts/CharacterContext';
 
 const App = () => {
   const [mounted, setMounted] = useState(false);
@@ -17,8 +18,10 @@ const App = () => {
     <>
       <AuthProvider>
         <DataProvider>
-          {mounted && <Routes />}
-          <Toaster position="top-right" richColors closeButton />
+          <CharacterProvider>
+            {mounted && <Routes />}
+            <Toaster position="top-right" richColors closeButton />
+          </CharacterProvider>
         </DataProvider>
       </AuthProvider>
     </>

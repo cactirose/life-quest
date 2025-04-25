@@ -4,7 +4,7 @@ import { CombinedProvider } from "./CombinedProvider";
 import { useGameDataManager } from "@/hooks/gameData/useGameDataManager";
 import { DEFAULT_GAME_DATA } from "../utils/defaultGameData";
 import { useDataEffects } from "../hooks/useDataEffects";
-import { GameData } from "@/types/gameData";
+import { GameData, DataContextType } from "@/types/gameData";
 import { DEFAULT_CHARACTER } from "@/types/character";
 import { SaveButton } from "@/components/ui/SaveButton";
 
@@ -24,21 +24,6 @@ import {
   createAchievementContextValue,
   AchievementContext,
 } from "./AchievementContext";
-
-interface DataContextType {
-  gameData: GameData;
-  setGameData: (newData: Partial<GameData>, changedFields?: Set<string>) => void;
-  isLoading: boolean;
-  loadingProgress: number;
-  error: string | null;
-  refreshData: () => Promise<void>;
-  saveState: {
-    isSaving: boolean;
-    lastSaveTime: Date | null;
-    pendingChanges: Set<string>;
-  };
-  manualSave: () => Promise<void>;
-}
 
 export const DataContext = createContext<DataContextType | undefined>(undefined);
 
@@ -98,6 +83,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // Handle side effects
   useDataEffects(safeGameData, setGameData);
 
+  // Create the full context value with all required properties
   const contextValue: DataContextType = {
     gameData: safeGameData,
     setGameData,
@@ -106,7 +92,25 @@ export function DataProvider({ children }: { children: ReactNode }) {
     error,
     refreshData,
     saveState,
-    manualSave
+    manualSave,
+    
+    // Add direct properties for easier access throughout the app
+    character: safeGameData.character,
+    quests: safeGameData.quests,
+    inventory: safeGameData.inventory,
+    shopItems: safeGameData.shopItems,
+    habits: safeGameData.habits, 
+    moods: safeGameData.moods,
+    achievements: safeGameData.achievements,
+    
+    // Add methods from context values
+    ...questContextValue,
+    ...inventoryContextValue,
+    equipItem: inventoryContextValue.toggleEquipped,
+    unequipItem: inventoryContextValue.toggleEquipped,
+    ...habitContextValue,
+    ...moodContextValue,
+    ...achievementContextValue
   };
 
   // Don't render anything on server or during hydration to avoid mismatch
