@@ -1,81 +1,46 @@
 
-import { useCallback } from "react";
-import { JournalEntry } from "@/types/journal";
-import { useGameData } from "@/contexts/DataContext";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { JournalFormData } from "@/components/journal/JournalFormSchema";
-import { generateId } from "@/utils/idGenerator";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { JournalFormValues } from "@/components/journal/JournalFormSchema";
 
-export const useJournalForm = (entryId?: string) => {
+export const useJournalForm = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { gameData, setGameData } = useGameData();
-  const journalEntries = gameData.journalEntries || [];
 
-  const existingEntry = entryId
-    ? journalEntries.find(entry => entry.id === entryId)
-    : undefined;
-
-  const defaultValues = existingEntry
-    ? {
-        title: existingEntry.title,
-        mood: existingEntry.mood,
-        content: existingEntry.content,
-        isPrivate: existingEntry.isPrivate || false,
-        isFavorite: existingEntry.isFavorite || false
+  const handleSubmit = async (values: JournalFormValues) => {
+    setIsSubmitting(true);
+    try {
+      // Get user session to include user_id
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
       }
-    : {
-        title: "",
-        mood: "",
-        content: "",
-        isPrivate: false,
-        isFavorite: false
-      };
-
-  const onSubmit = useCallback(
-    (data: JournalFormData) => {
-      const now = new Date();
       
-      if (existingEntry) {
-        // Update existing entry
-        const updatedEntries = journalEntries.map(entry =>
-          entry.id === entryId
-            ? {
-                ...entry,
-                ...data,
-                updated_at: now.toISOString()
-              }
-            : entry
-        );
-        
-        setGameData({ journalEntries: updatedEntries }, new Set(["journalEntries"]));
-        toast.success("Journal entry updated successfully");
-        navigate(`/journal/${entryId}`);
-      } else {
-        // Create new entry - make sure all required properties are provided
-        const newEntry: JournalEntry = {
-          id: generateId(),
-          title: data.title,       // Explicitly set all required fields
-          content: data.content,   // Explicitly set all required fields
-          date: now.toISOString(), // Required field
-          mood: data.mood,
-          isPrivate: data.isPrivate,
-          isFavorite: data.isFavorite,
-          created_at: now.toISOString(),
-          updated_at: now.toISOString()
-        };
-        
-        const updatedEntries = [...journalEntries, newEntry];
-        setGameData({ journalEntries: updatedEntries }, new Set(["journalEntries"]));
-        toast.success("Journal entry created successfully");
-        navigate("/journal");
-      }
-    },
-    [journalEntries, existingEntry, entryId, setGameData, navigate]
-  );
+      const { error } = await supabase.from("journal_entries").insert({
+        title: values.title,
+        content: values.content,
+        mood: values.mood || null,
+        is_private: values.is_private,
+        is_favorite: values.is_favorite,
+        user_id: session.user.id, // Add the user_id from the session
+      });
+
+      if (error) throw error;
+
+      toast.success("Journal entry created successfully");
+      navigate("/journal");
+    } catch (error) {
+      console.error("Error creating journal entry:", error);
+      toast.error("Failed to create journal entry");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return {
-    defaultValues,
-    onSubmit
+    isSubmitting,
+    handleSubmit
   };
 };

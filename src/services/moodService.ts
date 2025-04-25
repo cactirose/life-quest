@@ -1,97 +1,119 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { MoodEntry, MoodType } from "@/types/mood";
-import { generateId } from "@/utils/idGenerator";
 import { toast } from "sonner";
+import { MoodEntry } from "@/types/mood";
 
-// Fetch mood entries
-export const fetchMoods = async (): Promise<MoodEntry[]> => {
+// Mood entries methods
+export const fetchMoodEntries = async (): Promise<MoodEntry[]> => {
   try {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) return [];
+    console.log("Fetching mood entries from Supabase");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.log("No authenticated user found when fetching mood entries");
+      return [];
+    }
     
     const { data, error } = await supabase
       .from("mood_entries")
       .select("*")
-      .eq("user_id", user.user.id)
-      .order("date", { ascending: false });
-      
+      .eq("user_id", user.id);
+
     if (error) {
-      console.error("Error fetching moods:", error);
+      console.error("Error fetching mood entries:", error);
       return [];
     }
-    
+
+    console.log(`Successfully fetched ${data.length} mood entries`);
     return data.map(entry => ({
       id: entry.id,
-      mood: entry.mood as MoodType,
       date: entry.date,
-      notes: entry.notes || "",
-      factors: [],  // Default empty arrays for optional fields
-      activities: []
-    }));
+      mood: entry.mood,
+      notes: entry.notes || ""
+    }) as MoodEntry);
   } catch (error) {
-    console.error("Error in fetchMoods:", error);
+    console.error("Error in fetchMoodEntries:", error);
     return [];
   }
 };
 
-// Create or update mood entry
-export const upsertMood = async (entry: MoodEntry): Promise<boolean> => {
+export const upsertMoodEntry = async (entry: MoodEntry): Promise<void> => {
   try {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) {
-      toast.error("You must be logged in to save mood entries");
-      return false;
+    console.log("Upserting mood entry to Supabase:", entry.id);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error("No authenticated user found when upserting mood entry");
+      throw new Error("No authenticated user");
     }
-    
-    // Check if mood entry exists
-    const { data } = await supabase
-      .from("mood_entries")
-      .select("id")
-      .eq("id", entry.id)
-      .single();
-      
-    const entryData = {
-      mood: entry.mood,
+
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(entry.id)) {
+      console.error("Invalid UUID format for mood entry:", entry.id);
+      throw new Error("Invalid UUID format");
+    }
+
+    const moodData = {
+      id: entry.id,
+      user_id: user.id,
       date: entry.date,
-      notes: entry.notes,
-      // We don't store factors and activities yet in the database
+      mood: entry.mood,
+      notes: entry.notes
     };
-    
-    if (data) {
-      // Update existing entry
-      const { error } = await supabase
-        .from("mood_entries")
-        .update(entryData)
-        .eq("id", entry.id);
-        
-      if (error) {
-        console.error("Error updating mood entry:", error);
-        return false;
-      }
-    } else {
-      // Insert new entry
-      const { error } = await supabase
-        .from("mood_entries")
-        .insert([{
-          id: entry.id || generateId(),
-          user_id: user.user.id,
-          ...entryData
-        }]);
-        
-      if (error) {
-        console.error("Error creating mood entry:", error);
-        return false;
-      }
+
+    console.log("Preparing to upsert mood data:", moodData);
+
+    const { error } = await supabase
+      .from("mood_entries")
+      .upsert(moodData);
+
+    if (error) {
+      console.error("Error upserting mood entry:", error, "Mood data:", moodData);
+      toast.error("Failed to save mood entry", {
+        description: error.message
+      });
+      throw error;
     }
     
-    return true;
+    console.log("Successfully upserted mood entry:", entry.id);
   } catch (error) {
-    console.error("Error in upsertMood:", error);
-    return false;
+    console.error("Error in upsertMoodEntry:", error, "Mood entry:", entry);
+    toast.error("Failed to save mood entry", {
+      description: error.message || "Unknown error"
+    });
+    throw error;
   }
 };
 
-// Export aliases for backward compatibility
-export const upsertMoodEntry = upsertMood;
-export const fetchMoodEntries = fetchMoods;
+export const deleteMoodEntry = async (entryId: string): Promise<void> => {
+  try {
+    console.log("Deleting mood entry from Supabase:", entryId);
+    
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(entryId)) {
+      console.error("Invalid UUID format for mood entry:", entryId);
+      throw new Error("Invalid UUID format");
+    }
+    
+    const { error } = await supabase
+      .from("mood_entries")
+      .delete()
+      .eq("id", entryId);
+
+    if (error) {
+      console.error("Error deleting mood entry:", error, "Mood ID:", entryId);
+      toast.error("Failed to delete mood entry", {
+        description: error.message
+      });
+      throw error;
+    }
+    
+    console.log("Successfully deleted mood entry:", entryId);
+  } catch (error) {
+    console.error("Error in deleteMoodEntry:", error, "Entry ID:", entryId);
+    toast.error("Failed to delete mood entry", {
+      description: error.message || "Unknown error"
+    });
+    throw error;
+  }
+};

@@ -1,174 +1,197 @@
 
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Pencil, Trash2, Heart, Calendar, Clock, ArrowLeft, Lock, Star } from 'lucide-react';
-import { JournalEntry } from '@/types/journal';
-import { useGameData } from '@/contexts/DataContext';
-import { toast } from 'sonner';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { MOOD_OPTIONS } from '@/components/journal/JournalFormSchema';
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { JournalEntry } from "@/types/journal";
+import { toast } from "sonner";
+import { isAuthenticated } from "@/utils/auth";
+import { ArrowLeft, Edit, Trash, BookOpen } from "lucide-react";
+import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
-export default function JournalEntryDetail() {
+const JournalEntryDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { gameData, setGameData } = useGameData();
   const [entry, setEntry] = useState<JournalEntry | null>(null);
-  const [loading, setLoading] = useState(true);
-  
+  const [isLoading, setIsLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   useEffect(() => {
-    if (id && gameData.journalEntries) {
-      const foundEntry = gameData.journalEntries.find(e => e.id === id);
-      setEntry(foundEntry || null);
+    const checkAuthAndLoadEntry = async () => {
+      const authed = await isAuthenticated();
+      if (!authed) {
+        navigate('/login');
+        return;
+      }
+      
+      if (id) {
+        fetchJournalEntry(id);
+      }
+    };
+    
+    checkAuthAndLoadEntry();
+  }, [id, navigate]);
+
+  const fetchJournalEntry = async (entryId: string) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('journal_entries')
+        .select('*')
+        .eq('id', entryId)
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      if (data) {
+        setEntry(data);
+      } else {
+        toast.error("Journal entry not found");
+        navigate('/journal');
+      }
+    } catch (error) {
+      console.error("Error fetching journal entry:", error);
+      toast.error("Failed to load journal entry");
+      navigate('/journal');
+    } finally {
+      setIsLoading(false);
     }
-    setLoading(false);
-  }, [id, gameData.journalEntries]);
-  
-  if (loading) {
+  };
+
+  const handleDeleteEntry = async () => {
+    if (!id) return;
+
+    try {
+      const { error } = await supabase
+        .from('journal_entries')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success("Journal entry deleted successfully");
+      navigate('/journal');
+    } catch (error) {
+      console.error("Error deleting journal entry:", error);
+      toast.error("Failed to delete journal entry");
+    }
+  };
+
+  if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-10 bg-gray-300 rounded-md w-3/4 mb-4"></div>
-            <div className="h-6 bg-gray-300 rounded-md w-1/2 mb-8"></div>
-            <div className="h-40 bg-gray-300 rounded-md mb-4"></div>
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <div className="animate-spin text-3xl mb-4">⌛</div>
+          <p className="text-lg font-medium">Loading journal entry...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!entry) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-4">Journal Entry Not Found</h2>
+          <Button onClick={() => navigate("/journal")} className="pixel-button">
+            <ArrowLeft size={16} className="mr-2" />
+            Back to Journal
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto py-8 animate-fade-in">
+      <div className="flex items-center mb-6">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate("/journal")}
+          className="mr-2"
+        >
+          <ArrowLeft size={18} />
+        </Button>
+        <h1 className="text-3xl font-bold flex-grow">{entry.title}</h1>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline"
+            onClick={() => navigate(`/journal/${id}/edit`)}
+            className="flex items-center gap-2"
+          >
+            <Edit size={16} />
+            <span>Edit</span>
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => setDeleteDialogOpen(true)}
+            className="flex items-center gap-2 text-red-500 hover:text-red-700"
+          >
+            <Trash size={16} />
+            <span>Delete</span>
+          </Button>
+        </div>
+      </div>
+
+      <div className="parchment p-6">
+        <div className="flex justify-between items-center mb-4">
+          <div className="text-sm text-rpg-brown">
+            {format(new Date(entry.created_at), "MMMM d, yyyy 'at' h:mm a")}
+          </div>
+          {entry.mood && (
+            <div className="text-2xl">{entry.mood}</div>
+          )}
+        </div>
+
+        <div className="my-6 text-rpg-brown whitespace-pre-wrap">
+          {entry.content}
+        </div>
+
+        <div className="flex justify-between items-center mt-6 text-sm text-rpg-brown/70">
+          <div>
+            {entry.is_private && (
+              <span className="mr-3">🔒 Private</span>
+            )}
+            {entry.is_favorite && (
+              <span>⭐ Favorite</span>
+            )}
+          </div>
+          <div>
+            {entry.updated_at !== entry.created_at && 
+              `Last edited: ${format(new Date(entry.updated_at), "MMM d, yyyy")}`
+            }
           </div>
         </div>
       </div>
-    );
-  }
-  
-  if (!entry) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-2xl font-bold mb-4">Entry Not Found</h1>
-          <p className="mb-6">The journal entry you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate('/journal')}>
-            <ArrowLeft size={16} className="mr-2" />
-            Back to Journal
-          </Button>
-        </div>
-      </div>
-    );
-  }
-  
-  const handleDelete = () => {
-    const updatedEntries = gameData.journalEntries?.filter(e => e.id !== id) || [];
-    setGameData({ journalEntries: updatedEntries }, new Set(['journalEntries']));
-    toast.success("Journal entry deleted");
-    navigate('/journal');
-  };
-  
-  const toggleFavorite = () => {
-    const updatedEntries = gameData.journalEntries?.map(e => 
-      e.id === id ? { ...e, isFavorite: !e.isFavorite } : e
-    ) || [];
-    
-    setGameData({ journalEntries: updatedEntries }, new Set(['journalEntries']));
-    toast.success(entry.isFavorite ? "Removed from favorites" : "Added to favorites");
-    setEntry(prev => prev ? { ...prev, isFavorite: !prev.isFavorite } : null);
-  };
 
-  const moodLabel = entry.mood ? 
-    MOOD_OPTIONS.find(m => m.value === entry.mood)?.label || entry.mood 
-    : 'No mood recorded';
-  
-  const formattedCreatedDate = entry.created_at ? 
-    format(new Date(entry.created_at), 'PPP') : 'Unknown date';
-  
-  const formattedUpdatedDate = entry.updated_at ? 
-    format(new Date(entry.updated_at), 'PPP') : 'Unknown date';
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-6">
-          <Button variant="outline" onClick={() => navigate('/journal')}>
-            <ArrowLeft size={16} className="mr-2" />
-            Back to Journal
-          </Button>
-        </div>
-        
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-2xl mb-2">{entry.title}</CardTitle>
-                <div className="text-lg text-muted-foreground">{moodLabel}</div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="icon" onClick={toggleFavorite} title={entry.isFavorite ? "Remove from favorites" : "Add to favorites"}>
-                  <Star className={entry.isFavorite ? "fill-yellow-400 text-yellow-400" : "text-gray-400"} />
-                </Button>
-                <Button variant="ghost" size="icon" asChild>
-                  <Link to={`/journal/edit/${id}`}>
-                    <Pencil size={18} />
-                  </Link>
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-red-500">
-                      <Trash2 size={18} />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Journal Entry</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete this journal entry? This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">Delete</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-          </CardHeader>
-          
-          <CardContent>
-            <div className="prose max-w-none">
-              {entry.content.split('\n').map((paragraph, i) => (
-                paragraph ? <p key={i}>{paragraph}</p> : <br key={i} />
-              ))}
-            </div>
-          </CardContent>
-          
-          <CardFooter className="flex flex-col items-start gap-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-4">
-              {entry.isPrivate && (
-                <div className="flex items-center">
-                  <Lock size={14} className="mr-1" />
-                  <span>Private</span>
-                </div>
-              )}
-              {entry.isFavorite && (
-                <div className="flex items-center text-yellow-600">
-                  <Star size={14} className="mr-1 fill-yellow-600" />
-                  <span>Favorite</span>
-                </div>
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-4 mt-2">
-              <div className="flex items-center">
-                <Calendar size={14} className="mr-1" />
-                <span>Created: {formattedCreatedDate}</span>
-              </div>
-              {entry.updated_at !== entry.created_at && (
-                <div className="flex items-center">
-                  <Clock size={14} className="mr-1" />
-                  <span>Updated: {formattedUpdatedDate}</span>
-                </div>
-              )}
-            </div>
-          </CardFooter>
-        </Card>
-      </div>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this journal entry.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteEntry} className="bg-red-500 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-}
+};
+
+export default JournalEntryDetail;

@@ -3,8 +3,6 @@ import { createContext, useContext } from "react";
 import { Challenge, ChallengeStatus } from "../types/challenges";
 import { generateId } from "../utils/idGenerator";
 import { StatName } from "../types/character";
-import { updateCharacterStats } from "../services/characterService";
-import { toast } from "sonner";
 
 interface ChallengeContextType {
   challenges: Challenge[];
@@ -30,8 +28,7 @@ export const useChallenges = () => useContext(ChallengeContext);
 
 export const createChallengeContextValue = (
   challenges: Challenge[] = [],
-  setGameData: React.Dispatch<React.SetStateAction<any>>,
-  currentGameData: any // Add parameter to receive the game data
+  setGameData: React.Dispatch<React.SetStateAction<any>>
 ): ChallengeContextType => {
   const addChallenge = (challenge: Omit<Challenge, "id">) => {
     const newChallenge = {
@@ -124,64 +121,46 @@ export const createChallengeContextValue = (
     });
   };
   
-  const completeChallenge = async (challengeId: string) => {
-    // Use currentGameData instead of gameData global variable
-    const challenge = currentGameData.challenges?.find((c: any) => c.id === challengeId);
-    if (!challenge || challenge.status === "completed" || !currentGameData.character?.id) return;
-
-    try {
-      // Update character stats in Supabase first
-      const updatedChar = await updateCharacterStats(currentGameData.character.id, {
-        xp: currentGameData.character.xp + (challenge.xpReward || 0), // Add null check with || 0
-        coins: currentGameData.character.coins + (challenge.coinReward || 0)
-      });
-
-      if (!updatedChar) {
-        toast.error("Failed to update character stats");
-        return;
-      }
-
-      // Update local state only after successful Supabase update
-      setGameData(prevData => {
-        // Apply stat rewards to the updated character
-        const updatedCharWithStats = {
-          ...updatedChar,
-          stats: {
-            ...updatedChar.stats,
-            ...Object.entries(challenge.statRewards || {}).reduce((acc, [stat, value]) => ({
-              ...acc,
-              [stat]: updatedChar.stats[stat as StatName] + (Number(value) || 0)
-            }), {} as Record<StatName, number>)
-          }
-        };
-        
-        // Add special reward to inventory if provided
-        let updatedInventory = [...(prevData.inventory || [])];
-        if (challenge.specialReward) {
-          updatedInventory = [...updatedInventory, {
-            ...challenge.specialReward,
-            id: challenge.specialReward.id || generateId()
-          }];
+  const completeChallenge = (challengeId: string) => {
+    setGameData(prevData => {
+      const challenge = (prevData.challenges || []).find(c => c.id === challengeId);
+      if (!challenge || challenge.status === "completed") return prevData;
+      
+      // Apply rewards
+      const updatedCharacter = {
+        ...prevData.character,
+        xp: prevData.character.xp + challenge.xpReward,
+        coins: prevData.character.coins + challenge.coinReward,
+        stats: {
+          ...prevData.character.stats,
+          ...Object.entries(challenge.statRewards || {}).reduce((acc, [stat, value]) => ({
+            ...acc,
+            [stat]: prevData.character.stats[stat as StatName] + (value || 0)
+          }), {} as Record<StatName, number>)
         }
-        
-        // Update challenge status
-        const updatedChallenges = (prevData.challenges || []).map(c => 
-          c.id === challengeId ? { ...c, status: "completed" as ChallengeStatus } : c
-        );
-        
-        return { 
-          ...prevData, 
-          character: updatedCharWithStats,
-          inventory: updatedInventory,
-          challenges: updatedChallenges
-        };
-      });
-
-      toast.success(`Challenge completed! +${challenge.xpReward} XP, +${challenge.coinReward} coins`);
-    } catch (error) {
-      console.error("Error completing challenge:", error);
-      toast.error("Failed to complete challenge. Please try again.");
-    }
+      };
+      
+      // Add special reward to inventory if provided
+      let updatedInventory = [...(prevData.inventory || [])];
+      if (challenge.specialReward) {
+        updatedInventory = [...updatedInventory, {
+          ...challenge.specialReward,
+          id: challenge.specialReward.id || generateId()
+        }];
+      }
+      
+      // Update challenge status
+      const updatedChallenges = (prevData.challenges || []).map(c => 
+        c.id === challengeId ? { ...c, status: "completed" as ChallengeStatus } : c
+      );
+      
+      return { 
+        ...prevData, 
+        character: updatedCharacter,
+        inventory: updatedInventory,
+        challenges: updatedChallenges
+      };
+    });
   };
 
   return {

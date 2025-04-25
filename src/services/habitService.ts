@@ -1,163 +1,143 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Habit, HabitFrequency, HabitCompletion, DayOfWeek } from "@/types/habits";
 import { toast } from "sonner";
+import { Habit } from "@/types/habits";
+import { toHabitCompletions } from "./utils/supabaseUtils";
 import { Json } from "@/integrations/supabase/types";
 
+// Habits methods
 export const fetchHabits = async (): Promise<Habit[]> => {
   try {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) return [];
+    console.log("Fetching habits from Supabase");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.log("No authenticated user found when fetching habits");
+      return [];
+    }
     
     const { data, error } = await supabase
       .from("habits")
       .select("*")
-      .eq("user_id", user.user.id);
+      .eq("user_id", user.id);
 
     if (error) {
       console.error("Error fetching habits:", error);
       return [];
     }
 
-    return data.map(habit => {
-      // Safely convert completion_history to HabitCompletion[]
-      const completionHistory = Array.isArray(habit.completion_history) 
-        ? (habit.completion_history as unknown as HabitCompletion[])
-        : [] as HabitCompletion[];
-        
-      // Properly type custom_days as DayOfWeek[]
-      const customDays = Array.isArray(habit.custom_days)
-        ? (habit.custom_days as unknown as DayOfWeek[])
-        : [] as DayOfWeek[];
-      
-      // Safely handle achievement_links
-      let achievementLinks: string[] = [];
-      if ('achievement_links' in habit && habit.achievement_links !== null) {
-        if (Array.isArray(habit.achievement_links)) {
-          achievementLinks = habit.achievement_links as string[];
-        }
-      }
-        
-      return {
-        id: habit.id,
-        name: habit.name,
-        description: habit.description || "",
-        frequency: habit.frequency as HabitFrequency,
-        streak: habit.streak || 0,
-        completionHistory: completionHistory,
-        customDays: customDays,
-        color: habit.color || "#4F46E5",
-        icon: habit.icon || "✨",
-        createdAt: habit.created_at || new Date().toISOString(),
-        archivedAt: null,
-        priority: "medium",
-        xpReward: habit.xp_reward || 10,
-        coinReward: habit.coin_reward || 5,
-        achievementLinks: achievementLinks
-      };
-    });
+    console.log(`Successfully fetched ${data.length} habits`);
+    return data.map(habit => ({
+      id: habit.id,
+      name: habit.name,
+      description: habit.description || "",
+      icon: habit.icon || "",
+      frequency: habit.frequency,
+      customDays: habit.custom_days as any,
+      streak: habit.streak,
+      xpReward: habit.xp_reward,
+      coinReward: habit.coin_reward,
+      reminder: habit.reminder,
+      completionHistory: toHabitCompletions(habit.completion_history),
+      color: habit.color
+    } as Habit));
   } catch (error) {
     console.error("Error in fetchHabits:", error);
     return [];
   }
 };
 
-// Add the deleteHabit function
-export const deleteHabit = async (habitId: string): Promise<boolean> => {
+export const upsertHabit = async (habit: Habit): Promise<void> => {
   try {
+    console.log("Upserting habit to Supabase:", habit.id);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error("No authenticated user found when upserting habit");
+      throw new Error("No authenticated user");
+    }
+
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(habit.id)) {
+      console.error("Invalid UUID format for habit:", habit.id);
+      throw new Error("Invalid UUID format");
+    }
+
+    // Convert HabitCompletion[] to Json for storage
+    const completionsAsJson = habit.completionHistory.map(completion => ({
+      date: completion.date,
+      completed: completion.completed
+    }));
+
+    const habitData = {
+      id: habit.id,
+      user_id: user.id,
+      name: habit.name,
+      description: habit.description,
+      icon: habit.icon,
+      frequency: habit.frequency,
+      custom_days: habit.customDays as any,
+      streak: habit.streak,
+      xp_reward: habit.xpReward,
+      coin_reward: habit.coinReward,
+      reminder: habit.reminder,
+      completion_history: completionsAsJson as unknown as Json,
+      color: habit.color
+    };
+
+    console.log("Preparing to upsert habit data:", habitData);
+
+    const { error } = await supabase
+      .from("habits")
+      .upsert(habitData);
+
+    if (error) {
+      console.error("Error upserting habit:", error, "Habit data:", habitData);
+      toast.error("Failed to save habit", {
+        description: error.message
+      });
+      throw error;
+    }
+    
+    console.log("Successfully upserted habit:", habit.id);
+  } catch (error) {
+    console.error("Error in upsertHabit:", error, "Habit:", habit);
+    toast.error("Failed to save habit", {
+      description: error.message || "Unknown error"
+    });
+    throw error;
+  }
+};
+
+export const deleteHabit = async (habitId: string): Promise<void> => {
+  try {
+    console.log("Deleting habit from Supabase:", habitId);
+    
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(habitId)) {
+      console.error("Invalid UUID format for habit:", habitId);
+      throw new Error("Invalid UUID format");
+    }
+    
     const { error } = await supabase
       .from("habits")
       .delete()
       .eq("id", habitId);
 
     if (error) {
-      console.error("Error deleting habit:", error);
-      toast.error("Failed to delete habit");
-      return false;
+      console.error("Error deleting habit:", error, "Habit ID:", habitId);
+      toast.error("Failed to delete habit", {
+        description: error.message
+      });
+      throw error;
     }
-
-    return true;
+    
+    console.log("Successfully deleted habit:", habitId);
   } catch (error) {
-    console.error("Error in deleteHabit:", error);
-    toast.error("Failed to delete habit");
-    return false;
-  }
-};
-
-// Add the upsertHabit function
-export const upsertHabit = async (habit: Habit): Promise<Habit | null> => {
-  try {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) throw new Error("No authenticated user");
-
-    // Check if habit exists
-    const { data } = await supabase
-      .from("habits")
-      .select("id")
-      .eq("id", habit.id)
-      .single();
-
-    // Convert completion history to JSON compatible format
-    const completionHistory = JSON.parse(JSON.stringify(habit.completionHistory || []));
-
-    if (data) {
-      // Update existing habit
-      const { error } = await supabase
-        .from("habits")
-        .update({
-          name: habit.name,
-          description: habit.description,
-          frequency: habit.frequency,
-          streak: habit.streak,
-          completion_history: completionHistory,
-          custom_days: habit.customDays,
-          color: habit.color,
-          icon: habit.icon,
-          xp_reward: habit.xpReward,
-          coin_reward: habit.coinReward,
-          achievement_links: habit.achievementLinks || []
-        })
-        .eq("id", habit.id);
-
-      if (error) {
-        console.error("Error updating habit:", error);
-        toast.error("Failed to update habit");
-        return null;
-      }
-    } else {
-      // Insert new habit
-      const { error } = await supabase
-        .from("habits")
-        .insert([
-          {
-            id: habit.id,
-            user_id: user.user.id,
-            name: habit.name,
-            description: habit.description,
-            frequency: habit.frequency,
-            streak: habit.streak,
-            completion_history: completionHistory,
-            custom_days: habit.customDays,
-            color: habit.color,
-            icon: habit.icon,
-            created_at: new Date().toISOString(),
-            xp_reward: habit.xpReward,
-            coin_reward: habit.coinReward,
-            achievement_links: habit.achievementLinks || []
-          }
-        ]);
-
-      if (error) {
-        console.error("Error creating habit:", error);
-        toast.error("Failed to create habit");
-        return null;
-      }
-    }
-
-    return habit;
-  } catch (error) {
-    console.error("Error in upsertHabit:", error);
-    toast.error("Failed to save habit");
-    return null;
+    console.error("Error in deleteHabit:", error, "Habit ID:", habitId);
+    toast.error("Failed to delete habit", {
+      description: error.message || "Unknown error" 
+    });
+    throw error;
   }
 };

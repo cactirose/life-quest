@@ -1,48 +1,49 @@
 
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { useServerTime } from "./login-streak/useServerTime";
 import { useStreakChecker } from "./login-streak/useStreakChecker";
 import { useDailyBonus } from "./login-streak/useDailyBonus";
+import { startOfDay } from "date-fns";
 
 export const useLoginStreak = () => {
-  const { gameData, setGameData } = useGameData();
-  const { character } = gameData;
-  
+  const { character, setCharacter, setGameData } = useGameData();
   const { serverTime, fetchServerTime } = useServerTime();
-  
-  // Create a wrapper for setCharacter to update through GameData
-  const setCharacter = useCallback((updatedCharacter) => {
-    setGameData({ character: updatedCharacter }, new Set(['character']));
-  }, [setGameData]);
   
   const { 
     checkLoginStreak,
     isCheckingLogin
   } = useStreakChecker({ 
     character, 
-    setCharacter,
+    setCharacter, 
     fetchServerTime 
   });
   
-  // Update useDailyBonus hook usage to get all needed properties
   const { 
-    claimDailyBonus, 
-    isClaimingBonus 
-  } = useDailyBonus();
+    claimDailyBonus,
+    forceReset,
+    isClaimingBonus
+  } = useDailyBonus({ 
+    character, 
+    setGameData 
+  });
 
-  // Check login streak when component mounts or when character changes
+  // Check login streak when component mounts
   useEffect(() => {
-    if (character && !isCheckingLogin) {
+    if (character) {
       checkLoginStreak();
     }
-  }, [character?.id, checkLoginStreak, isCheckingLogin]);
+  }, [character, checkLoginStreak]);
+
+  // Adapted force reset that uses fetchServerTime
+  const adaptedForceReset = async () => {
+    await forceReset(fetchServerTime);
+  };
 
   return { 
     claimDailyBonus,
+    forceReset: adaptedForceReset,
     isCheckingLogin,
-    isClaimingBonus,
-    streak: character?.loginStreak || 0,
-    canClaimBonus: character && !character.dailyBonusClaimed
+    isClaimingBonus
   };
 };

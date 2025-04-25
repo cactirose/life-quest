@@ -2,9 +2,10 @@
 import { useGameData } from "@/contexts/DataContext";
 
 const StatusBar = () => {
-  const { gameData, isLoading } = useGameData();
+  const { character } = useGameData();
   
-  if (isLoading || !gameData.character) {
+  // Make sure character data is available
+  if (!character || !character.level) {
     return (
       <div className="flex items-center gap-4 text-[hsl(var(--nav-text))] font-pixel animate-pulse">
         <span>Loading...</span>
@@ -14,9 +15,9 @@ const StatusBar = () => {
   
   return (
     <div className="flex items-center gap-4 text-[hsl(var(--nav-text))] font-pixel">
-      <span>Level: {gameData.character.level}</span>
-      <span>XP: {gameData.character.xp}/{gameData.character.nextLevelXp}</span>
-      <span>Coins: {gameData.character.coins}</span>
+      <span>Level: {character.level}</span>
+      <span>XP: {character.xp}/{character.nextLevelXp}</span>
+      <span>Coins: {character.coins}</span>
     </div>
   );
 };

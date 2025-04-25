@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -19,21 +18,21 @@ import { useGameData } from "@/contexts/DataContext";
 export function TutorialSection() {
   // Always initialize state at the top level
   const [isVisible, setIsVisible] = useState(true);
-  const { gameData } = useGameData();
+  const { character } = useGameData();
   
   // Use useEffect to determine visibility after render
   useEffect(() => {
     // If game data is not loaded yet or character is undefined, show the tutorial by default
-    if (!gameData || !gameData.character || typeof gameData.character !== 'object') {
+    if (!character || typeof character !== 'object') {
       setIsVisible(true);
       return;
     }
     
     // If the character is above level 3, don't show the tutorial by default
-    const characterLevel = typeof gameData.character.level === 'number' ? gameData.character.level : 0;
+    const characterLevel = typeof character.level === 'number' ? character.level : 0;
     const isNewUser = characterLevel <= 3;
     setIsVisible(isNewUser);
-  }, [gameData]);
+  }, [character]);
   
   // Render null if not visible, but don't conditionally call hooks
   if (!isVisible) return null;

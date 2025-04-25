@@ -1,3 +1,4 @@
+
 export type AchievementCategory = "quests" | "habits" | "skills" | "character" | "general";
 
 export interface Achievement {
@@ -15,8 +16,9 @@ export interface Achievement {
   };
   unlocked: boolean;
   dateUnlocked?: string;
-  progress: number;           // current amount of progress
-  goal: number;              // total amount needed to complete the achievement
+  requiredCount?: number;
+  currentCount?: number;
+  // Add tracking properties
   requiredLevel?: number;
   requiredCoins?: number;
   requiredChallenges?: number;
@@ -31,8 +33,8 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "🏆",
     xpReward: 50,
     coinReward: 25,
-    progress: 0,
-    goal: 1
+    requiredCount: 1,
+    currentCount: 0
   },
   {
     title: "Habit Master",
@@ -41,8 +43,8 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "🔥",
     xpReward: 100,
     coinReward: 50,
-    progress: 0,
-    goal: 7
+    requiredCount: 7,
+    currentCount: 0
   },
   {
     title: "Skill Seeker",
@@ -51,8 +53,8 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "🌟",
     xpReward: 75,
     coinReward: 30,
-    progress: 0,
-    goal: 1
+    requiredCount: 1,
+    currentCount: 0
   },
   {
     title: "Well Equipped",
@@ -60,9 +62,7 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     category: "character",
     icon: "⚔️",
     xpReward: 125,
-    coinReward: 75,
-    progress: 0,
-    goal: 1
+    coinReward: 75
   },
   {
     title: "Wealthy Adventurer",
@@ -71,8 +71,8 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "💰",
     xpReward: 150,
     coinReward: 0,
-    progress: 0,
-    goal: 500,
+    requiredCount: 500,
+    currentCount: 0,
     requiredCoins: 500
   },
   {
@@ -82,8 +82,6 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "⭐",
     xpReward: 100,
     coinReward: 50,
-    progress: 0,
-    goal: 1,
     requiredLevel: 5
   },
   {
@@ -93,8 +91,6 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "🏅",
     xpReward: 125,
     coinReward: 75,
-    progress: 0,
-    goal: 3,
     requiredChallenges: 3
   }
 ];

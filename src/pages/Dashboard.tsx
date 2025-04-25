@@ -3,8 +3,6 @@ import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
 import { Award, BadgeCheck, CircleCheck, Clock, Plus, Sparkle, Target, BookOpen, ListChecks, UserCircle, LayoutGrid, Sword, Info, CalendarClock } from "lucide-react";
 import { format } from "date-fns";
-import { DailyLoginCard } from "@/components/dashboard/DailyLoginCard";
-import { DEFAULT_CHARACTER } from "@/types/character";
 
 // Category icon mapping
 const categoryIcons: Record<string, JSX.Element> = {
@@ -17,15 +15,10 @@ const categoryIcons: Record<string, JSX.Element> = {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { gameData } = useGameData();
-  
-  // Extract data safely with defaults
-  const { character: rawCharacter, quests, inventory, skillTree, achievements } = gameData;
-  
-  // Make sure we always have a valid character object with all required fields
-  const character = { ...DEFAULT_CHARACTER, ...rawCharacter };
+  const { character, quests, inventory, skillTree, achievements } = useGameData();
   
   // Make sure we have valid data or use defaults
+  const safeCharacter = character || { stats: {}, level: 1, xp: 0, nextLevelXp: 100, coins: 0 };
   const safeQuests = Array.isArray(quests) ? quests : [];
   const safeInventory = Array.isArray(inventory) ? inventory : [];
   const safeSkillTree = Array.isArray(skillTree) ? skillTree : [];
@@ -201,131 +194,107 @@ const Dashboard = () => {
         
         {/* Right Column */}
         <div className="space-y-6">
-          {/* Character Card */}
-          <div className="parchment">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <UserCircle className="h-5 w-5 text-rpg-brown" />
-                <h2 className="text-xl font-pixel text-rpg-brown">Character</h2>
-              </div>
-              <Button 
-                onClick={() => navigate("/character")} 
-                variant="ghost"
-                className="text-rpg-brown hover:text-rpg-green hover:bg-transparent"
-              >
-                View
-              </Button>
+          <div className="parchment p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Info size={20} className="text-rpg-brown" />
+              <h2 className="text-lg font-pixel text-rpg-brown">Daily Login Streak</h2>
             </div>
-            
-            <div className="space-y-4">
-              {/* Character Info */}
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-rpg-tan border-2 border-rpg-brown overflow-hidden">
-                  {character.portrait ? (
-                    <img 
-                      src={character.portrait} 
-                      alt={character.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <UserCircle className="w-full h-full text-rpg-brown" />
-                  )}
+            <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="flex flex-col items-center sm:items-start mb-4 sm:mb-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <CalendarClock className="text-rpg-brown" size={18} />
+                  <span className="font-pixel text-rpg-brown">Day {safeCharacter.loginStreak}</span>
                 </div>
-                <div>
-                  <h3 className="font-pixel text-lg text-rpg-brown">{character.name}</h3>
-                  <div className="flex items-center gap-1">
-                    <Sparkle size={16} className="text-rpg-green" />
-                    <span className="text-sm text-rpg-brown">Level {character.level}</span>
-                  </div>
-                </div>
+                <p className="text-sm text-rpg-brown">Keep logging in daily to earn increasing rewards!</p>
               </div>
               
-              {/* XP Progress */}
-              <div>
-                <div className="flex justify-between text-sm text-rpg-brown mb-1">
-                  <span>XP: {character.xp}</span>
-                  <span>{character.nextLevelXp}</span>
-                </div>
-                <div className="w-full h-2 bg-rpg-brown/30 rounded overflow-hidden">
-                  <div 
-                    className="h-full bg-rpg-green" 
-                    style={{ width: `${(character.xp / character.nextLevelXp) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-              
-              {/* Coins */}
-              <div className="flex items-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <circle cx="12" cy="12" r="9" fill="currentColor" stroke="none" />
-                  <circle cx="12" cy="12" r="7" fill="yellow" stroke="currentColor" strokeWidth="1" />
-                  <text x="12" y="14" textAnchor="middle" fill="currentColor" fontSize="10" fontWeight="bold">$</text>
-                </svg>
-                <span className="font-pixel text-rpg-brown">{character.coins} coins</span>
-              </div>
+              <Button
+                disabled={safeCharacter.dailyBonusClaimed}
+                className={`pixel-button ${safeCharacter.dailyBonusClaimed ? "opacity-50 cursor-not-allowed" : ""}`}
+                onClick={() => {
+                  if (character?.claimDailyBonus) {
+                    character.claimDailyBonus();
+                  }
+                }}
+              >
+                {safeCharacter.dailyBonusClaimed ? "Already Claimed" : "Claim Daily Bonus"}
+              </Button>
             </div>
           </div>
-          
-          {/* Daily Login Card */}
-          <DailyLoginCard />
-          
-          {/* Achievements Card */}
+
           <div className="parchment">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-rpg-brown" />
-                <h2 className="text-xl font-pixel text-rpg-brown">Achievements</h2>
-              </div>
-              <Button 
-                onClick={() => navigate("/achievements")} 
-                variant="ghost"
-                className="text-rpg-brown hover:text-rpg-green hover:bg-transparent"
-              >
-                View All
-              </Button>
-            </div>
+            <h2 className="text-2xl font-pixel text-rpg-brown mb-4">Character Stats</h2>
             
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-rpg-brown">Completed</p>
-                  <p className="font-pixel text-rpg-brown">{unlockedAchievements.length} / {safeAchievements.length}</p>
+            <div className="flex flex-col gap-3 mb-6">
+              <div className="flex items-center gap-2">
+                <Sparkle className="text-rpg-brown" size={20} />
+                <span className="font-pixel text-rpg-brown">Level {safeCharacter.level}</span>
+              </div>
+              
+              <div>
+                <span className="text-sm text-rpg-brown">XP Progress</span>
+                <div className="pixel-progress-bar mt-1">
+                  <div 
+                    className="pixel-progress-bar-fill"
+                    style={{ width: `${(safeCharacter.xp / safeCharacter.nextLevelXp) * 100}%` }} 
+                  />
                 </div>
-                <div className="w-16 h-16 rounded-full bg-rpg-tan border-2 border-rpg-brown flex items-center justify-center">
-                  <span className="font-pixel text-xl text-rpg-brown">
-                    {Math.round((unlockedAchievements.length / Math.max(1, safeAchievements.length)) * 100)}%
-                  </span>
+                <div className="flex justify-between text-xs mt-1">
+                  <span>{safeCharacter.xp} XP</span>
+                  <span>{safeCharacter.nextLevelXp} XP</span>
                 </div>
               </div>
               
-              {/* Recent Achievements */}
-              {unlockedAchievements.length > 0 ? (
-                <div>
-                  <h3 className="font-pixel text-sm text-rpg-brown mb-2">Recently Unlocked</h3>
-                  <div className="space-y-2">
-                    {unlockedAchievements.slice(0, 2).map(achievement => (
-                      <div key={achievement.id} className="flex items-center gap-2">
-                        <BadgeCheck className="h-4 w-4 text-rpg-green" />
-                        <div>
-                          <p className="text-sm font-medium text-rpg-brown">{achievement.title}</p>
-                          <div className="flex items-center gap-1 text-xs text-rpg-brown/70">
-                            {achievement.category && categoryIcons[achievement.category]}
-                            <span>{achievement.category}</span>
-                            {achievement.dateUnlocked && (
-                              <span>• {format(new Date(achievement.dateUnlocked), 'MMM d')}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🪙</span>
+                <span className="font-pixel text-rpg-brown">{safeCharacter.coins} Coins</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {safeCharacter.stats && Object.entries(safeCharacter.stats).map(([stat, value]) => (
+                <div key={stat} className="wood-texture p-2">
+                  <div className="text-sm capitalize text-rpg-brown">{stat}</div>
+                  <div className="font-pixel text-lg text-rpg-brown">{value}</div>
                 </div>
-              ) : (
-                <div className="text-center py-2 text-rpg-brown">
-                  <Info size={24} className="mx-auto mb-1" />
-                  <p className="text-sm">No achievements unlocked yet.</p>
+              ))}
+            </div>
+            
+            <Button 
+              onClick={() => navigate("/character")} 
+              className="w-full mt-4 pixel-button"
+            >
+              View Character
+            </Button>
+          </div>
+          
+          <div className="parchment">
+            <h2 className="text-2xl font-pixel text-rpg-brown mb-4">Progress Summary</h2>
+            
+            <div className="space-y-4">
+              <div className="wood-texture p-3">
+                <div className="text-sm text-rpg-brown mb-1">Quests</div>
+                <div className="flex justify-between">
+                  <span className="font-pixel text-rpg-brown">{completedQuests.length} Completed</span>
+                  <span className="font-pixel text-rpg-brown">{activeQuests.length} Active</span>
                 </div>
-              )}
+              </div>
+              
+              <div className="wood-texture p-3">
+                <div className="text-sm text-rpg-brown mb-1">Equipment</div>
+                <div className="flex justify-between">
+                  <span className="font-pixel text-rpg-brown">{equippedItems.length} Equipped</span>
+                  <span className="font-pixel text-rpg-brown">{safeInventory.length} Total</span>
+                </div>
+              </div>
+              
+              <div className="wood-texture p-3">
+                <div className="text-sm text-rpg-brown mb-1">Skills</div>
+                <div className="flex justify-between">
+                  <span className="font-pixel text-rpg-brown">{unlockedSkills} Unlocked</span>
+                  <span className="font-pixel text-rpg-brown">{totalSkills} Total</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

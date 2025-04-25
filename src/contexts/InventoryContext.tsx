@@ -1,8 +1,8 @@
 
-import { createContext, useContext, useRef } from "react";
+import { createContext, useContext } from "react";
 import { GearItem, GearType } from "../types/inventory";
 import { generateId } from "../utils/idGenerator";
-import { upsertInventoryItem, fetchInventory } from "@/services/inventoryService";
+import { toggleItemEquipped, upsertInventoryItem } from "@/services/inventoryService";
 import { toast } from "sonner";
 
 interface InventoryContextType {
@@ -27,8 +27,6 @@ export const createInventoryContextValue = (
   shopItems: GearItem[],
   setGameData: React.Dispatch<React.SetStateAction<any>>
 ): InventoryContextType => {
-  const changedFields = useRef<Set<string>>(new Set());
-
   // SHOP & INVENTORY METHODS
   const addToInventory = (item: GearItem) => {
     setGameData(prevData => ({
@@ -53,33 +51,27 @@ export const createInventoryContextValue = (
         return;
       }
 
+      // Optimistically update the UI first for better user experience
+      setGameData(prevData => {
+        // First unequip any items of the same type
+        const updatedInventory = prevData.inventory.map(item => {
+          if (item.type === itemToEquip.type) {
+            return { ...item, equipped: item.id === itemId };
+          }
+          return item;
+        });
+
+        return { ...prevData, inventory: updatedInventory };
+      });
+
       // Create the updated item object
       const updatedItem = { ...itemToEquip, equipped: true };
       
-      // Update the item in the database first
+      // Update the item in the database
       const result = await upsertInventoryItem(updatedItem);
       if (!result) {
         throw new Error("Failed to update item equipped status in database");
       }
-
-      // After successful database update, fetch fresh inventory data
-      const freshInventory = await fetchInventory();
-      if (!freshInventory) {
-        throw new Error("Failed to fetch updated inventory data");
-      }
-
-      // Mark inventory as changed to trigger sync
-      changedFields.current?.add('inventory');
-
-      // Update the UI with fresh data from the server
-      setGameData(prevData => ({
-        ...prevData,
-        inventory: freshInventory.map(item => ({
-          ...item,
-          equipped: item.id === itemId ? true : 
-            (item.type === updatedItem.type ? false : item.equipped)
-        }))
-      }));
       
       // Success notification
       toast.success(`${itemToEquip.name} equipped!`);
@@ -87,14 +79,11 @@ export const createInventoryContextValue = (
       console.error("Error equipping item:", error);
       toast.error("Failed to equip item. Please try again.");
       
-      // Refresh the inventory data from the server on error
-      const freshInventory = await fetchInventory();
-      if (freshInventory) {
-        setGameData(prevData => ({
-          ...prevData,
-          inventory: freshInventory
-        }));
-      }
+      // Revert the optimistic update on error
+      setGameData(prevData => ({
+        ...prevData,
+        inventory: inventory // Revert to original inventory state
+      }));
     }
   };
 

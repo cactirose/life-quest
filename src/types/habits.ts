@@ -28,10 +28,6 @@ export interface Habit {
   completionHistory: HabitCompletion[];
   color: string; // CSS color for the habit
   steps?: HabitStep[]; // Optional steps for the habit
-  achievementLinks?: string[]; // Array of achievement IDs that this habit contributes to
-  createdAt?: string;
-  archivedAt?: string | null;
-  priority?: string;
 }
 
 // Sample habits for first run

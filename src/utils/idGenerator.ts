@@ -1,33 +1,22 @@
-import { v4 as uuidv4 } from 'uuid';
+// Generate a UUID v4 compatible with Supabase UUID column type
+export function generateId(): string {
+  // Implementation of RFC4122 compliant UUID v4
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
-/**
- * Generate a unique ID using UUID v4
- */
-export const generateId = (): string => {
-  return uuidv4();
-};
-
-/**
- * Migrate an old ID format to UUID format
- * Checks if the ID is already a UUID and returns it, otherwise generates a new one
- */
-export const migrateToUUID = (oldId: string): string => {
-  // UUID v4 regex pattern
-  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+// Function to check if existing IDs need migration to UUID format
+export function migrateToUUID(id: string): string {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   
-  // Check if the ID is already a valid UUID
-  if (uuidPattern.test(oldId)) {
-    return oldId;
+  // If it's already a valid UUID, return it
+  if (uuidRegex.test(id)) {
+    return id;
   }
   
-  // Otherwise generate a new UUID
+  // Otherwise, generate a new UUID
   return generateId();
-};
-
-/**
- * Generate a unique numeric ID (legacy) 
- * This is kept for backwards compatibility
- */
-export const generateNumericId = (): number => {
-  return Math.floor(Math.random() * 1000000000);
-};
+}

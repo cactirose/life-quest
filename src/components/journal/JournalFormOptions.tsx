@@ -1,37 +1,48 @@
-
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
-import { JournalFormData } from "./JournalFormSchema";
+import { JournalFormValues } from "./JournalFormSchema";
 
-export function JournalFormOptions() {
-  const { register, setValue, watch } = useFormContext<JournalFormData>();
-  const isFavorite = watch("isFavorite");
-  const isPrivate = watch("isPrivate");
-
+const JournalFormOptions = () => {
+  const form = useFormContext<JournalFormValues>();
   return (
-    <div className="space-y-4 mt-6">
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="favorite-switch"
-          checked={!!isFavorite}
-          onCheckedChange={(checked) => {
-            setValue("isFavorite", checked);
-          }}
-        />
-        <Label htmlFor="favorite-switch">Mark as favorite</Label>
-      </div>
+    <div className="flex items-center gap-4">
+      <FormField
+        control={form.control}
+        name="is_favorite"
+        render={({ field }) => (
+          <FormItem className="flex items-center gap-2">
+            <FormControl>
+              <input 
+                type="checkbox" 
+                checked={field.value} 
+                onChange={field.onChange} 
+                className="h-4 w-4"
+              />
+            </FormControl>
+            <FormLabel className="text-rpg-brown font-medium">Mark as favorite</FormLabel>
+          </FormItem>
+        )}
+      />
 
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="private-switch"
-          checked={!!isPrivate}
-          onCheckedChange={(checked) => {
-            setValue("isPrivate", checked);
-          }}
-        />
-        <Label htmlFor="private-switch">Make private</Label>
-      </div>
+      <FormField
+        control={form.control}
+        name="is_private"
+        render={({ field }) => (
+          <FormItem className="flex items-center gap-2">
+            <FormControl>
+              <input 
+                type="checkbox" 
+                checked={field.value} 
+                onChange={field.onChange} 
+                className="h-4 w-4"
+              />
+            </FormControl>
+            <FormLabel className="text-rpg-brown font-medium">Make private</FormLabel>
+          </FormItem>
+        )}
+      />
     </div>
   );
 }
+
+export default JournalFormOptions;

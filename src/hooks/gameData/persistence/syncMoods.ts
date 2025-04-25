@@ -1,6 +1,6 @@
 
 import { GameData } from '@/types/gameData';
-import { upsertMood } from "@/services";
+import { upsertMoodEntry } from "@/services";
 import { retrySyncOperation, validateEntity } from './syncUtils';
 
 // Sync moods data
@@ -26,7 +26,7 @@ export const syncMoodsData = async (gameData: GameData, changedFields: Set<strin
     }
     
     const success = await retrySyncOperation(
-      async () => await upsertMood(mood),
+      async () => await upsertMoodEntry(mood),
       `mood-${mood.id}`
     );
     

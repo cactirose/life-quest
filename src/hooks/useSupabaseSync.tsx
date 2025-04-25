@@ -1,12 +1,15 @@
 
 import { useRef, useCallback, useEffect } from "react";
+import { useGameData } from "@/contexts/DataContext";
 import { useDataSync } from "./useDataSync";
 import { useConnectionStatus } from "./sync/useConnectionStatus";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { toast } from "sonner";
-import { GameData } from "@/types/gameData";
 
-export function useSupabaseSync(setGameData: (data: Partial<GameData>, changedFields: Set<string>) => void) {
+export function useSupabaseSync() {
+  // Always initialize all hooks at the top level
+  const gameContext = useGameData();
+  const { setGameData } = gameContext;
   const { session, isAuthenticated } = useAuth();
 
   const {
@@ -21,7 +24,6 @@ export function useSupabaseSync(setGameData: (data: Partial<GameData>, changedFi
   const hasLoadedData = useRef(false);
   const lastSyncTime = useRef<Date | null>(null);
   const syncErrorCount = useRef(0);
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { isOnline, supabaseConnected } = useConnectionStatus();
 
@@ -31,30 +33,15 @@ export function useSupabaseSync(setGameData: (data: Partial<GameData>, changedFi
     if (isAuthenticated && isOnline && supabaseConnected) {
       console.log("Auth state changed, triggering data sync");
       
-      // Clear any existing sync timeout
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-      }
-      
       // Set a small delay to allow auth context to fully initialize
-      syncTimeoutRef.current = setTimeout(async () => {
-        try {
-          await syncFromSupabase();
-          hasLoadedData.current = true;
-          lastSyncTime.current = new Date();
-          syncErrorCount.current = 0; // Reset error count on successful sync
-        } catch (error) {
-          console.error("Error during initial data sync:", error);
-          toast.error("Could not load your data. Please check your connection and try again.");
-          syncErrorCount.current += 1;
-        }
+      const timer = setTimeout(() => {
+        syncFromSupabase();
+        hasLoadedData.current = true;
+        lastSyncTime.current = new Date();
+        syncErrorCount.current = 0; // Reset error count on successful sync
       }, 300);
       
-      return () => {
-        if (syncTimeoutRef.current) {
-          clearTimeout(syncTimeoutRef.current);
-        }
-      };
+      return () => clearTimeout(timer);
     }
   }, [isAuthenticated, isOnline, supabaseConnected, syncFromSupabase]);
 
@@ -67,42 +54,14 @@ export function useSupabaseSync(setGameData: (data: Partial<GameData>, changedFi
       
       if (timeSinceLastSync > ONE_MINUTE) {
         console.log("Network reconnected after period of disconnection, resyncing data");
-        
-        // Clear any existing timeout
-        if (syncTimeoutRef.current) {
-          clearTimeout(syncTimeoutRef.current);
-        }
-        
-        // Add a small delay before reconnection sync
-        syncTimeoutRef.current = setTimeout(async () => {
-          try {
-            await syncFromSupabase();
-            lastSyncTime.current = new Date();
-            syncErrorCount.current = 0;
-            toast.success("Successfully reconnected and refreshed data");
-          } catch (error) {
-            console.error("Error during reconnection sync:", error);
-            syncErrorCount.current += 1;
-            
-            if (syncErrorCount.current <= 3) {
-              toast.error("Could not sync data. Will retry automatically.");
-            } else {
-              toast.error("Multiple sync failures. Please try manual refresh.");
-            }
-          }
-        }, 500);
+        syncFromSupabase();
+        lastSyncTime.current = new Date();
       }
     }
-    
-    return () => {
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-      }
-    };
   }, [isOnline, supabaseConnected, isAuthenticated, syncFromSupabase]);
 
   // Implement a throttled auto-refresh function
-  const refreshData = useCallback(async () => {
+  const refreshData = useCallback(() => {
     // Don't refresh if already syncing
     if (isSyncing) {
       toast.info("Data sync already in progress");
@@ -117,23 +76,15 @@ export function useSupabaseSync(setGameData: (data: Partial<GameData>, changedFi
     
     // Throttle refresh rate to prevent excessive API calls
     const now = new Date();
-    const minTimeBetweenSyncs = 5000; // 5 seconds - reduced from 10 seconds for better UX
+    const minTimeBetweenSyncs = 10000; // 10 seconds - reduced from 30 seconds
     
     if (lastSyncTime.current && (now.getTime() - lastSyncTime.current.getTime() < minTimeBetweenSyncs)) {
       toast.info("Data was recently synced. Please try again in a moment.");
       return;
     }
     
-    try {
-      await syncFromSupabase();
-      lastSyncTime.current = now;
-      syncErrorCount.current = 0;
-      toast.success("Data refreshed successfully");
-    } catch (error) {
-      console.error("Error refreshing data:", error);
-      syncErrorCount.current += 1;
-      toast.error("Failed to refresh data. Please try again.");
-    }
+    syncFromSupabase();
+    lastSyncTime.current = now;
   }, [isSyncing, isOnline, supabaseConnected, syncFromSupabase]);
 
   // Return all properties consistently
@@ -143,7 +94,7 @@ export function useSupabaseSync(setGameData: (data: Partial<GameData>, changedFi
     dataStatus,
     isOnline,
     supabaseConnected,
-    hasLoadedData: hasLoadedData.current,
+    hasLoadedData,
     syncFromSupabase,
     refreshData
   };

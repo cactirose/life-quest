@@ -46,7 +46,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       if (localData) {
         try {
           const parsedData = JSON.parse(localData);
-          setGameData(parsedData);
+          setGameData(prevData => ({
+            ...prevData,
+            ...parsedData,
+          }));
         } catch (error) {
           console.error("Error parsing local data during retry:", error);
         }

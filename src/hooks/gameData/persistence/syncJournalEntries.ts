@@ -1,65 +1,62 @@
 
 import { GameData } from '@/types/gameData';
-import { supabase } from '@/lib/supabase';
-import { JournalEntry } from '@/types/journal';
+import { supabase } from '@/integrations/supabase/client';
+import { ensureValidSession } from '@/utils/auth';
+import { validateEntity } from './syncUtils';
 
-// Sync journal entries data
-export const syncJournalEntriesData = async (gameData: GameData, changedFields: Set<string>): Promise<boolean> => {
-  if (!changedFields.has("journalEntries") || !gameData.journalEntries) {
-    return true; // Nothing to sync
-  }
+export const syncJournalEntriesData = async (
+  gameData: GameData, 
+  changedFields: Set<string>
+): Promise<boolean> => {
+  if (!changedFields.has('journalEntries')) return true;
   
   try {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) {
-      console.error("No authenticated user found");
-      return false;
+    // Check authentication
+    const sessionValid = await ensureValidSession();
+    if (!sessionValid) throw new Error('No authenticated user');
+    
+    // Get the current user
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) throw new Error('No authenticated user');
+
+    console.log('Syncing journal entries:', gameData.journalEntries);
+
+    const validEntries = gameData.journalEntries.filter(entry => 
+      validateEntity(entry, ['id', 'title', 'content'])
+    );
+
+    if (validEntries.length === 0) {
+      console.log('No valid journal entries to sync');
+      return true;
     }
 
-    // For each journal entry in the array
-    for (const entry of gameData.journalEntries) {
-      if (entry.id) {
-        // Update existing entry
-        const { error } = await supabase
-          .from('journal_entries')
-          .update({
-            title: entry.title,
-            content: entry.content,
-            mood: entry.mood,
-            is_favorite: entry.isFavorite,
-            is_private: entry.isPrivate,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', entry.id)
-          .eq('user_id', user.user.id);
+    // Properly format entries for upsert operation
+    const formattedEntries = validEntries.map(entry => ({
+      id: entry.id,
+      user_id: userData.user.id,
+      title: entry.title,
+      content: entry.content,
+      mood: entry.mood || null,
+      is_favorite: entry.is_favorite,
+      is_private: entry.is_private,
+      updated_at: new Date().toISOString()
+    }));
 
-        if (error) {
-          console.error("Error updating journal entry:", error);
-          return false;
-        }
-      } else {
-        // Create new entry
-        const { error } = await supabase
-          .from('journal_entries')
-          .insert({
-            user_id: user.user.id,
-            title: entry.title,
-            content: entry.content,
-            mood: entry.mood,
-            is_favorite: entry.isFavorite || false,
-            is_private: entry.isPrivate || false
-          });
+    const { error } = await supabase
+      .from('journal_entries')
+      .upsert(formattedEntries, { 
+        onConflict: 'id'
+      });
 
-        if (error) {
-          console.error("Error creating journal entry:", error);
-          return false;
-        }
-      }
+    if (error) {
+      console.error('Supabase error syncing journal entries:', error);
+      throw error;
     }
     
+    console.log('Journal entries sync successful');
     return true;
   } catch (error) {
-    console.error("Error syncing journal entries:", error);
-    return false;
+    console.error('Error syncing journal entries:', error);
+    throw new Error(`Failed to sync journal entries: ${error.message}`);
   }
-};
+}; 

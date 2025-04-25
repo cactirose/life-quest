@@ -56,8 +56,6 @@
     /* RPG Theme Custom Variables - Keep these for compatibility */
     --rpg-tan: #D2B48C;
     --rpg-brown: #3F210E;
-    --rpg-gold: #F1C40F;
-    --rpg-gold-rgb: 241, 196, 15;
     --rpg-background: #FFF8DC;
     --rpg-green: #3A1F0E;
     --rpg-red: #B22222;
@@ -417,23 +415,6 @@
   .auth-link:hover {
     opacity: 0.8;
   }
-
-  /* Update animations */
-  .animate-float {
-    animation: float 5s ease-in-out infinite;
-  }
-
-  .animate-pulse-gentle {
-    animation: pulse-gentle 3s ease-in-out infinite;
-  }
-
-  .animate-spin-slow {
-    animation: spin 15s linear infinite;
-  }
-
-  .animate-sparkle {
-    animation: sparkle 2s ease-in-out infinite;
-  }
 }
 
 /* Custom animations */
@@ -465,46 +446,6 @@
 
 .animate-fade-in {
   animation: fade-in 0.3s ease-out forwards;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes pulse-gentle {
-  0%, 100% {
-    opacity: 0.7;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes sparkle {
-  0%, 100% {
-    opacity: 1;
-    filter: brightness(1);
-  }
-  50% {
-    opacity: 0.7;
-    filter: brightness(1.5);
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* Add this class for the background pattern only */

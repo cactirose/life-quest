@@ -1,6 +1,6 @@
 
 import { Quest } from "@/types/quests";
-import { deleteQuest } from "@/services/questService";
+import { deleteQuest as deleteQuestService } from "@/services/questService";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -10,7 +10,7 @@ export const useQuestManager = (
 ) => {
   const [isDeletingQuest, setIsDeletingQuest] = useState<string | null>(null);
 
-  const deleteQuestHandler = async (questId: string) => {
+  const deleteQuest = async (questId: string) => {
     try {
       // Prevent concurrent deletion of the same quest
       if (isDeletingQuest === questId) {
@@ -27,7 +27,7 @@ export const useQuestManager = (
       }));
       
       // Then send delete request to Supabase
-      await deleteQuest(questId);
+      await deleteQuestService(questId);
       
       toast.success("Quest deleted successfully");
     } catch (error) {
@@ -58,6 +58,6 @@ export const useQuestManager = (
   };
 
   return {
-    deleteQuest: deleteQuestHandler
+    deleteQuest
   };
 };

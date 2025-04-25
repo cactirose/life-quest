@@ -1,5 +1,4 @@
-
-import { useCallback, useRef, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { GameData } from '@/types/gameData';
 import { isAuthenticatedSync, ensureValidSession } from '@/utils/auth';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -8,17 +7,13 @@ import { useDebounce } from "./persistence/useDebounce";
 import { useSyncWithSupabase } from "./persistence/useSyncWithSupabase";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
-import { loadInitialGameData } from '@/utils/loadInitialData';
 
-export function useDataPersistence() {
+export function useDataPersistence(gameData: GameData) {
   const isMobile = useIsMobile();
   const changedFields = useRef<Set<string>>(new Set());
   const previousData = useRef<GameData | null>(null);
   const syncErrorCount = useRef<number>(0);
   const isInitialSync = useRef<boolean>(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
-  const [pendingChanges, setPendingChanges] = useState<Set<string>>(new Set());
 
   // Different sync delays for mobile vs desktop
   const getSyncDelay = () => {
@@ -30,53 +25,155 @@ export function useDataPersistence() {
   
   const { syncWithSupabase } = useSyncWithSupabase();
   
-  // Load data function
-  const loadData = useCallback(async (): Promise<Partial<GameData> | null> => {
+  const debouncedSync = useDebounce(async () => {
     try {
-      // First try to load from localStorage as a fallback
-      const data = await loadInitialGameData();
-      return data;
-    } catch (error) {
-      console.error("Error loading data:", error);
-      return null;
-    }
-  }, []);
-
-  // Save data function
-  const saveData = useCallback(async (gameData: GameData, fields: Set<string>): Promise<boolean> => {
-    try {
-      setIsSaving(true);
-      setPendingChanges(fields);
-
       // Ensure valid session before sync
       const hasValidSession = await ensureValidSession();
       if (!hasValidSession) {
         console.log("No valid session, skipping sync");
-        return false;
+        return;
       }
 
-      const success = await syncWithSupabase(gameData, fields, syncErrorCount);
-      
-      if (success) {
-        setLastSaveTime(new Date());
-        setPendingChanges(new Set());
-      }
-      
-      return success;
+      await syncWithSupabase(gameData, changedFields.current, syncErrorCount);
+      isInitialSync.current = false;
     } catch (error) {
-      console.error("Save error:", error);
-      toast.error("Failed to save data");
-      return false;
-    } finally {
-      setIsSaving(false);
+      console.error("Sync error:", error);
     }
-  }, [syncWithSupabase]);
+  }, getSyncDelay());
 
-  return {
-    loadData,
-    saveData,
-    isSaving,
-    lastSaveTime,
-    pendingChanges
-  };
+  // Add sync recovery
+  useEffect(() => {
+    const attemptRecovery = async () => {
+      const pendingSync = localStorage.getItem('pendingSync');
+      if (pendingSync) {
+        try {
+          const { timestamp, operations, gameData: failedData } = JSON.parse(pendingSync);
+          
+          // Only retry if the pending sync is less than 1 hour old
+          if (Date.now() - timestamp < 3600000) {
+            console.log('Attempting to recover failed sync operations');
+            await syncWithSupabase(failedData, new Set(operations.map(op => op.field)), syncErrorCount);
+          } else {
+            localStorage.removeItem('pendingSync');
+          }
+        } catch (error) {
+          console.error('Error recovering sync:', error);
+        }
+      }
+    };
+
+    // Try recovery on mount and when coming back online
+    attemptRecovery();
+    window.addEventListener('online', attemptRecovery);
+    return () => window.removeEventListener('online', attemptRecovery);
+  }, []);
+
+  // Add health check system
+  useEffect(() => {
+    const checkDatabaseHealth = async () => {
+      try {
+        // Define tables that should be checked, ensuring they match the table names in Supabase
+        // Use 'as const' to make TypeScript infer the literal types rather than just string
+        const tables = [
+          'characters',
+          'quests',
+          'mood_entries',
+          'achievements',
+          'habits',
+          'inventory_items',
+          'challenges',
+          'skill_nodes',
+          'shop_items',
+          'journal_entries',
+          'shopping_lists'
+        ] as const; // This is crucial for type safety
+
+        const results = await Promise.all(tables.map(async (table) => {
+          try {
+            // Test read permission only
+            const { error: readError } = await supabase
+              .from(table)
+              .select('id')
+              .limit(1);
+
+            return {
+              table,
+              status: !readError ? 'healthy' : 'error',
+              error: readError
+            };
+          } catch (error) {
+            return { table, status: 'error', error };
+          }
+        }));
+
+        const unhealthyTables = results.filter(r => r.status === 'error');
+        if (unhealthyTables.length > 0) {
+          console.error('Unhealthy tables detected:', unhealthyTables);
+          toast.error('Some features may not work properly', {
+            description: 'Please contact support if issues persist'
+          });
+        }
+      } catch (error) {
+        console.error('Health check failed:', error);
+      }
+    };
+
+    checkDatabaseHealth();
+  }, []);
+
+  // Modify the sync effect
+  useEffect(() => {
+    const validateData = (data: any, field: string): boolean => {
+      if (!data) return false;
+      
+      switch(field) {
+        case 'character':
+          return data.id && data.name;
+        case 'moods':
+          return Array.isArray(data) && data.every(item => item.id && item.mood && item.date);
+        case 'achievements':
+          return Array.isArray(data) && data.every(item => item.id && item.category && item.title);
+        case 'habits':
+          return Array.isArray(data) && data.every(item => item.id && item.name && item.frequency);
+        case 'quests':
+          return Array.isArray(data) && data.every(item => item.id && item.title);
+        case 'inventory':
+          return Array.isArray(data) && data.every(item => item.id && item.name);
+        case 'skillTree':
+          return Array.isArray(data) && data.every(item => item.id && item.name);
+        case 'challenges':
+          return Array.isArray(data) && data.every(item => item.id && item.title);
+        default:
+          return true;
+      }
+    };
+
+    try {
+      if (!previousData.current) {
+        previousData.current = JSON.parse(JSON.stringify(gameData));
+        return;
+      }
+      
+      const changes = detectChangedFields(previousData.current, gameData);
+      
+      // Only sync fields that have valid data
+      const validChanges = changes.filter(field => validateData(gameData[field], field));
+      validChanges.forEach(field => changedFields.current.add(field));
+      
+      if (changedFields.current.size > 0) {
+        console.log("Valid changes detected:", Array.from(changedFields.current));
+        debouncedSync();
+      }
+      
+      // Update previous data regardless of sync
+      previousData.current = JSON.parse(JSON.stringify(gameData));
+    } catch (error) {
+      console.error("Error during data persistence:", error);
+      toast.error('Error saving changes', {
+        description: error.message
+      });
+    }
+  }, [gameData, debouncedSync]);
+
+  return null;
 }

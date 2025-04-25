@@ -1,75 +1,39 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { Achievement } from "@/types/achievements";
-import { GameData } from "@/types/gameData";
-import { retrySyncOperation } from "./syncUtils";
+import { GameData } from '@/types/gameData';
+import { upsertAchievement } from "@/services";
+import { retrySyncOperation, validateEntity } from './syncUtils';
 
+// Sync achievements data
 export const syncAchievementsData = async (gameData: GameData, changedFields: Set<string>): Promise<boolean> => {
-  if (!changedFields.has("achievements")) {
-    return true; // Nothing to sync
-  }
-
-  const { data: user } = await supabase.auth.getUser();
-  if (!user?.user) {
-    console.error("No authenticated user for achievements sync");
-    return false;
-  }
-
-  try {
-    // First sync unlocked achievements
-    for (const achievement of gameData.achievements) {
-      // Check if achievement exists
-      const { data: existingAchievement } = await supabase
-        .from("achievements")
-        .select("id")
-        .eq("id", achievement.id)
-        .single();
-
-      const achievementData = {
-        title: achievement.title,
-        description: achievement.description,
-        category: achievement.category,
-        icon: achievement.icon,
-        xp_reward: achievement.xpReward,
-        coin_reward: achievement.coinReward,
-        special_reward: achievement.specialReward || null,
-        unlocked: achievement.unlocked,
-        date_unlocked: achievement.dateUnlocked,
-        current_count: achievement.progress,
-        required_count: achievement.goal
-      };
-
-      if (existingAchievement) {
-        // Update existing achievement
-        const { error } = await supabase
-          .from("achievements")
-          .update(achievementData)
-          .eq("id", achievement.id);
-
-        if (error) {
-          console.error("Error updating achievement:", error, achievement);
-          continue;
-        }
-      } else {
-        // Insert new achievement
-        const { error } = await supabase
-          .from("achievements")
-          .insert({
-            ...achievementData,
-            user_id: user.user.id,
-            id: achievement.id
-          });
-
-        if (error) {
-          console.error("Error inserting achievement:", error, achievement);
-          continue;
-        }
-      }
+  if (!changedFields.has('achievements')) return true;
+  
+  let allAchievementsSuccess = true;
+  
+  for (const achievement of gameData.achievements) {
+    // Validate required fields
+    if (!validateEntity(achievement, ['id', 'category', 'title'])) {
+      console.error(`Invalid achievement, missing required fields:`, achievement);
+      allAchievementsSuccess = false;
+      continue;
     }
-
-    return true;
-  } catch (error) {
-    console.error("Error syncing achievements data:", error);
-    return false;
+    
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(achievement.id)) {
+      console.error(`Invalid UUID format for achievement:`, achievement.id);
+      allAchievementsSuccess = false;
+      continue;
+    }
+    
+    const success = await retrySyncOperation(
+      async () => await upsertAchievement(achievement),
+      `achievement-${achievement.id}`
+    );
+    
+    if (!success) {
+      allAchievementsSuccess = false;
+    }
   }
+  
+  return allAchievementsSuccess;
 };

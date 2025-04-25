@@ -37,21 +37,7 @@ const Journal = () => {
 
       if (error) throw error;
 
-      // Map database fields to our JournalEntry type
-      const mappedEntries: JournalEntry[] = (data || []).map(entry => ({
-        id: entry.id,
-        title: entry.title,
-        content: entry.content,
-        date: entry.created_at,
-        mood: entry.mood || undefined,
-        isPrivate: entry.is_private || false,
-        isFavorite: entry.is_favorite || false,
-        userId: entry.user_id,
-        created_at: entry.created_at,
-        updated_at: entry.updated_at
-      }));
-
-      setEntries(mappedEntries);
+      setEntries(data || []);
     } catch (error) {
       console.error("Error fetching journal entries:", error);
       toast.error("Failed to load journal entries");

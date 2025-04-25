@@ -1,15 +1,16 @@
-
-import { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import { createContext, useContext } from "react";
 import { CombinedProvider } from "./CombinedProvider";
-import { useGameDataManager } from "@/hooks/gameData/useGameDataManager";
+import { useGameDataManager } from "../hooks/gameData";
 import { DEFAULT_GAME_DATA } from "../utils/defaultGameData";
 import { useDataEffects } from "../hooks/useDataEffects";
-import { GameData, DataContextType } from "@/types/gameData";
-import { DEFAULT_CHARACTER } from "@/types/character";
-import { SaveButton } from "@/components/ui/SaveButton";
-import { CharacterProvider } from "./CharacterContext";
+import { GameData } from "../types/gameData";
+import { DEFAULT_CHARACTER } from "../types/character";
 
 // Create context providers
+import {
+  createCharacterContextValue,
+  CharacterContext,
+} from "./CharacterContext";
 import { createQuestContextValue, QuestContext } from "./QuestContext";
 import {
   createInventoryContextValue,
@@ -19,6 +20,10 @@ import {
   createSkillTreeContextValue,
   SkillTreeContext,
 } from "./SkillTreeContext";
+import {
+  createChallengeContextValue,
+  ChallengeContext,
+} from "./ChallengeContext";
 import { createHabitContextValue, HabitContext } from "./HabitContext";
 import { createMoodContextValue, MoodContext } from "./MoodContext";
 import {
@@ -26,145 +31,100 @@ import {
   AchievementContext,
 } from "./AchievementContext";
 
-export const DataContext = createContext<DataContextType | undefined>(undefined);
+// Create context
+export const DataContext = createContext<GameData>(DEFAULT_GAME_DATA);
 
-export function DataProvider({ children }: { children: ReactNode }) {
-  const {
-    gameData,
-    setGameData,
-    isLoading,
-    loadingProgress,
-    error,
-    refreshData,
-    saveState,
-    manualSave
-  } = useGameDataManager();
-  
-  const [mounted, setMounted] = useState(false);
-
-  // Handle client-side hydration
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Ensure gameData has all required properties with defaults
-  const safeGameData = {
-    ...DEFAULT_GAME_DATA,
-    ...gameData,
-    character: {
-      ...DEFAULT_CHARACTER,
-      ...(gameData?.character || {})
-    }
-  };
+export const DataProvider = ({ children }: { children: React.ReactNode }) => {
+  const { gameData, setGameData } = useGameDataManager();
 
   // Create contexts
+  const characterContextValue = createCharacterContextValue(
+    gameData.character,
+    setGameData
+  );
   const questContextValue = createQuestContextValue(
-    safeGameData.quests || [],
+    gameData.quests,
     setGameData
   );
   const inventoryContextValue = createInventoryContextValue(
-    safeGameData.inventory || [],
-    safeGameData.shopItems || [],
+    gameData.inventory,
+    gameData.shopItems,
     setGameData
   );
   const skillTreeContextValue = createSkillTreeContextValue(
-    safeGameData.skillTree || [],
+    gameData.skillTree,
+    setGameData
+  );
+  const challengeContextValue = createChallengeContextValue(
+    gameData.challenges,
     setGameData
   );
   const habitContextValue = createHabitContextValue(
-    safeGameData.habits || [],
+    gameData.habits,
     setGameData
   );
-  const moodContextValue = createMoodContextValue(safeGameData.moods || [], setGameData);
+  const moodContextValue = createMoodContextValue(gameData.moods, setGameData);
   const achievementContextValue = createAchievementContextValue(
-    safeGameData.achievements || [],
+    gameData.achievements,
     setGameData
   );
 
   // Handle side effects
-  useDataEffects(safeGameData, setGameData);
+  useDataEffects(characterContextValue, challengeContextValue);
 
-  // Modified: Wrap the return of manualSave to ensure it returns Promise<void>
-  const manualSaveWrapper = async (): Promise<void> => {
-    await manualSave();
-  };
-
-  // Create the full context value with all required properties
-  const contextValue: DataContextType = {
-    gameData: safeGameData,
-    setGameData,
-    isLoading,
-    loadingProgress,
-    error,
-    refreshData,
-    saveState,
-    manualSave: manualSaveWrapper,  // Use the wrapper function
-    
-    // Add direct properties for easier access throughout the app
-    character: safeGameData.character,
-    quests: safeGameData.quests,
-    inventory: safeGameData.inventory,
-    shopItems: safeGameData.shopItems,
-    habits: safeGameData.habits, 
-    moods: safeGameData.moods,
-    achievements: safeGameData.achievements,
-    
-    // Add methods from context values
+  // Combined context value
+  const contextValue: GameData = {
+    ...gameData,
+    ...characterContextValue,
     ...questContextValue,
     ...inventoryContextValue,
-    // Update equipItem and unequipItem to use the correct method names
-    equipItem: inventoryContextValue.equipItem,
-    unequipItem: inventoryContextValue.unequipItem,
+    ...skillTreeContextValue,
+    ...challengeContextValue,
     ...habitContextValue,
     ...moodContextValue,
-    ...achievementContextValue
+    ...achievementContextValue,
+    setGameData: setGameData,
   };
 
-  // Don't render anything on server or during hydration to avoid mismatch
-  if (!mounted) {
-    return null;
-  }
-
+  // Use combined provider pattern
   return (
     <DataContext.Provider value={contextValue}>
-      <CharacterProvider>
-        <CombinedProvider
-          contextValue={contextValue}
-          questContextValue={questContextValue}
-          inventoryContextValue={inventoryContextValue}
-          skillTreeContextValue={skillTreeContextValue}
-          habitContextValue={habitContextValue}
-          moodContextValue={moodContextValue}
-          achievementContextValue={achievementContextValue}
-        >
-          {children}
-          
-          {/* Global Save Button */}
-          <SaveButton 
-            isSaving={saveState.isSaving}
-            lastSaveTime={saveState.lastSaveTime}
-            onSave={manualSaveWrapper}
-            pendingChanges={saveState.pendingChanges}
-          />
-        </CombinedProvider>
-      </CharacterProvider>
+      <CombinedProvider
+        contextValue={contextValue}
+        characterContextValue={characterContextValue}
+        questContextValue={questContextValue}
+        inventoryContextValue={inventoryContextValue}
+        skillTreeContextValue={skillTreeContextValue}
+        challengeContextValue={challengeContextValue}
+        habitContextValue={habitContextValue}
+        moodContextValue={moodContextValue}
+        achievementContextValue={achievementContextValue}
+      >
+        {children}
+      </CombinedProvider>
     </DataContext.Provider>
   );
-}
+};
 
-export function useGameData() {
+// Custom hook for using the context
+export const useGameData = () => {
   const context = useContext(DataContext);
   if (context === undefined) {
     throw new Error("useGameData must be used within a DataProvider");
   }
   return context;
-}
+};
 
 // Re-export types
 export type { Character, StatName, Stats } from "../types/character";
 export type { Quest, QuestType, QuestStatus, QuestStep } from "../types/quests";
 export type { GearItem, GearType, GearRarity } from "../types/inventory";
 export type { SkillNode } from "../types/skills";
+export type {
+  Challenge,
+  ChallengeFrequency,
+  ChallengeStatus,
+} from "../types/challenges";
 export type {
   Habit,
   HabitFrequency,

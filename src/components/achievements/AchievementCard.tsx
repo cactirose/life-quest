@@ -1,3 +1,4 @@
+
 import { Achievement, AchievementCategory } from "@/types/achievements";
 import { Badge, BadgeCheck, BadgePercent, Coins, Edit, Sparkle, Trash2, Award, ListChecks, BookOpen, UserCircle, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,11 @@ const AchievementCard = ({
   onDelete, 
   onUnlock 
 }: AchievementCardProps) => {
-  const progress = Math.min(100, (achievement.progress / achievement.goal) * 100);
+  const progress = achievement.requiredCount && achievement.currentCount !== undefined
+    ? Math.min(100, (achievement.currentCount / achievement.requiredCount) * 100)
+    : 0;
+  
+  const isTrackable = achievement.requiredCount !== undefined && achievement.currentCount !== undefined;
   
   return (
     <div 
@@ -80,46 +85,48 @@ const AchievementCard = ({
       
       <p className="text-sm text-rpg-brown mb-3">{achievement.description}</p>
       
-      {!achievement.unlocked && (
+      {isTrackable && !achievement.unlocked && (
         <div className="mb-3">
           <div className="flex justify-between text-xs text-rpg-brown mb-1">
-            <span>Progress: {achievement.progress}/{achievement.goal}</span>
+            <span>Progress: {achievement.currentCount}/{achievement.requiredCount}</span>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
       )}
       
-      <div className="flex items-center gap-3 text-xs text-rpg-brown">
-        <div className="flex items-center">
-          <Sparkle size={14} className="mr-1" />
-          <span>+{achievement.xpReward} XP</span>
-        </div>
-        <div className="flex items-center">
-          <Coins size={14} className="mr-1" />
-          <span>+{achievement.coinReward}</span>
-        </div>
-        {achievement.specialReward && (
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 text-xs text-rpg-brown">
           <div className="flex items-center">
-            <BadgePercent size={14} className="mr-1 text-rpg-purple" />
-            <span className="text-rpg-purple">Special</span>
+            <Sparkle size={14} className="mr-1" />
+            <span>+{achievement.xpReward} XP</span>
           </div>
+          <div className="flex items-center">
+            <Coins size={14} className="mr-1" />
+            <span>+{achievement.coinReward}</span>
+          </div>
+          {achievement.specialReward && (
+            <div className="flex items-center">
+              <BadgePercent size={14} className="mr-1 text-rpg-purple" />
+              <span className="text-rpg-purple">Special</span>
+            </div>
+          )}
+        </div>
+        
+        {achievement.unlocked ? (
+          <div className="text-xs text-rpg-brown">
+            Unlocked: {achievement.dateUnlocked ? format(new Date(achievement.dateUnlocked), "MMM d, yyyy") : "Unknown"}
+          </div>
+        ) : (
+          <Button
+            onClick={() => onUnlock(achievement.id)}
+            variant="outline"
+            size="sm"
+            className="bg-rpg-green text-white border-none hover:bg-rpg-light-green"
+          >
+            <BadgeCheck size={14} className="mr-1" /> Unlock
+          </Button>
         )}
       </div>
-      
-      {achievement.unlocked ? (
-        <div className="text-xs text-rpg-brown mt-3">
-          Unlocked: {achievement.dateUnlocked ? format(new Date(achievement.dateUnlocked), "MMM d, yyyy") : "Unknown"}
-        </div>
-      ) : (
-        <Button
-          onClick={() => onUnlock(achievement.id)}
-          variant="outline"
-          size="sm"
-          className="mt-3 bg-rpg-green text-white border-none hover:bg-rpg-light-green"
-        >
-          <BadgeCheck size={14} className="mr-1" /> Unlock
-        </Button>
-      )}
     </div>
   );
 };

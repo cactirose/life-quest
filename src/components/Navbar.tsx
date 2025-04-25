@@ -9,33 +9,25 @@ import {
   Backpack,
   ListChecks,
   Smile,
+  Flag,
   ShoppingCart,
   MapPin,
   Book,
-  ShoppingBag,
-  LogIn
+  ShoppingBag
 } from "lucide-react";
 import { ThemeSettings } from "./ThemeSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavMenu from "./MobileNavMenu";
 import StatusBar from "./navigation/StatusBar";
 import DesktopNav from "./navigation/DesktopNav";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { logout } from "@/utils/auth";
-import { useAuth } from "@/features/auth/context/AuthContext";
-import { Button } from "./ui/button";
 
 const Navbar = () => {
-  const { gameData } = useGameData();
-  const { isAuthenticated } = useAuth();
+  const { character } = useGameData();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   
-  const handleLogoClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate(isAuthenticated ? "/dashboard" : "/");
-  };
-
   const navStructure = [
     {
       label: "Milestones",
@@ -79,6 +71,14 @@ const Navbar = () => {
         label: "Mood",
         path: "/mood",
         icon: <Smile size={18} />
+      }, {
+        label: "Challenges",
+        path: "/challenges",
+        icon: <Flag size={18} />
+      }, {
+        label: "Journal",
+        path: "/journal",
+        icon: <Book size={18} />
       }]
     }
   ];
@@ -111,13 +111,16 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await logout(navigate);
-      toast.success("Logged out", {
-        description: "You have been successfully logged out."
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
       });
     } catch (error) {
       console.error("Logout error:", error);
-      toast.error("Logout error", {
-        description: "An error occurred while logging out. Please try again."
+      toast({
+        title: "Logout error",
+        description: "An error occurred while logging out. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -127,53 +130,32 @@ const Navbar = () => {
       <div className="container mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <a href="#" onClick={handleLogoClick} className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2">
               <h1 className="text-xl font-pixel text-[hsl(var(--nav-text))]">Life Quest</h1>
-            </a>
+            </Link>
           </div>
           
-          {isAuthenticated ? (
-            <>
-              <div className="hidden md:flex items-center gap-4">
-                <StatusBar />
-              </div>
-              
-              {!isMobile && (
-                <DesktopNav navStructure={navStructure} />
-              )}
-              
-              {isMobile && (
-                <div className="flex items-center ml-auto z-[100]">
-                  <MobileNavMenu 
-                    items={mobileMenuItems} 
-                    onLogout={handleLogout} 
-                    statusBar={<StatusBar />} 
-                  />
-                </div>
-              )}
-              
-              <div className="hidden md:block">
-                <ThemeSettings />
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                className="font-pixel text-[hsl(var(--nav-text))] hover:bg-[hsl(var(--nav-hover))]"
-                onClick={() => navigate("/login")}
-              >
-                <LogIn className="h-5 w-5 mr-2" />
-                Login
-              </Button>
-              <Button
-                className="font-pixel"
-                onClick={() => navigate("/signup")}
-              >
-                Start Your Quest
-              </Button>
+          <div className="hidden md:flex items-center gap-4">
+            <StatusBar />
+          </div>
+          
+          {!isMobile && (
+            <DesktopNav navStructure={navStructure} />
+          )}
+          
+          {isMobile && (
+            <div className="flex items-center ml-auto z-[100]">
+              <MobileNavMenu 
+                items={mobileMenuItems} 
+                onLogout={handleLogout} 
+                statusBar={<StatusBar />} 
+              />
             </div>
           )}
+          
+          <div className="hidden md:block">
+            <ThemeSettings />
+          </div>
         </div>
       </div>
     </header>

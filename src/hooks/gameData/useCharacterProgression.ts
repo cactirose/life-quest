@@ -1,40 +1,31 @@
 
-// This hook now returns a function to process character progression instead of using useCharacter directly
-export function useCharacterProgression() {
-  // Process character progression based on XP
-  const processCharacterProgression = (gameData) => {
-    if (!gameData?.character) {
-      return gameData;
-    }
-    
-    const character = gameData.character;
-    
-    // Check if the character has enough XP to level up
-    if (character.xp >= character.nextLevelXp) {
-      // Calculate new level and remaining XP
-      const newLevel = character.level + 1;
-      const remainingXp = character.xp - character.nextLevelXp;
-      const newCoins = character.coins + 25; // Level up bonus
-      const nextLevelXp = Math.floor(character.nextLevelXp * 1.2); // Increase XP needed for next level
+import { useEffect } from "react";
+import { GameData } from "@/types/gameData";
+import { toast } from "sonner";
+
+export function useCharacterProgression(
+  gameData: GameData, 
+  setGameData: React.Dispatch<React.SetStateAction<GameData>>
+) {
+  useEffect(() => {
+    const { character } = gameData;
+    if (character && character.xp >= character.nextLevelXp) {
+      // Level up!
+      setGameData(prevData => ({
+        ...prevData,
+        character: {
+          ...prevData.character,
+          level: prevData.character.level + 1,
+          xp: prevData.character.xp - prevData.character.nextLevelXp,
+          nextLevelXp: Math.floor(prevData.character.nextLevelXp * 1.5),
+          coins: prevData.character.coins + 25 // Level up bonus
+        }
+      }));
       
-      // Update character with new values
-      const updatedCharacter = {
-        ...character,
-        level: newLevel,
-        xp: remainingXp,
-        coins: newCoins,
-        nextLevelXp
-      };
-      
-      // Return updated gameData
-      return {
-        ...gameData,
-        character: updatedCharacter
-      };
+      // Display level up notification
+      toast(`You've reached level ${character.level + 1}!`);
     }
-    
-    return gameData;
-  };
-  
-  return { processCharacterProgression };
+  }, [gameData.character?.xp, setGameData]);
+
+  return null;
 }

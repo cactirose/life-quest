@@ -7,6 +7,7 @@ import {
   syncQuestsData,
   syncInventoryData,
   syncSkillTreeData,
+  syncChallengesData,
   syncHabitsData,
   syncMoodsData,
   syncAchievementsData,
@@ -71,6 +72,7 @@ export const useSyncWithSupabase = () => {
       // Then sync other data
       const regularOperations = [
         { field: 'skillTree', operation: () => syncSkillTreeData(gameData, changedFields) },
+        { field: 'challenges', operation: () => syncChallengesData(gameData, changedFields) },
         { field: 'habits', operation: () => syncHabitsData(gameData, changedFields) },
         { field: 'moods', operation: () => syncMoodsData(gameData, changedFields) },
         { field: 'achievements', operation: () => syncAchievementsData(gameData, changedFields) },

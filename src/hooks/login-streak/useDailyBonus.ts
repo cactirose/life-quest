@@ -1,138 +1,105 @@
 
-import { useCallback, useState } from 'react';
-import { useGameData } from '@/contexts/DataContext';
-import { toast } from 'sonner';
-import {
-  calculateReward,
-  applyStatChanges
-} from '@/utils/rewardUtils';
+import { useState, useCallback } from "react";
+import { Character } from "@/types/character";
+import { toast } from "sonner";
+import { upsertCharacter } from "@/services/characterService";
+import { upsertInventoryItem } from "@/services/inventoryService";
+import { createStreakTrophy, calculateDailyBonus } from "@/features/character/utils/dailyLoginUtils";
+import { startOfDay } from "date-fns"; // Added missing import
 
-export function useDailyBonus() {
-  const { gameData, setGameData } = useGameData();
+interface UseDailyBonusProps {
+  character: Character | null;
+  setGameData: React.Dispatch<React.SetStateAction<any>>;
+}
+
+export const useDailyBonus = ({ 
+  character, 
+  setGameData 
+}: UseDailyBonusProps) => {
   const [isClaimingBonus, setIsClaimingBonus] = useState(false);
-  
-  const calculateDailyLoginReward = useCallback((streak: number) => {
-    // Base rewards
-    let xp = 10;
-    let coins = 5;
-    
-    // Bonus for streaks
-    if (streak >= 7) {
-      // Weekly bonus
-      xp += 20;
-      coins += 15;
-    }
-    
-    if (streak >= 30) {
-      // Monthly bonus
-      xp += 50;
-      coins += 25;
-    }
-    
-    // Scale with streak length (diminishing returns)
-    xp += Math.floor(Math.sqrt(streak) * 3);
-    coins += Math.floor(Math.sqrt(streak) * 2);
-    
-    return { xp, coins };
-  }, []);
 
   const claimDailyBonus = useCallback(async () => {
-    if (!gameData.character) return;
+    if (!character || character.dailyBonusClaimed || isClaimingBonus) {
+      if (character?.dailyBonusClaimed) {
+        toast.error("You've already claimed today's bonus!");
+      }
+      return;
+    }
     
     try {
       setIsClaimingBonus(true);
       
-      const { loginStreak } = gameData.character;
+      // Calculate bonus based on streak
+      const streak = character.loginStreak;
+      const { xpBonus, coinBonus } = calculateDailyBonus(streak);
       
-      // Calculate rewards based on login streak
-      const baseReward = calculateDailyLoginReward(loginStreak);
+      // Every 7 days, give a special bonus
+      let specialItem = null;
+      if (streak % 7 === 0) {
+        specialItem = createStreakTrophy(streak);
+        
+        // Sync new inventory item with Supabase
+        if (specialItem) {
+          await upsertInventoryItem(specialItem);
+          toast.success(`You received a special trophy for your ${streak}-day streak!`);
+        }
+      }
       
-      // Apply any character bonuses
-      const reward = calculateReward(
-        baseReward.xp,
-        baseReward.coins,
-        gameData.character
-      );
-
       // Update character
-      const updatedGameData = applyStatChanges(gameData, {
-        xp: reward.xp,
-        coins: reward.coins
-      });
-      
-      // Mark daily bonus as claimed
       const updatedCharacter = {
-        ...updatedGameData.character,
+        ...character,
+        xp: character.xp + xpBonus,
+        coins: character.coins + coinBonus,
         dailyBonusClaimed: true
       };
       
-      // Check for streak achievements
-      const achievementId = checkStreakAchievement(loginStreak);
-      if (achievementId) {
-        // Implement achievement unlocking logic here
-        toast.success(`Achievement unlocked: ${achievementId}`);
-      }
+      // Sync with Supabase
+      await upsertCharacter(updatedCharacter);
       
-      // Save changes
-      setGameData({
-        ...updatedGameData,
-        character: updatedCharacter
-      }, new Set(['character']));
+      // Update local state
+      setGameData(prevData => {
+        // Update inventory if special item
+        const updatedInventory = specialItem
+          ? [...prevData.inventory, specialItem]
+          : prevData.inventory;
+        
+        return {
+          ...prevData,
+          character: updatedCharacter,
+          inventory: updatedInventory
+        };
+      });
       
-      // Show notification
-      toast.success(
-        `Daily bonus claimed!`, 
-        { description: `+${reward.xp} XP, +${reward.coins} coins` }
-      );
+      toast.success(`Daily bonus claimed! +${xpBonus} XP, +${coinBonus} coins`);
+    } catch (error) {
+      console.error("Error claiming daily bonus:", error);
+      toast.error("Failed to claim daily bonus. Please try again.");
     } finally {
       setIsClaimingBonus(false);
     }
-  }, [gameData, setGameData, calculateDailyLoginReward]);
+  }, [character, setGameData, isClaimingBonus]);
 
-  // Simple check for streak achievements - in a real app you would have a more complex system
-  const checkStreakAchievement = (streak: number): string | null => {
-    const streakMilestones = {
-      3: 'login_streak_3_days',
-      7: 'login_streak_7_days',
-      14: 'login_streak_14_days',
-      30: 'login_streak_30_days',
-      90: 'login_streak_90_days',
-      180: 'login_streak_180_days',
-      365: 'login_streak_365_days'
-    };
+  const forceReset = useCallback(async (fetchServerTime: () => Promise<Date>) => {
+    if (!character) return;
     
-    // Find the highest milestone achieved
-    const milestones = Object.keys(streakMilestones)
-      .map(Number)
-      .filter(days => streak >= days)
-      .sort((a, b) => b - a);
+    const now = await fetchServerTime();
+    setGameData(prevData => ({
+      ...prevData,
+      character: {
+        ...character,
+        lastLoginDate: now.toISOString(),
+        dailyBonusClaimed: false
+      }
+    }));
     
-    if (milestones.length === 0) return null;
+    localStorage.setItem('lastStreakReset', startOfDay(now).toISOString());
     
-    const highestMilestone = milestones[0];
-    return streakMilestones[highestMilestone];
-  };
+    console.log("Forced reset of daily login status");
+  }, [character, setGameData]);
 
-  // Add a forceReset function to satisfy the API that useLoginStreak expects
-  const forceReset = useCallback(() => {
-    if (!gameData.character) return;
-    
-    const updatedCharacter = {
-      ...gameData.character,
-      loginStreak: 0,
-      dailyBonusClaimed: false
-    };
-    
-    setGameData({
-      character: updatedCharacter
-    }, new Set(['character']));
-    
-    toast.info("Login streak has been reset");
-  }, [gameData, setGameData]);
-  
-  return { 
-    claimDailyBonus, 
+  return {
+    claimDailyBonus,
     forceReset,
-    isClaimingBonus 
+    isClaimingBonus
   };
-}
+};

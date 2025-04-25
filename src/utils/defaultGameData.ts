@@ -9,9 +9,69 @@ export const DEFAULT_GAME_DATA: GameData = {
   inventory: [],
   shopItems: [],
   skillTree: [],
+  challenges: [],
   habits: [],
   moods: [],
   achievements: [],
   journalEntries: [], // Add empty journal entries array
-  shoppingLists: [] // Add empty shopping lists array
+  shoppingLists: [], // Add empty shopping lists array
+  
+  // Character methods
+  setCharacter: () => {},
+  updateCharacterStat: () => {},
+  
+  // Quest methods
+  addQuest: () => {},
+  updateQuest: () => {},
+  deleteQuest: () => {},
+  completeQuestStep: () => {},
+  completeQuest: () => {},
+  
+  // Inventory methods
+  addToInventory: () => {},
+  removeFromInventory: () => {},
+  equipItem: () => {},
+  unequipItem: () => {},
+  
+  // Shop methods
+  purchaseItem: () => false,
+  addShopItem: () => {},
+  updateShopItem: () => {},
+  deleteShopItem: () => {},
+  
+  // Skill tree methods
+  addSkillNode: () => "",
+  updateSkillNode: () => {},
+  deleteSkillNode: () => {},
+  unlockSkillNode: () => {},
+  
+  // Challenge methods
+  addChallenge: () => {},
+  updateChallenge: () => {},
+  deleteChallenge: () => {},
+  incrementChallengeProgress: () => {},
+  resetChallenges: () => {},
+  completeChallenge: () => {},
+  
+  // Habit methods
+  addHabit: () => {},
+  updateHabit: () => {},
+  deleteHabit: () => {},
+  completeHabit: () => {},
+  uncompleteHabit: () => {},
+  
+  // Mood methods
+  addMoodEntry: () => {},
+  updateMoodEntry: () => {},
+  deleteMoodEntry: () => {},
+  
+  // Achievement methods
+  addAchievement: () => {},
+  updateAchievement: () => {},
+  deleteAchievement: () => {},
+  checkAndUnlockAchievement: () => false,
+  
+  // Daily login methods
+  checkDailyLogin: () => {},
+  claimDailyBonus: () => {}
 };

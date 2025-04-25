@@ -1,7 +1,5 @@
+
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,8 +18,6 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2, Plus } from "lucide-react";
 import { generateId } from "@/utils/idGenerator";
-import { Achievement } from "@/types/achievements";
-import AchievementLinksField from "@/components/achievements/form-fields/AchievementLinksField";
 
 // List of emoji icons to choose from
 const EMOJI_OPTIONS = ["✅", "🏃", "💧", "📚", "💻", "🧠", "🧘", "💤", "🥗", "🍎", "🌞", "🧹", "💊", "🌱", "👨‍👩‍👧‍👦", "💰", "🚶", "💪", "🎯", "⏰"];
@@ -53,33 +49,17 @@ const DAYS_OF_WEEK: { label: string; value: DayOfWeek }[] = [
   { label: "Sunday", value: "sunday" }
 ];
 
-// Define the form schema
-const habitFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  description: z.string().optional(),
-  frequency: z.enum(["daily", "weekdays", "weekends", "weekly", "custom"] as const),
-  customDays: z.array(z.string()).optional(),
-  steps: z.array(z.object({
-    id: z.string(),
-    description: z.string()
-  })).optional(),
-  linkedAchievementIds: z.array(z.string()).default([])
-});
-
-type HabitFormData = z.infer<typeof habitFormSchema>;
-
-interface HabitFormProps {
-  onSubmit: (data: Omit<Habit, "id" | "completionHistory" | "streak">) => void;
-  initialData?: Partial<Habit>;
-  achievements: Achievement[];
+type HabitFormProps = {
+  onSubmit: (habit: Omit<Habit, "id" | "completionHistory" | "streak">) => void;
+  initialData?: Habit | null;
   onCancel: () => void;
-}
+};
 
-export const HabitForm = ({ onSubmit, initialData, achievements, onCancel }: HabitFormProps) => {
-  const [selectedAchievementIds, setSelectedAchievementIds] = useState<string[]>(
-    initialData?.achievementLinks || []
-  );
-
+export const HabitForm = ({ 
+  onSubmit, 
+  initialData = null, 
+  onCancel 
+}: HabitFormProps) => {
   const [name, setName] = useState(initialData?.name || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [icon, setIcon] = useState(initialData?.icon || "✅");
@@ -125,8 +105,7 @@ export const HabitForm = ({ onSubmit, initialData, achievements, onCancel }: Hab
       steps: validSteps.length > 0 ? validSteps.map(step => ({
         ...step,
         completed: false
-      })) : undefined,
-      achievementLinks: selectedAchievementIds
+      })) : undefined
     };
     
     onSubmit(habit);
@@ -152,15 +131,6 @@ export const HabitForm = ({ onSubmit, initialData, achievements, onCancel }: Hab
     setSteps(prev => prev.map(step => 
       step.id === id ? { ...step, description } : step
     ));
-  };
-
-  const handleAchievementToggle = (achievementId: string) => {
-    setSelectedAchievementIds(prev => {
-      const newIds = prev.includes(achievementId)
-        ? prev.filter(id => id !== achievementId)
-        : [...prev, achievementId];
-      return newIds;
-    });
   };
   
   return (
@@ -368,15 +338,6 @@ export const HabitForm = ({ onSubmit, initialData, achievements, onCancel }: Hab
           )}
         </div>
         
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Linked Achievements</h3>
-          <AchievementLinksField
-            achievements={achievements}
-            selectedAchievementIds={selectedAchievementIds}
-            onAchievementToggle={handleAchievementToggle}
-          />
-        </div>
-        
         <DialogFooter className="flex justify-between pt-4">
           <Button variant="outline" onClick={onCancel}>
             Cancel
@@ -389,5 +350,3 @@ export const HabitForm = ({ onSubmit, initialData, achievements, onCancel }: Hab
     </ScrollArea>
   );
 };
-
-export type { HabitFormData };

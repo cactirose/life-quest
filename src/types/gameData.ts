@@ -1,82 +1,88 @@
 
-import { Character } from './character';
-import { Quest } from './quests';
-import { GearItem } from './inventory';
-import { SkillNode } from './skills';
-import { Habit } from './habits';
-import { MoodEntry } from './mood';
-import { Achievement } from './achievements';
-import { JournalEntry } from './journal';
-import { ShoppingList } from './shopping';
+import { Character, StatName } from "./character";
+import { Quest } from "./quests";
+import { GearItem } from "./inventory";
+import { SkillNode } from "./skills";
+import { Challenge } from "./challenges";
+import { Habit } from "./habits";
+import { MoodEntry } from "./mood";
+import { Achievement } from "./achievements";
+import { JournalEntry } from "./journal";
+import { ShoppingList } from "./shoppingList";
 
+// The actual data structure
 export interface GameData {
   character: Character;
   quests: Quest[];
   inventory: GearItem[];
   shopItems: GearItem[];
   skillTree: SkillNode[];
+  challenges: Challenge[];
   habits: Habit[];
   moods: MoodEntry[];
   achievements: Achievement[];
-  journalEntries?: JournalEntry[];
-  shoppingLists?: ShoppingList[];
-  lastUpdate?: string;
-  version?: string;
-}
-
-export interface DataContextType {
-  gameData: GameData;
-  setGameData: (newData: Partial<GameData>, changedFields?: Set<string>) => void;
-  isLoading: boolean;
-  loadingProgress: number;
-  error: string | null;
-  refreshData: () => Promise<void>;
-  saveState: {
-    isSaving: boolean;
-    lastSaveTime: Date | null;
-    pendingChanges: Set<string>;
-  };
-  manualSave: () => Promise<void>;
+  journalEntries: JournalEntry[];
+  shoppingLists: ShoppingList[];
   
-  // Character properties
-  character: Character;
+  // Character methods
+  setCharacter: (character: Character) => void;
+  updateCharacterStat: (stat: StatName, value: number) => void;
   
-  // Quest properties
-  quests: Quest[];
+  // Quest methods
   addQuest: (quest: Omit<Quest, "id">) => void;
   updateQuest: (quest: Quest) => void;
   deleteQuest: (questId: string) => void;
   completeQuestStep: (questId: string, stepId: string) => void;
   completeQuest: (questId: string) => void;
   
-  // Inventory properties
-  inventory: GearItem[];
+  // Inventory methods
+  addToInventory: (item: GearItem) => void;
+  removeFromInventory: (itemId: string) => void;
   equipItem: (itemId: string) => void;
   unequipItem: (itemId: string) => void;
   
-  // Shop properties
-  shopItems: GearItem[];
+  // Shop methods
   purchaseItem: (itemId: string) => boolean;
-  addShopItem: (item: GearItem) => void;
+  addShopItem: (item: Omit<GearItem, "id">) => void;
   updateShopItem: (item: GearItem) => void;
   deleteShopItem: (itemId: string) => void;
   
-  // Habits properties
-  habits: Habit[];
-  addHabit: (habit: Omit<Habit, "id" | "streak" | "completionHistory">) => void;
+  // Skill tree methods
+  addSkillNode: (node: Omit<SkillNode, "id">) => string;
+  updateSkillNode: (node: SkillNode) => void;
+  deleteSkillNode: (nodeId: string) => void;
+  unlockSkillNode: (nodeId: string) => void;
+  
+  // Challenge methods
+  addChallenge: (challenge: Omit<Challenge, "id">) => void;
+  updateChallenge: (challenge: Challenge) => void;
+  deleteChallenge: (challengeId: string) => void;
+  incrementChallengeProgress: (challengeId: string) => void;
+  resetChallenges: () => void;
+  completeChallenge: (challengeId: string) => void;
+  
+  // Habit methods
+  addHabit: (habit: Omit<Habit, "id" | "completionHistory" | "streak">) => void;
   updateHabit: (habit: Habit) => void;
   deleteHabit: (habitId: string) => void;
-  completeHabit: (habitId: string, date?: string) => void;
-  uncompleteHabit: (habitId: string, date?: string) => void;
+  completeHabit: (habitId: string, date: string) => void;
+  uncompleteHabit: (habitId: string, date: string) => void;
   
-  // Mood properties
-  moods: MoodEntry[];
+  // Mood methods
   addMoodEntry: (entry: Omit<MoodEntry, "id">) => void;
   updateMoodEntry: (entry: MoodEntry) => void;
   deleteMoodEntry: (entryId: string) => void;
   
-  // Achievement properties
-  achievements: Achievement[];
+  // Achievement methods
+  addAchievement: (achievement: Omit<Achievement, "id" | "unlocked" | "dateUnlocked">) => void;
+  updateAchievement: (achievement: Achievement) => void;
+  deleteAchievement: (achievementId: string) => void;
+  checkAndUnlockAchievement: (achievementId: string) => boolean;
+  
+  // Daily login methods
+  checkDailyLogin: () => void;
+  claimDailyBonus: () => void;
+  
+  // Data access method
+  setGameData?: React.Dispatch<React.SetStateAction<any>>;
 }
-
-export type GameDataUpdater = (newData: Partial<GameData>, changedFields?: Set<string>) => void;

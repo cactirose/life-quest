@@ -1,53 +1,84 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useAuth } from "@/features/auth/context/AuthContext";
-import { DEFAULT_GAME_DATA } from "@/utils/defaultGameData";
-import { GameData } from "@/types/gameData";
-import { loadGameData } from "@/services";
-import { useDataStatus } from "../useDataStatus";
 
-export const useDataLoader = (
+import { useState, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { storeSession } from '@/utils/auth';
+import { loadInitialData } from '@/utils/loadInitialData';
+import { loadAllGameData } from '@/services';
+import { useIsMobile } from "../use-mobile";
+import { type GameData } from '@/types/gameData';
+
+export function useDataLoader(
   setGameData: React.Dispatch<React.SetStateAction<GameData>>,
-  resetStatus: () => void,
-  updateStatus: (key: keyof GameData, status: 'loading' | 'loaded' | 'error') => void,
-  setLoadingProgress: React.Dispatch<React.SetStateAction<number>>
-) => {
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const loadingProgressRef = useRef(0);
+  syncFromSupabase: (signal?: AbortSignal) => Promise<void>,
+  loadLocalData: () => void,
+  hasLoadedData: React.MutableRefObject<boolean>,
+  abortControllerRef: React.MutableRefObject<AbortController | null>
+) {
+  const [loadingState, setLoadingState] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
+  const isMobile = useIsMobile();
+  const syncTimeoutRef = useRef<number | null>(null);
 
-  const loadInitialData = useCallback(async () => {
-    if (!isAuthenticated || isAuthLoading || loading) return;
-
-    setLoading(true);
-    resetStatus();
-    loadingProgressRef.current = 0;
-    setLoadingProgress(0);
-
+  const loadUserData = useCallback(async () => {
+    setLoadingState('loading');
+    
     try {
-      const initialData = await loadGameData();
+      // First try to load from local storage as immediate fallback
+      loadLocalData();
+      
+      // Then attempt to sync with Supabase
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      
+      // Implement progressive loading with timeout handling
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Loading timeout')), 15000);
+      });
 
-      // Update game data in state
-      setGameData((prev) => ({
-        ...DEFAULT_GAME_DATA,
-        ...prev,
-        ...initialData,
-      }));
-
-      console.log("Initial data loaded successfully");
-      setLoadingProgress(100);
+      const dataPromise = loadAllGameData();
+      
+      const allData = await Promise.race([dataPromise, timeoutPromise]);
+      
+      if (Object.keys(allData).length > 0) {
+        setGameData(prevData => ({
+          ...prevData,
+          ...allData,
+        }));
+        setLoadingState('success');
+        hasLoadedData.current = true;
+      } else {
+        throw new Error('No data received from server');
+      }
     } catch (error) {
-      console.error("Error loading initial data:", error);
-      setLoadingProgress(0);
-    } finally {
-      setLoading(false);
+      console.error('Error loading data:', error);
+      setErrorDetails(error.message);
+      setLoadingState('error');
+      
+      // Implement fallback strategy
+      if (!hasLoadedData.current) {
+        toast.error("Unable to load from server, using local data");
+        loadLocalData();
+      }
     }
-  }, [isAuthenticated, isAuthLoading, setGameData, resetStatus, setLoadingProgress, loading]);
+  }, [loadLocalData, setGameData, hasLoadedData, abortControllerRef]);
 
-  useEffect(() => {
-    if (isAuthenticated && !isAuthLoading && !loading) {
-      loadInitialData();
-    }
-  }, [isAuthenticated, isAuthLoading, loadInitialData, loading]);
+  const retryDataLoad = useCallback(() => {
+    toast.info("Retrying data load...");
+    hasLoadedData.current = false;
+    setRetryCount(0);
+    loadUserData();
+  }, [loadUserData]);
 
-  return { loading };
-};
+  return {
+    loadingState,
+    setLoadingState,
+    errorDetails,
+    retryCount,
+    loadUserData,
+    retryDataLoad,
+    syncTimeoutRef,
+  };
+}

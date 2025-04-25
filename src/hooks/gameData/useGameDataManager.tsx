@@ -1,128 +1,185 @@
-
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+// import { loadInitialData } from "@/utils/loadInitialData";
 import { GameData } from "@/types/gameData";
-import { DEFAULT_GAME_DATA } from "@/utils/defaultGameData";
+import { toast } from "sonner";
 import { useDataPersistence } from "./useDataPersistence";
-import { useSaveManager } from "./useSaveManager";
 import { useCharacterProgression } from "./useCharacterProgression";
+import { supabase } from "@/integrations/supabase/client";
+import { isAuthenticated } from "@/utils/auth";
+import { loadAllGameData } from "@/services";
 
 export function useGameDataManager() {
-  // Default state
-  const [gameData, setGameDataInternal] = useState<GameData>(DEFAULT_GAME_DATA);
+  const [gameData, setGameData] = useState<GameData>({
+    character: {},
+    quests: [],
+    inventory: [],
+    shopItems: [],
+    skillTree: [],
+    challenges: [],
+    habits: [],
+    moods: [],
+    achievements: [],
+  } as GameData);
+  // () => {
+  // Always start with empty state, will be populated properly in useEffect
+  // const initialData = loadInitialData();
+  // console.log("Initial game data loaded:", initialData);
+  // return initialData as GameData;
+  // }
+
   const [isLoading, setIsLoading] = useState(true);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
 
-  // Load data from persistence
-  const {
-    loadData,
-    saveData,
-    isSaving,
-    lastSaveTime,
-    pendingChanges,
-  } = useDataPersistence();
+  // Set up data persistence (local storage and Supabase)
+  useDataPersistence(gameData);
 
-  const {
-    handleGameDataChange,
-    saveImmediately
-  } = useSaveManager({ 
-    saveData, 
-    gameData 
-  });
+  // Set up character progression (level up logic)
+  useCharacterProgression(gameData, setGameData);
 
-  // Character progression system
-  const { processCharacterProgression } = useCharacterProgression();
+  // Load data when authenticated and handle auth state changes
+  useEffect(() => {
+    let isMounted = true;
+    let authSubscription: {
+      data: { subscription: { unsubscribe: () => void } };
+    } | null = null;
 
-  // Load initial data
-  const loadInitialData = useCallback(async () => {
-    try {
+    const loadData = async () => {
       setIsLoading(true);
-      setError(null);
-      setLoadingProgress(10);
+      try {
+        const authenticated = await isAuthenticated();
 
-      // Load data from storage
-      const loadedData = await loadData();
-      setLoadingProgress(80);
+        if (authenticated) {
+          setLoadingProgress(10);
+          
+          // Add a timeout to prevent infinite loading
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Loading timeout')), 15000);
+          });
+          
+          // Load all game data at once
+          const dataPromise = loadAllGameData();
+          
+          // Race between data loading and timeout
+          const serverData = await Promise.race([dataPromise, timeoutPromise])
+            .catch(error => {
+              console.error("Data loading failed or timed out:", error);
+              return {};
+            });
+          
+          if (isMounted && Object.keys(serverData).length > 0) {
+            setLoadingProgress(90);
+            setGameData(prevData => ({
+              ...prevData,
+              ...serverData,
+            }));
+            setLastSyncTime(new Date());
+            setLoadingProgress(100);
+            toast.success("Your game data has been loaded", {
+              id: "data-sync-success",
+            });
+          } else {
+            // If we got no data, show error message
+            toast.error("Unable to load your game data. Please try again.");
+          }
+        } else {
+          console.log("User is not authenticated, using local data");
+          // If we reached here, user is not authenticated, use local data
+          // const localData = localStorage.getItem("rpgProductivityData");
+          // if (localData) {
+          //   try {
+          //     const parsedData = JSON.parse(localData);
+          //     if (isMounted) {
+          //       setGameData((prevData) => ({
+          //         ...prevData,
+          //         ...parsedData,
+          //       }));
+          //     }
+          //   } catch (error) {
+          //     console.error("Error parsing local data:", error);
+          //   }
+          // }
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+        toast.error("Some data failed to load. Retrying...");
+        // Retry loading after a short delay
+        setTimeout(loadData, 3000);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
 
-      if (loadedData) {
-        // Process any character progression logic
-        const processedData = processCharacterProgression(loadedData);
-        setGameDataInternal(processedData);
-      } else {
-        // Use default data if nothing is loaded
-        setGameDataInternal(DEFAULT_GAME_DATA);
+    // Set up auth state listener - FIXED to prevent deadlocks
+    authSubscription = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event);
+
+      // Use setTimeout to avoid potential deadlocks with Supabase
+      setTimeout(() => {
+        if (!isMounted) return;
+
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          loadData();
+        } else if (event === "SIGNED_OUT") {
+          // Reset to initial data when user signs out
+          // const initialData = loadInitialData();
+          setGameData({} as GameData);
+          toast.info("Signed out - local data will be used", {
+            id: "signed-out",
+          });
+        }
+      }, 0);
+    });
+
+    // Initial data load
+    loadData();
+
+    return () => {
+      isMounted = false;
+      if (authSubscription && authSubscription.data.subscription) {
+        authSubscription.data.subscription.unsubscribe();
+      }
+    };
+  }, []);
+
+  // Force refresh data from server
+  const refreshData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const authenticated = await isAuthenticated();
+      if (!authenticated) {
+        toast.error("You must be logged in to refresh data");
+        setIsLoading(false);
+        return;
       }
 
-      setLoadingProgress(100);
-      setIsLoading(false);
-    } catch (err) {
-      console.error("Error loading game data:", err);
-      setError("Failed to load game data. Please refresh the page.");
+      const serverData = await loadAllGameData();
+      if (Object.keys(serverData).length > 0) {
+        setGameData((prevData) => ({
+          ...prevData,
+          ...serverData,
+        }));
+        setLastSyncTime(new Date());
+        toast.success("Your game data has been refreshed");
+      } else {
+        toast.error("Failed to refresh data from server");
+      }
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      toast.error("Error refreshing data from server");
+    } finally {
       setIsLoading(false);
     }
-  }, [loadData, processCharacterProgression]);
-
-  // Initialize data on mount
-  useEffect(() => {
-    loadInitialData();
-  }, [loadInitialData]);
-
-  // Handle force reloads
-  useEffect(() => {
-    const handleForceReload = () => {
-      loadInitialData();
-    };
-
-    window.addEventListener('force-data-reload', handleForceReload);
-    return () => {
-      window.removeEventListener('force-data-reload', handleForceReload);
-    };
-  }, [loadInitialData]);
-
-  // Wrapped setter function to handle saving
-  const setGameData = useCallback(
-    (newData: Partial<GameData>, changedFields?: Set<string>) => {
-      // Process character progression on updates
-      const updateWithProcessing = (prevData: GameData): GameData => {
-        // Start with a merged state
-        const mergedData = { ...prevData, ...newData };
-        // Process character progression
-        return processCharacterProgression(mergedData);
-      };
-
-      // Update state and trigger save
-      setGameDataInternal((prevData) => {
-        const newState = updateWithProcessing(prevData);
-        // Schedule save with debounce
-        handleGameDataChange(newState, changedFields);
-        return newState;
-      });
-    },
-    [handleGameDataChange, processCharacterProgression]
-  );
-
-  // Manual save handler
-  const manualSave = useCallback(async () => {
-    return await saveImmediately();
-  }, [saveImmediately]);
-
-  // Refresh data handler
-  const refreshData = useCallback(async () => {
-    await loadInitialData();
-  }, [loadInitialData]);
+  }, []);
 
   return {
     gameData,
     setGameData,
     isLoading,
     loadingProgress,
-    error,
+    lastSyncTime,
     refreshData,
-    saveState: {
-      isSaving,
-      lastSaveTime,
-      pendingChanges,
-    },
-    manualSave,
   };
 }

@@ -1,9 +1,9 @@
-
 import { createContext, useContext } from "react";
-import { Quest, QuestStatus } from "@/types/quests";
-import { toast } from "sonner";
-import { GameData } from "@/types/gameData";
-import { generateId } from "@/utils/idGenerator";
+import { Quest, QuestStatus, QuestRepeatInterval, StatReward } from "../types/quests";
+import { generateId } from "../utils/idGenerator";
+import { StatName } from "../types/character";
+import { addDays, addMonths, addWeeks, format } from "date-fns";
+import { useQuestManager } from "@/features/quests/hooks/useQuestManager";
 
 interface QuestContextType {
   quests: Quest[];
@@ -14,79 +14,123 @@ interface QuestContextType {
   completeQuest: (questId: string) => void;
 }
 
-export const QuestContext = createContext<QuestContextType | null>(null);
+export const QuestContext = createContext<QuestContextType>({} as QuestContextType);
+
+export const useQuests = () => useContext(QuestContext);
 
 export const createQuestContextValue = (
   quests: Quest[],
-  setGameData: (data: Partial<GameData>, changedFields: Set<string>) => void
+  setGameData: React.Dispatch<React.SetStateAction<any>>
 ): QuestContextType => {
+  const { deleteQuest } = useQuestManager(quests, setGameData);
+
   const addQuest = (quest: Omit<Quest, "id">) => {
     const newQuest = {
       ...quest,
       id: generateId(),
-      status: "active" as QuestStatus,
-      steps: quest.steps?.map(step => ({
+      steps: quest.steps.map(step => ({
         ...step,
-        id: step.id || generateId(),
-        completed: false
-      })) || []
+        id: step.id || generateId()
+      }))
     };
 
-    setGameData({ quests: [...quests, newQuest] }, new Set(['quests']));
-    toast.success("Quest added successfully!");
+    setGameData(prevData => ({
+      ...prevData,
+      quests: [...prevData.quests, newQuest]
+    }));
   };
 
-  const updateQuest = (updatedQuest: Quest) => {
-    const newQuests = quests.map(quest => 
-      quest.id === updatedQuest.id ? updatedQuest : quest
-    );
-    
-    setGameData({ quests: newQuests }, new Set(['quests']));
-    toast.success("Quest updated successfully!");
-  };
-
-  const deleteQuest = (questId: string) => {
-    const newQuests = quests.filter(quest => quest.id !== questId);
-    setGameData({ quests: newQuests }, new Set(['quests']));
-    toast.success("Quest deleted successfully!");
+  const updateQuest = (quest: Quest) => {
+    setGameData(prevData => ({
+      ...prevData,
+      quests: prevData.quests.map(q => 
+        q.id === quest.id ? quest : q
+      )
+    }));
   };
 
   const completeQuestStep = (questId: string, stepId: string) => {
-    const newQuests = quests.map(quest => {
-      if (quest.id === questId) {
+    setGameData(prevData => {
+      const updatedQuests = prevData.quests.map(quest => {
+        if (quest.id !== questId) return quest;
+
         const updatedSteps = quest.steps.map(step => 
           step.id === stepId ? { ...step, completed: true } : step
         );
-        
-        // Check if all steps are completed
-        const allStepsCompleted = updatedSteps.every(step => step.completed);
-        
-        return {
-          ...quest,
-          steps: updatedSteps,
-          status: allStepsCompleted ? "completed" : quest.status
-        };
-      }
-      return quest;
+
+        return { ...quest, steps: updatedSteps };
+      });
+
+      return { ...prevData, quests: updatedQuests };
     });
-    
-    setGameData({ quests: newQuests }, new Set(['quests']));
-    toast.success("Quest step completed!");
   };
 
   const completeQuest = (questId: string) => {
-    const newQuests = quests.map(quest => 
-      quest.id === questId 
-        ? { 
-            ...quest, 
-            status: "completed" as QuestStatus,
-            steps: quest.steps.map(step => ({ ...step, completed: true }))
-          } 
-        : quest
-    );
-    
-    setGameData({ quests: newQuests }, new Set(['quests']));
-    toast.success("Quest completed successfully!");
+    setGameData(prevData => {
+      const quest = prevData.quests.find(q => q.id === questId);
+      if (!quest || quest.status === "completed") return prevData;
+
+      const updatedCharacter = {
+        ...prevData.character,
+        xp: prevData.character.xp + quest.xpReward,
+        coins: prevData.character.coins + quest.coinReward,
+        stats: {
+          ...prevData.character.stats,
+          ...Object.fromEntries((quest.statRewards || []).map(reward => [
+            reward.stat, 
+            prevData.character.stats[reward.stat] + reward.value
+          ]))
+        }
+      };
+
+      let updatedQuests = prevData.quests.map(q => 
+        q.id === questId ? { ...q, status: "completed" as QuestStatus } : q
+      );
+
+      if (quest.repeatType && quest.repeatType !== "none") {
+        const now = new Date();
+        let nextResetDate: Date;
+        
+        switch (quest.repeatType) {
+          case "daily":
+            nextResetDate = addDays(now, 1);
+            break;
+          case "weekly":
+            nextResetDate = addWeeks(now, 1);
+            break;
+          case "monthly":
+            nextResetDate = addMonths(now, 1);
+            break;
+          case "custom":
+            nextResetDate = addDays(now, 3);
+            break;
+          default:
+            nextResetDate = addDays(now, 1);
+        }
+        
+        const newQuestInstance: Quest = {
+          ...quest,
+          id: generateId(),
+          status: "active",
+          steps: quest.steps.map(step => ({
+            ...step,
+            completed: false
+          })),
+          repeat: {
+            interval: quest.repeatType,
+            nextRepeatDate: nextResetDate.toISOString(),
+          }
+        };
+        
+        updatedQuests = [...updatedQuests, newQuestInstance];
+      }
+
+      return { 
+        ...prevData, 
+        character: updatedCharacter,
+        quests: updatedQuests
+      };
+    });
   };
 
   return {
@@ -97,12 +141,4 @@ export const createQuestContextValue = (
     completeQuestStep,
     completeQuest
   };
-};
-
-export const useQuests = () => {
-  const context = useContext(QuestContext);
-  if (!context) {
-    throw new Error("useQuests must be used within a QuestProvider");
-  }
-  return context;
 };

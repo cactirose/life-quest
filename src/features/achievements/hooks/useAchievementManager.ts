@@ -1,13 +1,14 @@
 
 import { Achievement } from "@/types/achievements";
+import { GameDataUpdater } from "@/utils/contextTypes";
 import { generateId } from "@/utils/idGenerator";
-import { upsertAchievement, deleteAchievement as deleteAchievementService, updateAchievement } from "@/services/achievementService";
+import { upsertAchievement, deleteAchievement as deleteAchievementService } from "@/services/achievementService";
 import { upsertInventoryItem } from "@/services/inventoryService";
 import { upsertCharacter } from "@/services/characterService";
 
 export const useAchievementManager = (
   achievements: Achievement[],
-  setGameData: React.Dispatch<React.SetStateAction<any>>
+  setGameData: GameDataUpdater
 ) => {
   const addAchievement = (achievement: Omit<Achievement, "id" | "unlocked" | "dateUnlocked">) => {
     const newAchievement = {

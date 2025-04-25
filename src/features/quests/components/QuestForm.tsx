@@ -9,11 +9,6 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Achievement } from "@/types/achievements";
-import AchievementLinksField from "@/components/achievements/form-fields/AchievementLinksField";
 
 // Import refactored components
 import { QuestBasicInfoSection } from "./form-sections/QuestBasicInfoSection";
@@ -47,8 +42,7 @@ const questFormSchema = z.object({
     intelligence: z.number().int().min(0).max(5).optional(),
     wisdom: z.number().int().min(0).max(5).optional(),
     charisma: z.number().int().min(0).max(5).optional()
-  }).optional(),
-  linkedAchievementIds: z.array(z.string()).optional()
+  }).optional()
 });
 
 type QuestFormValues = z.infer<typeof questFormSchema>;
@@ -59,7 +53,6 @@ type QuestFormProps = {
   onCancel: () => void;
   isSubmitting?: boolean;
   submitButtonText?: string;
-  achievements: Achievement[];
 };
 
 export const QuestForm = ({ 
@@ -67,8 +60,7 @@ export const QuestForm = ({
   initialData = null,
   onCancel,
   isSubmitting = false,
-  submitButtonText = "Submit",
-  achievements
+  submitButtonText = "Submit"
 }: QuestFormProps) => {
   const [isSubmittingInternal, setIsSubmittingInternal] = useState(false);
   const isProcessing = isSubmitting || isSubmittingInternal;
@@ -95,8 +87,7 @@ export const QuestForm = ({
       intelligence: initialData?.statRewards?.find(sr => sr.stat === "intelligence")?.value || 0,
       wisdom: initialData?.statRewards?.find(sr => sr.stat === "wisdom")?.value || 0,
       charisma: initialData?.statRewards?.find(sr => sr.stat === "charisma")?.value || 0
-    },
-    linkedAchievementIds: initialData?.linkedAchievementIds || []
+    }
   };
 
   // Setup form with validation
@@ -111,10 +102,6 @@ export const QuestForm = ({
     "strength", "dexterity", "constitution", 
     "intelligence", "wisdom", "charisma"
   ];
-
-  const [selectedAchievementIds, setSelectedAchievementIds] = useState<string[]>(
-    initialData?.linkedAchievementIds || []
-  );
 
   const handleFormSubmit = async (data: QuestFormValues) => {
     try {
@@ -131,7 +118,6 @@ export const QuestForm = ({
           description: step.description,
           completed: false 
         })),
-        completedSteps: initialData?.completedSteps || 0,
         xpReward: data.xpReward,
         coinReward: data.coinReward,
         tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
@@ -143,8 +129,7 @@ export const QuestForm = ({
           .map(([stat, value]) => ({
             stat: stat as StatName,
             value: value as number
-          })),
-        linkedAchievementIds: selectedAchievementIds
+          }))
       };
 
       // Submit the quest data
@@ -159,15 +144,6 @@ export const QuestForm = ({
       toast.error("Failed to save quest. Please try again.");
       setIsSubmittingInternal(false);
     }
-  };
-
-  const handleAchievementToggle = (achievementId: string) => {
-    setSelectedAchievementIds(prev => {
-      const newIds = prev.includes(achievementId)
-        ? prev.filter(id => id !== achievementId)
-        : [...prev, achievementId];
-      return newIds;
-    });
   };
 
   return (
@@ -185,15 +161,6 @@ export const QuestForm = ({
           <BasicRewardsSection />
 
           <StatRewardsSection statNames={statNames} />
-
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Linked Achievements</h3>
-            <AchievementLinksField
-              achievements={achievements}
-              selectedAchievementIds={selectedAchievementIds}
-              onAchievementToggle={handleAchievementToggle}
-            />
-          </div>
 
           <DialogFooter className="flex justify-between">
             <Button 

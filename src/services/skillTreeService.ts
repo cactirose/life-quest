@@ -1,109 +1,82 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { SkillNode } from "@/types/skills";
-import { StatName } from "@/types/character";
-import { Json } from "@/integrations/supabase/types";
 
+// Skill Tree methods
 export const fetchSkillTree = async (): Promise<SkillNode[]> => {
   try {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) return [];
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) return [];
     
     const { data, error } = await supabase
       .from("skill_nodes")
       .select("*")
-      .eq("user_id", user.user.id);
+      .eq("user_id", user.data.user.id);
 
     if (error) {
       console.error("Error fetching skill tree:", error);
       return [];
     }
 
-    return data.map(node => {
-      // Convert position from database to expected structure
-      const nodePosition = node.position as Record<string, number> || { x: 0, y: 0 };
-      const position = {
-        x: nodePosition.x || 0,
-        y: nodePosition.y || 0
-      };
-      
-      // Convert connectedTo array from DB
-      const connectedTo = Array.isArray(node.connected_to) ? node.connected_to as string[] : [];
-      
-      // Convert statBonuses from database
-      const statBonuses = typeof node.stat_bonuses === 'object' && node.stat_bonuses !== null
-        ? node.stat_bonuses as Partial<Record<StatName, number>>
-        : {};
-      
-      return {
-        id: node.id,
-        name: node.name,
-        description: node.description || "",
-        unlocked: node.unlocked || false,
-        icon: node.icon || "",
-        statBonuses,
-        position,
-        connectedTo
-      };
-    });
+    return data.map(node => ({
+      id: node.id,
+      name: node.name,
+      description: node.description || "",
+      icon: node.icon || "",
+      unlocked: node.unlocked,
+      statBonuses: node.stat_bonuses as any,
+      position: node.position as unknown as { x: number, y: number },
+      connectedTo: Array.isArray(node.connected_to) ? node.connected_to as string[] : []
+    }) as SkillNode);
   } catch (error) {
     console.error("Error in fetchSkillTree:", error);
     return [];
   }
 };
 
-export const upsertSkillNode = async (node: SkillNode): Promise<SkillNode | null> => {
+export const upsertSkillNode = async (node: SkillNode): Promise<void> => {
   try {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user?.user) throw new Error("No authenticated user");
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) throw new Error("No authenticated user");
 
-    // Check if node exists
-    const { data } = await supabase
+    const { error } = await supabase
       .from("skill_nodes")
-      .select("id")
-      .eq("id", node.id)
-      .single();
+      .upsert({
+        id: node.id,
+        user_id: user.data.user.id,
+        name: node.name,
+        description: node.description,
+        icon: node.icon,
+        unlocked: node.unlocked,
+        stat_bonuses: node.statBonuses as any,
+        position: node.position as any,
+        connected_to: node.connectedTo as any
+      });
 
-    const nodeData = {
-      name: node.name,
-      description: node.description,
-      unlocked: node.unlocked,
-      icon: node.icon,
-      connected_to: node.connectedTo,
-      position: node.position,
-      stat_bonuses: node.statBonuses
-    };
-
-    if (data) {
-      // Update existing node
-      const { error } = await supabase
-        .from("skill_nodes")
-        .update(nodeData)
-        .eq("id", node.id);
-
-      if (error) {
-        console.error("Error updating skill node:", error);
-        return null;
-      }
-    } else {
-      // Insert new node
-      const { error } = await supabase
-        .from("skill_nodes")
-        .insert([{
-          id: node.id,
-          user_id: user.user.id,
-          ...nodeData
-        }]);
-
-      if (error) {
-        console.error("Error creating skill node:", error);
-        return null;
-      }
+    if (error) {
+      console.error("Error upserting skill node:", error);
+      toast.error("Failed to save skill node");
     }
-
-    return node;
   } catch (error) {
     console.error("Error in upsertSkillNode:", error);
-    return null;
+    toast.error("Failed to save skill node");
+  }
+};
+
+export const deleteSkillNode = async (nodeId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from("skill_nodes")
+      .delete()
+      .eq("id", nodeId);
+
+    if (error) {
+      console.error("Error deleting skill node:", error);
+      toast.error("Failed to delete skill node");
+    }
+  } catch (error) {
+    console.error("Error in deleteSkillNode:", error);
+    toast.error("Failed to delete skill node");
   }
 };
