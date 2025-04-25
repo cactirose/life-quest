@@ -1,8 +1,9 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useGameData, StatName, GearItem } from "@/contexts/DataContext";
+import { useGameData } from "@/contexts/DataContext";
 import { toast } from "sonner";
 import { 
   ArrowUp, 
@@ -22,6 +23,7 @@ import {
   ScrollText
 } from "lucide-react";
 import { CharacterResetDialog } from "@/components/CharacterResetDialog";
+import { StatName } from "@/types/character";
 
 const StatDisplay = ({ 
   name, 
@@ -64,9 +66,9 @@ const StatDisplay = ({
 const EquippedGear = ({ 
   equippedItems 
 }: { 
-  equippedItems: GearItem[] 
+  equippedItems: any[]
 }) => {
-  const getItemByType = (type: GearItem["type"]) => {
+  const getItemByType = (type: string) => {
     return equippedItems.find(item => item.type === type);
   };
   
@@ -74,7 +76,7 @@ const EquippedGear = ({
   const armor = getItemByType("armor");
   const accessory = getItemByType("accessory");
   
-  const renderItem = (item: GearItem | undefined, icon: React.ReactNode, slot: string) => (
+  const renderItem = (item: any | undefined, icon: React.ReactNode, slot: string) => (
     <div className={`wood-texture p-3 flex items-start gap-3 animate-fade-in ${item ? 'border-rpg-brown' : 'border-dashed'}`}>
       <div className="w-10 h-10 flex items-center justify-center bg-rpg-tan border border-rpg-brown rounded-md flex-shrink-0">
         {item ? (
@@ -107,7 +109,7 @@ const EquippedGear = ({
             <p className="text-xs text-rpg-brown mt-1 line-clamp-2">{item.description}</p>
             <div className="flex flex-wrap gap-2 mt-2">
               {Object.entries(item.statBonuses).map(([stat, value]) => (
-                value > 0 && (
+                Number(value) > 0 && (
                   <span key={stat} className="text-xs px-1.5 py-0.5 bg-rpg-green text-white rounded">
                     +{value} {stat}
                   </span>
@@ -132,12 +134,30 @@ const EquippedGear = ({
 };
 
 const Character = () => {
-  const { character, inventory, setCharacter } = useGameData();
+  const { gameData, setGameData } = useGameData();
   const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState(character.name);
-  const [editedBio, setEditedBio] = useState(character.bio);
+  const [editedName, setEditedName] = useState(gameData.character?.name || '');
+  const [editedBio, setEditedBio] = useState(gameData.character?.bio || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  const character = gameData.character || {
+    name: 'Adventurer',
+    bio: 'A brave adventurer',
+    level: 1,
+    xp: 0,
+    nextLevelXp: 100,
+    coins: 0,
+    stats: {
+      strength: 10,
+      dexterity: 10,
+      constitution: 10,
+      intelligence: 10,
+      wisdom: 10,
+      charisma: 10
+    }
+  };
+  
+  const inventory = gameData.inventory || [];
   const equippedItems = inventory.filter(item => item.equipped);
   
   const calculateStatBonuses = () => {
@@ -151,9 +171,13 @@ const Character = () => {
     };
     
     equippedItems.forEach(item => {
-      Object.entries(item.statBonuses).forEach(([stat, value]) => {
-        bonuses[stat as StatName] += value || 0;
-      });
+      if (item.statBonuses) {
+        Object.entries(item.statBonuses).forEach(([stat, value]) => {
+          if (stat in bonuses && typeof value === 'number') {
+            bonuses[stat as StatName] += value;
+          }
+        });
+      }
     });
     
     return bonuses;
@@ -171,10 +195,14 @@ const Character = () => {
     
     const reader = new FileReader();
     reader.onload = () => {
-      setCharacter({
-        ...character,
-        portrait: reader.result as string
-      });
+      if (character) {
+        setGameData({
+          character: {
+            ...character,
+            portrait: reader.result as string
+          }
+        }, new Set(['character']));
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -185,14 +213,18 @@ const Character = () => {
       return;
     }
     
-    setCharacter({
-      ...character,
-      name: editedName,
-      bio: editedBio
-    });
-    
-    setIsEditing(false);
-    toast.success("Character updated successfully!");
+    if (character) {
+      setGameData({
+        character: {
+          ...character,
+          name: editedName,
+          bio: editedBio
+        }
+      }, new Set(['character']));
+      
+      setIsEditing(false);
+      toast.success("Character updated successfully!");
+    }
   };
   
   const handleStatUpgrade = (stat: StatName) => {
@@ -201,14 +233,16 @@ const Character = () => {
       return;
     }
     
-    setCharacter({
-      ...character,
-      coins: character.coins - 25,
-      stats: {
-        ...character.stats,
-        [stat]: (character.stats[stat] || 0) + 1
+    const updatedStats = { ...character.stats };
+    updatedStats[stat] = (updatedStats[stat] || 0) + 1;
+    
+    setGameData({
+      character: {
+        ...character,
+        coins: character.coins - 25,
+        stats: updatedStats
       }
-    });
+    }, new Set(['character']));
     
     toast.success(`${stat} increased by 1!`);
   };
@@ -242,7 +276,7 @@ const Character = () => {
               className="w-40 h-40 mx-auto mb-4 bg-rpg-tan border-4 border-rpg-brown rounded-md overflow-hidden cursor-pointer relative"
               onClick={handleAvatarClick}
             >
-              {character.portrait ? (
+              {character?.portrait ? (
                 <img 
                   src={character.portrait} 
                   alt={character.name} 
@@ -337,37 +371,37 @@ const Character = () => {
             <div className="space-y-3">
               <StatDisplay 
                 name="strength" 
-                base={character.stats.strength} 
+                base={character.stats.strength || 0} 
                 bonus={statBonuses.strength}
                 icon={<Dumbbell className="text-rpg-brown" size={16} />} 
               />
               <StatDisplay 
                 name="dexterity" 
-                base={character.stats.dexterity} 
+                base={character.stats.dexterity || 0} 
                 bonus={statBonuses.dexterity}
                 icon={<Zap className="text-rpg-brown" size={16} />} 
               />
               <StatDisplay 
                 name="constitution" 
-                base={character.stats.constitution} 
+                base={character.stats.constitution || 0} 
                 bonus={statBonuses.constitution}
                 icon={<Heart className="text-rpg-brown" size={16} />} 
               />
               <StatDisplay 
                 name="intelligence" 
-                base={character.stats.intelligence} 
+                base={character.stats.intelligence || 0} 
                 bonus={statBonuses.intelligence}
                 icon={<Brain className="text-rpg-brown" size={16} />} 
               />
               <StatDisplay 
                 name="wisdom" 
-                base={character.stats.wisdom} 
+                base={character.stats.wisdom || 0} 
                 bonus={statBonuses.wisdom}
                 icon={<BookOpen className="text-rpg-brown" size={16} />} 
               />
               <StatDisplay 
                 name="charisma" 
-                base={character.stats.charisma} 
+                base={character.stats.charisma || 0} 
                 bonus={statBonuses.charisma}
                 icon={<Smile className="text-rpg-brown" size={16} />} 
               />
@@ -399,19 +433,19 @@ const Character = () => {
                     <div className="flex justify-between">
                       <span className="text-sm text-rpg-brown">Strength</span>
                       <span className="font-pixel text-rpg-brown">
-                        {character.stats.strength + statBonuses.strength}
+                        {(character.stats.strength || 0) + statBonuses.strength}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-rpg-brown">Dexterity</span>
                       <span className="font-pixel text-rpg-brown">
-                        {character.stats.dexterity + statBonuses.dexterity}
+                        {(character.stats.dexterity || 0) + statBonuses.dexterity}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-rpg-brown">Constitution</span>
                       <span className="font-pixel text-rpg-brown">
-                        {character.stats.constitution + statBonuses.constitution}
+                        {(character.stats.constitution || 0) + statBonuses.constitution}
                       </span>
                     </div>
                   </div>
@@ -419,19 +453,19 @@ const Character = () => {
                     <div className="flex justify-between">
                       <span className="text-sm text-rpg-brown">Intelligence</span>
                       <span className="font-pixel text-rpg-brown">
-                        {character.stats.intelligence + statBonuses.intelligence}
+                        {(character.stats.intelligence || 0) + statBonuses.intelligence}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-rpg-brown">Wisdom</span>
                       <span className="font-pixel text-rpg-brown">
-                        {character.stats.wisdom + statBonuses.wisdom}
+                        {(character.stats.wisdom || 0) + statBonuses.wisdom}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-rpg-brown">Charisma</span>
                       <span className="font-pixel text-rpg-brown">
-                        {character.stats.charisma + statBonuses.charisma}
+                        {(character.stats.charisma || 0) + statBonuses.charisma}
                       </span>
                     </div>
                   </div>

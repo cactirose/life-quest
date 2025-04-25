@@ -1,10 +1,11 @@
 
 import { useState } from "react";
-import { useGameData, Achievement } from "@/contexts/DataContext";
+import { useGameData } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Achievement } from "@/types/achievements";
 
 // Import our new components
 import AchievementForm from "@/components/achievements/AchievementForm";
@@ -12,18 +13,12 @@ import AchievementStatsCard from "@/components/achievements/AchievementStatsCard
 import AchievementTabs from "@/components/achievements/AchievementTabs";
 
 const Achievements = () => {
-  const { 
-    achievements, 
-    addAchievement, 
-    updateAchievement, 
-    deleteAchievement, 
-    checkAndUnlockAchievement 
-  } = useGameData();
-  
+  const { gameData, setGameData } = useGameData();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   
+  const achievements = gameData.achievements || [];
   const lockedAchievements = achievements.filter(a => !a.unlocked);
   const unlockedAchievements = achievements.filter(a => a.unlocked);
   
@@ -40,35 +35,82 @@ const Achievements = () => {
     ? Math.round((unlockedAchievements.length / achievements.length) * 100)
     : 0;
   
-  const handleAddAchievement = (achievement: Omit<Achievement, "id" | "unlocked" | "dateUnlocked">) => {
-    addAchievement(achievement);
+  const addAchievement = (achievement: Omit<Achievement, "id" | "unlocked" | "dateUnlocked">) => {
+    const newAchievement = {
+      ...achievement,
+      id: crypto.randomUUID(),
+      unlocked: false,
+      dateUnlocked: null
+    };
+    
+    setGameData({ 
+      achievements: [...achievements, newAchievement] 
+    }, new Set(['achievements']));
+    
     setShowAddDialog(false);
     toast.success("Achievement added successfully!");
   };
   
-  const handleUpdateAchievement = (achievement: Omit<Achievement, "id" | "unlocked" | "dateUnlocked">) => {
+  const updateAchievement = (achievement: Achievement) => {
     if (editingAchievement) {
-      updateAchievement({
-        ...editingAchievement,
-        ...achievement,
-      });
+      const updatedAchievements = achievements.map(a => 
+        a.id === achievement.id ? achievement : a
+      );
+      
+      setGameData({ 
+        achievements: updatedAchievements 
+      }, new Set(['achievements']));
+      
       setEditingAchievement(null);
       toast.success("Achievement updated successfully!");
     }
   };
   
-  const handleDeleteAchievement = (achievementId: string) => {
-    deleteAchievement(achievementId);
+  const deleteAchievement = (achievementId: string) => {
+    const updatedAchievements = achievements.filter(a => a.id !== achievementId);
+    
+    setGameData({ 
+      achievements: updatedAchievements 
+    }, new Set(['achievements']));
+    
     toast.success("Achievement deleted successfully!");
   };
   
-  const handleUnlockAchievement = (achievementId: string) => {
-    const unlocked = checkAndUnlockAchievement(achievementId);
-    if (unlocked) {
-      toast.success("Achievement unlocked! Rewards added to your character.");
+  const checkAndUnlockAchievement = (achievementId: string) => {
+    const achievement = achievements.find(a => a.id === achievementId);
+    if (!achievement || achievement.unlocked) return false;
+    
+    const updatedAchievements = achievements.map(a => 
+      a.id === achievementId 
+        ? { ...a, unlocked: true, dateUnlocked: new Date().toISOString() } 
+        : a
+    );
+    
+    // Apply rewards to character
+    if (achievement.xpReward || achievement.coinReward) {
+      const character = gameData.character;
+      if (character) {
+        setGameData({
+          character: {
+            ...character,
+            xp: character.xp + (achievement.xpReward || 0),
+            coins: character.coins + (achievement.coinReward || 0)
+          },
+          achievements: updatedAchievements
+        }, new Set(['character', 'achievements']));
+      } else {
+        setGameData({ 
+          achievements: updatedAchievements 
+        }, new Set(['achievements']));
+      }
     } else {
-      toast.error("Failed to unlock achievement.");
+      setGameData({ 
+        achievements: updatedAchievements 
+      }, new Set(['achievements']));
     }
+    
+    toast.success("Achievement unlocked! Rewards added to your character.");
+    return true;
   };
   
   return (
@@ -88,7 +130,7 @@ const Achievements = () => {
               <DialogTitle className="text-2xl font-pixel text-rpg-brown">Create New Achievement</DialogTitle>
             </DialogHeader>
             <AchievementForm 
-              onSubmit={handleAddAchievement} 
+              onSubmit={addAchievement} 
               onCancel={() => setShowAddDialog(false)} 
             />
           </DialogContent>
@@ -105,7 +147,7 @@ const Achievements = () => {
             {editingAchievement && (
               <AchievementForm 
                 initialData={editingAchievement}
-                onSubmit={handleUpdateAchievement} 
+                onSubmit={updateAchievement} 
                 onCancel={() => setEditingAchievement(null)} 
               />
             )}
@@ -127,8 +169,8 @@ const Achievements = () => {
         lockedAchievements={lockedAchievements}
         unlockedAchievements={unlockedAchievements}
         onEdit={setEditingAchievement}
-        onDelete={handleDeleteAchievement}
-        onUnlock={handleUnlockAchievement}
+        onDelete={deleteAchievement}
+        onUnlock={checkAndUnlockAchievement}
         onAddNew={() => setShowAddDialog(true)}
       />
     </div>

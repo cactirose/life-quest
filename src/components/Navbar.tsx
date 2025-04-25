@@ -1,3 +1,4 @@
+
 import { Link, useNavigate } from "react-router-dom";
 import { useGameData } from "@/contexts/DataContext";
 import { 
@@ -20,13 +21,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import MobileNavMenu from "./MobileNavMenu";
 import StatusBar from "./navigation/StatusBar";
 import DesktopNav from "./navigation/DesktopNav";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { logout } from "@/utils/auth";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { Button } from "./ui/button";
 
 const Navbar = () => {
-  const { character } = useGameData();
+  const { gameData } = useGameData();
   const { isAuthenticated } = useAuth();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -79,10 +80,6 @@ const Navbar = () => {
         label: "Mood",
         path: "/mood",
         icon: <Smile size={18} />
-      }, {
-        label: "Journal",
-        path: "/journal",
-        icon: <Book size={18} />
       }]
     }
   ];

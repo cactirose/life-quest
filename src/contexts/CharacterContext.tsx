@@ -1,9 +1,10 @@
+
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Character } from '@/types/character';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { debounce } from 'lodash';
 import { toast } from 'sonner';
-import { useGameDataManager } from '@/hooks/gameData';
+import { useGameData } from '@/contexts/DataContext';
 
 interface CharacterContextType {
   character: Character | null;
@@ -16,7 +17,7 @@ interface CharacterContextType {
 export const CharacterContext = createContext<CharacterContextType | null>(null);
 
 export const CharacterProvider = ({ children }: { children: React.ReactNode }) => {
-  const { gameData, setGameData } = useGameDataManager();
+  const { gameData, setGameData } = useGameData();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -28,10 +29,9 @@ export const CharacterProvider = ({ children }: { children: React.ReactNode }) =
       const updatedCharacter = { ...gameData.character, ...updates };
       
       // Optimistically update local state
-      setGameData(prev => ({
-        ...prev,
-        character: updatedCharacter
-      }));
+      setGameData({ 
+        character: updatedCharacter 
+      }, new Set(['character']));
 
       // Update in Supabase
       const { error } = await supabase

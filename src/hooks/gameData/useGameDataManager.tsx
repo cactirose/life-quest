@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GameData } from "@/types/gameData";
 import { DEFAULT_GAME_DATA } from "@/utils/defaultGameData";
@@ -6,7 +7,7 @@ import { useSupabaseSync } from "../useSupabaseSync";
 import { useDataEffects } from "../useDataEffects";
 import { loadGameData } from "@/services";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { useSaveManager } from "./useSaveManager";
 
@@ -21,17 +22,20 @@ export function useGameDataManager() {
   const { dataStatus, updateStatus } = useDataStatus();
   
   // Handle data changes
-  const handleDataChange = useCallback((newData: Partial<GameData>, changedFields: Set<string>) => {
+  const handleDataChange = useCallback((newData: Partial<GameData>, changedFields?: Set<string>) => {
     setGameData(prev => ({ ...prev, ...newData }));
+    
+    // Use provided changedFields or create a new set with keys from newData
+    const fieldsToTrack = changedFields || new Set(Object.keys(newData));
     
     // Determine if this is a critical change that needs immediate save
     const criticalFields = new Set(['character', 'quests', 'inventory']);
-    const hasCriticalChanges = Array.from(changedFields).some(field => criticalFields.has(field));
+    const hasCriticalChanges = Array.from(fieldsToTrack).some(field => criticalFields.has(field));
     
     if (hasCriticalChanges) {
-      immediateSave(changedFields);
+      immediateSave(fieldsToTrack);
     } else {
-      trackChanges(changedFields);
+      trackChanges(fieldsToTrack);
     }
   }, []);
 

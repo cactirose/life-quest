@@ -27,7 +27,7 @@ import {
 
 interface DataContextType {
   gameData: GameData;
-  setGameData: (newData: Partial<GameData>, changedFields: Set<string>) => void;
+  setGameData: (newData: Partial<GameData>, changedFields?: Set<string>) => void;
   isLoading: boolean;
   loadingProgress: number;
   error: string | null;
@@ -73,25 +73,25 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // Create contexts
   const questContextValue = createQuestContextValue(
-    safeGameData.quests,
+    safeGameData.quests || [],
     setGameData
   );
   const inventoryContextValue = createInventoryContextValue(
-    safeGameData.inventory,
-    safeGameData.shopItems,
+    safeGameData.inventory || [],
+    safeGameData.shopItems || [],
     setGameData
   );
   const skillTreeContextValue = createSkillTreeContextValue(
-    safeGameData.skillTree,
+    safeGameData.skillTree || [],
     setGameData
   );
   const habitContextValue = createHabitContextValue(
-    safeGameData.habits,
+    safeGameData.habits || [],
     setGameData
   );
-  const moodContextValue = createMoodContextValue(safeGameData.moods, setGameData);
+  const moodContextValue = createMoodContextValue(safeGameData.moods || [], setGameData);
   const achievementContextValue = createAchievementContextValue(
-    safeGameData.achievements,
+    safeGameData.achievements || [],
     setGameData
   );
 
@@ -117,7 +117,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   return (
     <DataContext.Provider value={contextValue}>
       <CombinedProvider
-        contextValue={safeGameData}
+        contextValue={contextValue}
         questContextValue={questContextValue}
         inventoryContextValue={inventoryContextValue}
         skillTreeContextValue={skillTreeContextValue}
