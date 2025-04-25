@@ -35,52 +35,52 @@ export const syncShoppingListsData = async (gameData: GameData, changedFields: S
           return false;
         }
 
-        // Handle items for this list
-        if (list.items && list.items.length > 0) {
-          for (const item of list.items) {
-            if (item.id) {
-              // Update existing item
-              const { error: itemError } = await supabase
-                .from('shopping_items')
-                .update({
-                  name: item.name,
-                  quantity: item.quantity,
-                  category: item.category,
-                  purchased: item.purchased,
-                  notes: item.notes,
-                  sort_order: item.sortOrder || 0,
-                  updated_at: new Date().toISOString()
-                })
-                .eq('id', item.id)
-                .eq('list_id', list.id);
+        // Sync items in the list
+        for (const item of list.items) {
+          if (item.id) {
+            // Update existing item
+            const { error: itemError } = await supabase
+              .from('shopping_items')
+              .update({
+                name: item.name,
+                quantity: item.quantity,
+                category: item.category,
+                purchased: item.purchased,
+                notes: item.notes,
+                price: item.price,
+                sort_order: item.sortOrder,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', item.id)
+              .eq('list_id', list.id);
 
-              if (itemError) {
-                console.error("Error updating shopping item:", itemError);
-                return false;
-              }
-            } else {
-              // Create new item
-              const { error: itemError } = await supabase
-                .from('shopping_items')
-                .insert({
-                  list_id: list.id,
-                  name: item.name,
-                  quantity: item.quantity,
-                  category: item.category,
-                  purchased: item.purchased || false,
-                  notes: item.notes,
-                  sort_order: item.sortOrder || 0
-                });
+            if (itemError) {
+              console.error("Error updating shopping item:", itemError);
+              return false;
+            }
+          } else {
+            // Create new item
+            const { error: itemError } = await supabase
+              .from('shopping_items')
+              .insert({
+                list_id: list.id,
+                name: item.name,
+                quantity: item.quantity,
+                category: item.category,
+                purchased: item.purchased,
+                notes: item.notes,
+                price: item.price,
+                sort_order: item.sortOrder || 0
+              });
 
-              if (itemError) {
-                console.error("Error creating shopping item:", itemError);
-                return false;
-              }
+            if (itemError) {
+              console.error("Error creating shopping item:", itemError);
+              return false;
             }
           }
         }
       } else {
-        // Create new shopping list
+        // Create new list
         const { data: newList, error: listError } = await supabase
           .from('shopping_lists')
           .insert({
@@ -88,7 +88,7 @@ export const syncShoppingListsData = async (gameData: GameData, changedFields: S
             name: list.name,
             description: list.description
           })
-          .select('id')
+          .select()
           .single();
 
         if (listError || !newList) {
@@ -96,24 +96,23 @@ export const syncShoppingListsData = async (gameData: GameData, changedFields: S
           return false;
         }
 
-        // Add items to the new list if there are any
-        if (list.items && list.items.length > 0) {
-          const itemsToInsert = list.items.map((item, index) => ({
-            list_id: newList.id,
-            name: item.name,
-            quantity: item.quantity,
-            category: item.category,
-            purchased: item.purchased || false,
-            notes: item.notes,
-            sort_order: item.sortOrder || index
-          }));
-
-          const { error: itemsError } = await supabase
+        // Create items for the new list
+        for (const item of list.items) {
+          const { error: itemError } = await supabase
             .from('shopping_items')
-            .insert(itemsToInsert);
+            .insert({
+              list_id: newList.id,
+              name: item.name,
+              quantity: item.quantity,
+              category: item.category,
+              purchased: item.purchased,
+              notes: item.notes,
+              price: item.price,
+              sort_order: item.sortOrder || 0
+            });
 
-          if (itemsError) {
-            console.error("Error creating shopping items:", itemsError);
+          if (itemError) {
+            console.error("Error creating shopping item:", itemError);
             return false;
           }
         }

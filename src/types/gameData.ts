@@ -37,6 +37,46 @@ export interface DataContextType {
     pendingChanges: Set<string>;
   };
   manualSave: () => Promise<void>;
+  
+  // Character properties
+  character: Character;
+  
+  // Quest properties
+  quests: Quest[];
+  addQuest: (quest: Omit<Quest, "id">) => void;
+  updateQuest: (quest: Quest) => void;
+  deleteQuest: (questId: string) => void;
+  completeQuestStep: (questId: string, stepId: string) => void;
+  completeQuest: (questId: string) => void;
+  
+  // Inventory properties
+  inventory: GearItem[];
+  equipItem: (itemId: string) => void;
+  unequipItem: (itemId: string) => void;
+  
+  // Shop properties
+  shopItems: GearItem[];
+  purchaseItem: (itemId: string) => boolean;
+  addShopItem: (item: GearItem) => void;
+  updateShopItem: (item: GearItem) => void;
+  deleteShopItem: (itemId: string) => void;
+  
+  // Habits properties
+  habits: Habit[];
+  addHabit: (habit: Omit<Habit, "id" | "streak" | "completionHistory">) => void;
+  updateHabit: (habit: Habit) => void;
+  deleteHabit: (habitId: string) => void;
+  completeHabit: (habitId: string, date?: string) => void;
+  uncompleteHabit: (habitId: string, date?: string) => void;
+  
+  // Mood properties
+  moods: MoodEntry[];
+  addMoodEntry: (entry: Omit<MoodEntry, "id">) => void;
+  updateMoodEntry: (entry: MoodEntry) => void;
+  deleteMoodEntry: (entryId: string) => void;
+  
+  // Achievement properties
+  achievements: Achievement[];
 }
 
 export type GameDataUpdater = (newData: Partial<GameData>, changedFields?: Set<string>) => void;

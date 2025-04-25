@@ -21,7 +21,7 @@ export function useGameDataManager() {
   const { isAuthenticated } = useAuth();
   const { dataStatus, updateStatus } = useDataStatus();
   
-  // Handle data changes
+  // Handle data change
   const handleDataChange = useCallback((newData: Partial<GameData>, changedFields: Set<string> = new Set()) => {
     setGameData(prev => ({ ...prev, ...newData }));
     
@@ -134,8 +134,20 @@ export function useGameDataManager() {
     }
   }, [isAuthenticated]);
 
+  // Create a merged object with both the game data and the methods
+  const gameDataWithMethods = {
+    ...gameData,
+    character: gameData.character,
+    quests: gameData.quests,
+    inventory: gameData.inventory,
+    shopItems: gameData.shopItems,
+    habits: gameData.habits,
+    moods: gameData.moods,
+    achievements: gameData.achievements
+  };
+
   return {
-    gameData,
+    gameData: gameDataWithMethods,
     setGameData: handleDataChange,
     isLoading,
     loadingProgress,

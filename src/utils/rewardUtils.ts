@@ -122,8 +122,10 @@ export function completeAchievement(
   achievementId: string,
   setGameData: (data: Partial<GameData>, changedFields: Set<string>) => void
 ): void {
-  setGameData(prevData => {
-    const achievements = [...prevData.achievements || []];
+  const updatedData: Partial<GameData> = {};
+  
+  updatedData.achievements = (prevAchievements: any) => {
+    const achievements = [...(prevAchievements || [])];
     const achievementIndex = achievements.findIndex(a => a.id === achievementId);
     
     if (achievementIndex !== -1 && !achievements[achievementIndex].unlocked) {
@@ -140,9 +142,8 @@ export function completeAchievement(
       
       // Apply any rewards from the achievement
       if (updatedAchievement.xpReward || updatedAchievement.coinReward) {
-        const character = { ...prevData.character };
         allocateRewards(
-          character,
+          updatedData.character as any || {},
           {
             xp: updatedAchievement.xpReward,
             coins: updatedAchievement.coinReward
@@ -152,9 +153,11 @@ export function completeAchievement(
       }
       
       toast.success(`Achievement unlocked: ${updatedAchievement.title}!`);
-      return { ...prevData, achievements: updatedAchievements };
+      return updatedAchievements;
     }
     
-    return prevData;
-  }, new Set(['achievements']));
+    return achievements;
+  };
+  
+  setGameData(updatedData, new Set(['achievements']));
 }

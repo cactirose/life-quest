@@ -22,3 +22,25 @@ export function generateUUID(): string {
     return v.toString(16);
   });
 }
+
+/**
+ * Converts a non-UUID ID to a UUID format
+ * Used for data migrations when changing ID formats
+ */
+export function migrateToUUID(oldId: string): string {
+  // If it's already a UUID, return it
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(oldId)) {
+    return oldId;
+  }
+  
+  // Create a deterministic UUID based on the old ID
+  const hash = Array.from(oldId).reduce((acc, char) => {
+    return (((acc << 5) - acc) + char.charCodeAt(0)) | 0;
+  }, 0);
+  
+  // Use the hash to create a deterministic part of the UUID
+  const deterministicPart = Math.abs(hash).toString(16).padStart(8, '0');
+  
+  // Generate the rest randomly
+  return `${deterministicPart.substring(0, 8)}-${deterministicPart.substring(0, 4)}-4${generateUUID().substring(14)}`;
+}
