@@ -84,6 +84,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // Handle side effects
   useDataEffects(safeGameData, setGameData);
 
+  // Modified: Wrap the return of manualSave to ensure it returns Promise<void>
+  const manualSaveWrapper = async (): Promise<void> => {
+    await manualSave();
+  };
+
   // Create the full context value with all required properties
   const contextValue: DataContextType = {
     gameData: safeGameData,
@@ -93,7 +98,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     error,
     refreshData,
     saveState,
-    manualSave,
+    manualSave: manualSaveWrapper,  // Use the wrapper function
     
     // Add direct properties for easier access throughout the app
     character: safeGameData.character,
@@ -107,8 +112,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     // Add methods from context values
     ...questContextValue,
     ...inventoryContextValue,
-    equipItem: inventoryContextValue.toggleEquipped,
-    unequipItem: inventoryContextValue.toggleEquipped,
+    // Update equipItem and unequipItem to use the correct method names
+    equipItem: inventoryContextValue.equipItem,
+    unequipItem: inventoryContextValue.unequipItem,
     ...habitContextValue,
     ...moodContextValue,
     ...achievementContextValue
@@ -137,7 +143,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           <SaveButton 
             isSaving={saveState.isSaving}
             lastSaveTime={saveState.lastSaveTime}
-            onSave={manualSave}
+            onSave={manualSaveWrapper}
             pendingChanges={saveState.pendingChanges}
           />
         </CombinedProvider>

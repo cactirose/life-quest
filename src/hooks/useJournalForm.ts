@@ -56,6 +56,7 @@ export const useJournalForm = (entryId?: string) => {
         const newEntry: JournalEntry = {
           id: generateId(),
           ...data,
+          date: now.toISOString(), // Add the required 'date' property
           created_at: now.toISOString(),
           updated_at: now.toISOString()
         };

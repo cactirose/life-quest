@@ -25,14 +25,8 @@ export const useLoginStreak = () => {
     fetchServerTime 
   });
   
-  const { 
-    claimDailyBonus,
-    forceReset,
-    isClaimingBonus
-  } = useDailyBonus({ 
-    character, 
-    setGameData 
-  });
+  // Update useDailyBonus hook usage to match its current implementation
+  const { claimDailyBonus } = useDailyBonus();
 
   // Check login streak when component mounts or when character changes
   useEffect(() => {
@@ -43,9 +37,7 @@ export const useLoginStreak = () => {
 
   return { 
     claimDailyBonus,
-    forceReset,
     isCheckingLogin,
-    isClaimingBonus,
     streak: character?.loginStreak || 0,
     canClaimBonus: character && !character.dailyBonusClaimed
   };
