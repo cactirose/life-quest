@@ -115,6 +115,8 @@ const PublicLayout = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
+const queryClient = new QueryClient();
+
 const App = () => {
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {

@@ -1,3 +1,4 @@
+
 import { Character, StatName } from "./character";
 import { Quest } from "./quests";
 import { GearItem } from "./inventory";
@@ -71,7 +72,4 @@ export interface GameData {
   // Daily login methods
   checkDailyLogin: () => void;
   claimDailyBonus: () => void;
-  
-  // Data access method
-  setGameData?: React.Dispatch<React.SetStateAction<any>>;
 }

@@ -1,18 +1,19 @@
+
 import {
   Book,
   Calendar,
   CheckCircle,
-  Coin,
+  Coins,
   Dumbbell,
   Flame,
   Home,
   ListChecks,
   Settings,
   ShoppingBag,
-  Tree2,
+  Trees,
   User,
 } from "lucide-react";
-import { NavLink } from "./NavLink";
+import { Link } from "react-router-dom";
 
 export function Sidebar() {
   return (
@@ -24,10 +25,16 @@ export function Sidebar() {
           </h2>
           <ul className="space-y-1">
             <li>
-              <NavLink href="/" label="Home" icon={<Home className="h-5 w-5" />} />
+              <Link to="/" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-rpg-tan/80 hover:bg-rpg-brown/50">
+                <Home className="h-5 w-5" />
+                <span>Home</span>
+              </Link>
             </li>
             <li>
-              <NavLink href="/character" label="Character" icon={<User className="h-5 w-5" />} />
+              <Link to="/character" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-rpg-tan/80 hover:bg-rpg-brown/50">
+                <User className="h-5 w-5" />
+                <span>Character</span>
+              </Link>
             </li>
           </ul>
         </div>
@@ -37,19 +44,34 @@ export function Sidebar() {
           </h2>
           <ul className="space-y-1">
             <li>
-              <NavLink href="/quests" label="Quests" icon={<ListChecks className="h-5 w-5" />} />
+              <Link to="/quests" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-rpg-tan/80 hover:bg-rpg-brown/50">
+                <ListChecks className="h-5 w-5" />
+                <span>Quests</span>
+              </Link>
             </li>
             <li>
-              <NavLink href="/habits" label="Habits" icon={<CheckCircle className="h-5 w-5" />} />
+              <Link to="/habits" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-rpg-tan/80 hover:bg-rpg-brown/50">
+                <CheckCircle className="h-5 w-5" />
+                <span>Habits</span>
+              </Link>
             </li>
             <li>
-              <NavLink href="/mood" label="Mood Tracker" icon={<Flame className="h-5 w-5" />} />
+              <Link to="/mood" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-rpg-tan/80 hover:bg-rpg-brown/50">
+                <Flame className="h-5 w-5" />
+                <span>Mood Tracker</span>
+              </Link>
             </li>
             <li>
-              <NavLink href="/skills" label="Skills" icon={<Tree2 className="h-5 w-5" />} />
+              <Link to="/skills" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-rpg-tan/80 hover:bg-rpg-brown/50">
+                <Trees className="h-5 w-5" />
+                <span>Skills</span>
+              </Link>
             </li>
             <li>
-              <NavLink href="/journal" label="Journal" icon={<Book className="h-5 w-5" />} />
+              <Link to="/journal" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-rpg-tan/80 hover:bg-rpg-brown/50">
+                <Book className="h-5 w-5" />
+                <span>Journal</span>
+              </Link>
             </li>
           </ul>
         </div>
@@ -59,13 +81,22 @@ export function Sidebar() {
           </h2>
           <ul className="space-y-1">
             <li>
-              <NavLink href="/inventory" label="Inventory" icon={<Dumbbell className="h-5 w-5" />} />
+              <Link to="/inventory" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-rpg-tan/80 hover:bg-rpg-brown/50">
+                <Dumbbell className="h-5 w-5" />
+                <span>Inventory</span>
+              </Link>
             </li>
             <li>
-              <NavLink href="/shop" label="Shop" icon={<Coin className="h-5 w-5" />} />
+              <Link to="/shop" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-rpg-tan/80 hover:bg-rpg-brown/50">
+                <Coins className="h-5 w-5" />
+                <span>Shop</span>
+              </Link>
             </li>
             <li>
-              <NavLink href="/shopping-list" label="Shopping List" icon={<ShoppingBag className="h-5 w-5" />} />
+              <Link to="/shopping-list" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-rpg-tan/80 hover:bg-rpg-brown/50">
+                <ShoppingBag className="h-5 w-5" />
+                <span>Shopping List</span>
+              </Link>
             </li>
           </ul>
         </div>
@@ -75,7 +106,10 @@ export function Sidebar() {
           </h2>
           <ul className="space-y-1">
             <li>
-              <NavLink href="/settings" label="Settings" icon={<Settings className="h-5 w-5" />} />
+              <Link to="/settings" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-rpg-tan/80 hover:bg-rpg-brown/50">
+                <Settings className="h-5 w-5" />
+                <span>Settings</span>
+              </Link>
             </li>
           </ul>
         </div>

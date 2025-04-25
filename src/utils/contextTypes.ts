@@ -1,9 +1,7 @@
-
 import { Character, StatName } from "../types/character";
 import { Quest } from "../types/quests";
 import { GearItem } from "../types/inventory";
 import { SkillNode } from "../types/skills";
-import { Challenge } from "../types/challenges";
 import { Habit } from "../types/habits";
 import { MoodEntry } from "../types/mood";
 import { Achievement } from "../types/achievements";
@@ -48,17 +46,6 @@ export interface SkillTreeContextType {
   updateSkillNode: (node: SkillNode) => void;
   deleteSkillNode: (nodeId: string) => void;
   unlockSkillNode: (nodeId: string) => void;
-}
-
-// Challenge Context Types
-export interface ChallengeContextType {
-  challenges: Challenge[];
-  addChallenge: (challenge: Omit<Challenge, "id">) => void;
-  updateChallenge: (challenge: Challenge) => void;
-  deleteChallenge: (challengeId: string) => void;
-  incrementChallengeProgress: (challengeId: string) => void;
-  resetChallenges: () => void;
-  completeChallenge: (challengeId: string) => void;
 }
 
 // Habit Context Types
