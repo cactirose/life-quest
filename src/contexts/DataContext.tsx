@@ -106,8 +106,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     // Add methods from context values
     ...questContextValue,
     ...inventoryContextValue,
-    equipItem: inventoryContextValue.toggleEquipped,
-    unequipItem: inventoryContextValue.toggleEquipped,
+    equipItem: inventoryContextValue.toggleEquipped,  // Use the correct property name
+    unequipItem: inventoryContextValue.toggleEquipped, // Use the correct property name
     ...habitContextValue,
     ...moodContextValue,
     ...achievementContextValue

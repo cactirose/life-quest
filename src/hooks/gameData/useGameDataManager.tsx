@@ -25,7 +25,10 @@ export function useGameDataManager() {
   const {
     handleGameDataChange,
     saveImmediately
-  } = useSaveManager({ saveData, gameData });
+  } = useSaveManager({ 
+    saveData, 
+    gameData 
+  });
 
   // Character progression system
   const { processCharacterProgression } = useCharacterProgression();

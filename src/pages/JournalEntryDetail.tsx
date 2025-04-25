@@ -1,110 +1,73 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useParams, useNavigate } from "react-router-dom";
+import { useGameData } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
-import { JournalEntry } from "@/types/journal";
-import { toast } from "sonner";
-import { isAuthenticated } from "@/utils/auth";
-import { ArrowLeft, Edit, Trash, BookOpen } from "lucide-react";
-import { format } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
+import { Trash, Edit, ArrowLeft, Star, Lock, Calendar } from "lucide-react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useState } from "react";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { JournalEntry } from "@/types/journal";
+import { MoodType } from "@/types/mood";
 
-const JournalEntryDetail = () => {
+const MOOD_COLORS: Record<MoodType | string, string> = {
+  happy: "bg-green-500",
+  sad: "bg-blue-500",
+  angry: "bg-red-500",
+  anxious: "bg-yellow-500",
+  calm: "bg-teal-500",
+  excited: "bg-purple-500",
+  bored: "bg-gray-500",
+  proud: "bg-amber-500",
+  stressed: "bg-orange-500",
+  neutral: "bg-slate-500",
+  default: "bg-slate-500",
+};
+
+const MOOD_EMOJIS: Record<MoodType | string, string> = {
+  happy: "😊",
+  sad: "😢",
+  angry: "😠",
+  anxious: "😰",
+  calm: "😌",
+  excited: "🤩",
+  bored: "😒",
+  proud: "😎",
+  stressed: "😩",
+  neutral: "😐",
+  default: "😐",
+};
+
+export default function JournalEntryDetail() {
   const { id } = useParams<{ id: string }>();
+  const { gameData, setGameData } = useGameData();
   const navigate = useNavigate();
-  const [entry, setEntry] = useState<JournalEntry | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  useEffect(() => {
-    const checkAuthAndLoadEntry = async () => {
-      const authed = await isAuthenticated();
-      if (!authed) {
-        navigate('/login');
-        return;
-      }
-      
-      if (id) {
-        fetchJournalEntry(id);
-      }
-    };
-    
-    checkAuthAndLoadEntry();
-  }, [id, navigate]);
-
-  const fetchJournalEntry = async (entryId: string) => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('journal_entries')
-        .select('*')
-        .eq('id', entryId)
-        .maybeSingle();
-
-      if (error) throw error;
-      
-      if (data) {
-        setEntry(data);
-      } else {
-        toast.error("Journal entry not found");
-        navigate('/journal');
-      }
-    } catch (error) {
-      console.error("Error fetching journal entry:", error);
-      toast.error("Failed to load journal entry");
-      navigate('/journal');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeleteEntry = async () => {
-    if (!id) return;
-
-    try {
-      const { error } = await supabase
-        .from('journal_entries')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast.success("Journal entry deleted successfully");
-      navigate('/journal');
-    } catch (error) {
-      console.error("Error deleting journal entry:", error);
-      toast.error("Failed to delete journal entry");
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">
-          <div className="animate-spin text-3xl mb-4">⌛</div>
-          <p className="text-lg font-medium">Loading journal entry...</p>
-        </div>
-      </div>
-    );
-  }
+  const journalEntries = gameData.journalEntries || [];
+  const entry = journalEntries.find((e) => e.id === id);
 
   if (!entry) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-4">Journal Entry Not Found</h2>
-          <Button onClick={() => navigate("/journal")} className="pixel-button">
-            <ArrowLeft size={16} className="mr-2" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col items-center justify-center min-h-[50vh]">
+          <h2 className="text-2xl font-semibold mb-2">Entry Not Found</h2>
+          <p className="text-muted-foreground mb-4">
+            The journal entry you're looking for doesn't exist.
+          </p>
+          <Button onClick={() => navigate("/journal")}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Journal
           </Button>
         </div>
@@ -112,86 +75,110 @@ const JournalEntryDetail = () => {
     );
   }
 
+  const handleDelete = () => {
+    const updatedEntries = journalEntries.filter((e) => e.id !== id);
+    setGameData({ journalEntries: updatedEntries }, new Set(["journalEntries"]));
+    toast.success("Journal entry deleted");
+    navigate("/journal");
+  };
+
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "";
+    try {
+      return format(new Date(dateString), "PPpp");
+    } catch (error) {
+      console.error("Invalid date:", dateString);
+      return "Invalid date";
+    }
+  };
+
   return (
-    <div className="container mx-auto py-8 animate-fade-in">
-      <div className="flex items-center mb-6">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate("/journal")}
-          className="mr-2"
-        >
-          <ArrowLeft size={18} />
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-6 flex items-center justify-between">
+        <Button variant="outline" onClick={() => navigate("/journal")}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Journal
         </Button>
-        <h1 className="text-3xl font-bold flex-grow">{entry.title}</h1>
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline"
-            onClick={() => navigate(`/journal/${id}/edit`)}
-            className="flex items-center gap-2"
-          >
-            <Edit size={16} />
-            <span>Edit</span>
+        <div className="space-x-2">
+          <Button variant="outline" onClick={() => navigate(`/journal/edit/${id}`)}>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit
           </Button>
-          <Button 
-            variant="outline"
-            onClick={() => setDeleteDialogOpen(true)}
-            className="flex items-center gap-2 text-red-500 hover:text-red-700"
-          >
-            <Trash size={16} />
-            <span>Delete</span>
-          </Button>
+          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you sure you want to delete this entry?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete your
+                  journal entry.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button variant="destructive" onClick={handleDelete}>
+                  Delete
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
-      <div className="parchment p-6">
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-sm text-rpg-brown">
-            {format(new Date(entry.created_at), "MMMM d, yyyy 'at' h:mm a")}
+      <Card className="mb-8 border-t-4 border-t-primary">
+        <CardContent className="pt-6">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <div className="flex-grow">
+              <h1 className="text-3xl font-bold">{entry.title}</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              {entry.isPrivate && (
+                <Badge variant="outline" className="gap-1 border-amber-500 text-amber-500">
+                  <Lock className="h-3 w-3" />
+                  Private
+                </Badge>
+              )}
+              {entry.isFavorite && (
+                <Badge variant="outline" className="gap-1 border-yellow-500 text-yellow-500">
+                  <Star className="h-3 w-3" />
+                  Favorite
+                </Badge>
+              )}
+              {entry.mood && (
+                <Badge
+                  className={`${
+                    MOOD_COLORS[entry.mood] || MOOD_COLORS.default
+                  } text-white`}
+                >
+                  {MOOD_EMOJIS[entry.mood] || MOOD_EMOJIS.default} {entry.mood}
+                </Badge>
+              )}
+            </div>
           </div>
-          {entry.mood && (
-            <div className="text-2xl">{entry.mood}</div>
-          )}
-        </div>
 
-        <div className="my-6 text-rpg-brown whitespace-pre-wrap">
-          {entry.content}
-        </div>
-
-        <div className="flex justify-between items-center mt-6 text-sm text-rpg-brown/70">
-          <div>
-            {entry.is_private && (
-              <span className="mr-3">🔒 Private</span>
-            )}
-            {entry.is_favorite && (
-              <span>⭐ Favorite</span>
-            )}
+          <div className="mb-6 text-sm text-muted-foreground flex items-center">
+            <Calendar className="h-3 w-3 mr-1" />
+            {entry.updatedAt !== entry.createdAt
+              ? `Updated ${formatDate(entry.updatedAt)}`
+              : `Created ${formatDate(entry.createdAt)}`}
           </div>
-          <div>
-            {entry.updated_at !== entry.created_at && 
-              `Last edited: ${format(new Date(entry.updated_at), "MMM d, yyyy")}`
-            }
-          </div>
-        </div>
-      </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this journal entry.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteEntry} className="bg-red-500 hover:bg-red-700">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          <Separator className="mb-4" />
+
+          <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none">
+            {entry.content.split("\n").map((paragraph, index) => (
+              <p key={index}>{paragraph}</p>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default JournalEntryDetail;
+}

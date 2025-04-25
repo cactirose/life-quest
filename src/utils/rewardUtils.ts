@@ -1,163 +1,134 @@
 
+import { GearItem } from "@/types/inventory";
 import { toast } from "sonner";
-import { Character, StatName } from "@/types/character";
+import { generateId } from "./idGenerator";
+import { StatName } from "@/types/character";
 import { GameData } from "@/types/gameData";
 
-export interface RewardPayload {
-  xp?: number;
-  coins?: number;
-  stats?: Partial<Record<StatName, number>>;
+// Reward types
+interface BasicReward {
+  xp: number;
+  coins: number;
+  stats?: Record<StatName, number>;
 }
 
-/**
- * Calculate XP needed for the next level
- * Using a common RPG formula: baseXP * (level ^ 1.8)
- */
-export function calculateNextLevelXp(level: number): number {
-  const baseXP = 100;
-  return Math.floor(baseXP * Math.pow(level, 1.8));
+interface ComplexReward extends BasicReward {
+  item?: GearItem;
+  achievement?: string; // ID of achievement to unlock
 }
 
-/**
- * Allocate rewards (XP, coins, stats) to the character
- * Handles level-ups automatically
- */
-export function allocateRewards(
-  character: Character,
-  rewards: RewardPayload,
-  setGameData: (data: Partial<GameData>, changedFields: Set<string>) => void
-): Character {
-  if (!character) return character;
+export type Reward = BasicReward | ComplexReward;
 
-  let { xp, level, nextLevelXp, coins } = character;
-  const updatedCharacter = { ...character };
-  let leveledUp = false;
+// Processing rewards functions
+export const processBasicReward = (gameData: GameData, reward: BasicReward): Partial<GameData> => {
+  if (!gameData.character) return {};
 
-  // Add XP if provided
-  if (rewards.xp && rewards.xp > 0) {
-    xp += rewards.xp;
-    // Check for level up
-    while (xp >= nextLevelXp) {
-      level += 1;
-      xp -= nextLevelXp;
-      nextLevelXp = calculateNextLevelXp(level);
-      leveledUp = true;
-    }
-    updatedCharacter.xp = xp;
-    updatedCharacter.level = level;
-    updatedCharacter.nextLevelXp = nextLevelXp;
-  }
+  const { xp, coins, stats = {} } = reward;
+  const character = { ...gameData.character };
 
-  // Add coins if provided
-  if (rewards.coins && rewards.coins > 0) {
-    updatedCharacter.coins = coins + rewards.coins;
-  }
-
-  // Update stats if provided
-  if (rewards.stats) {
-    const updatedStats = { ...updatedCharacter.stats };
-    Object.entries(rewards.stats).forEach(([stat, value]) => {
-      if (value) {
-        updatedStats[stat as StatName] = (updatedStats[stat as StatName] || 0) + value;
-      }
+  // Add XP and check for level up
+  character.xp += xp;
+  
+  // Level up check
+  while (character.xp >= character.nextLevelXp) {
+    character.level += 1;
+    character.xp -= character.nextLevelXp;
+    character.nextLevelXp = Math.round(character.nextLevelXp * 1.5);
+    
+    // Notify user of level up
+    toast.success(`Leveled up to ${character.level}!`, {
+      description: `Keep up the good work!`
     });
-    updatedCharacter.stats = updatedStats;
   }
-
-  // Update game data
-  setGameData({ character: updatedCharacter }, new Set(['character']));
-
-  // Show appropriate toasts for feedback
-  if (rewards.xp) toast.success(`Gained ${rewards.xp} XP!`);
-  if (rewards.coins) toast.success(`Gained ${rewards.coins} coins!`);
-  if (leveledUp) toast.success(`Level up! You are now level ${level}!`);
   
-  return updatedCharacter;
-}
-
-/**
- * Calculate daily login rewards based on streak
- * Rewards increase with streak, with a cap at 7 days
- */
-export function calculateDailyLoginReward(streak: number): RewardPayload {
-  const baseXp = 25;
-  const baseCoins = 15;
-  const cappedStreak = Math.min(streak, 7); // Cap at day 7
+  // Add coins
+  character.coins += coins;
   
-  // Exponential increase with streak
-  const multiplier = Math.pow(1.3, cappedStreak - 1);
-  
-  return {
-    xp: Math.floor(baseXp * multiplier),
-    coins: Math.floor(baseCoins * multiplier)
-  };
-}
-
-/**
- * Check if an achievement should be completed based on a streak
- */
-export function checkStreakAchievement(
-  streak: number, 
-  setGameData: (data: Partial<GameData>, changedFields: Set<string>) => void
-): void {
-  // Check for streak-based achievements
-  const streakAchievements = [
-    { days: 7, id: "7-day-streak" },
-    { days: 14, id: "14-day-streak" },
-    { days: 30, id: "30-day-streak" }
-  ];
-  
-  streakAchievements.forEach(achievement => {
-    if (streak >= achievement.days) {
-      // Update achievement progress/unlock status
-      completeAchievement(achievement.id, setGameData);
+  // Add stat bonuses
+  Object.entries(stats).forEach(([stat, value]) => {
+    const statName = stat as StatName;
+    if (character.stats[statName] !== undefined) {
+      character.stats[statName] += value;
     }
   });
-}
 
-/**
- * Complete an achievement by ID
- */
-export function completeAchievement(
-  achievementId: string,
-  setGameData: (data: Partial<GameData>, changedFields: Set<string>) => void
-): void {
-  const updatedData: Partial<GameData> = {};
+  return { character };
+};
+
+export const processItemReward = (
+  gameData: GameData,
+  item: GearItem
+): Partial<GameData> => {
+  // Add item to inventory
+  const inventory = [...(gameData.inventory || [])];
+  const newItem = { ...item, id: item.id || generateId() };
+  inventory.push(newItem);
+
+  return { inventory };
+};
+
+export const processReward = (
+  gameData: GameData,
+  reward: Reward,
+  message = "Reward received!"
+): Partial<GameData> => {
+  const updates: Partial<GameData> = {};
   
-  updatedData.achievements = (prevAchievements: any) => {
-    const achievements = [...(prevAchievements || [])];
-    const achievementIndex = achievements.findIndex(a => a.id === achievementId);
+  // Process basic rewards (XP, coins, stats)
+  const basicUpdates = processBasicReward(gameData, reward);
+  Object.assign(updates, basicUpdates);
+  
+  // If the reward includes an item
+  if ('item' in reward && reward.item) {
+    const itemUpdates = processItemReward(gameData, reward.item);
+    Object.assign(updates, itemUpdates);
+    
+    toast.success(`Received ${reward.item.name}!`, {
+      description: `${reward.item.description || "A new item has been added to your inventory."}`
+    });
+  }
+  
+  // If the reward includes an achievement ID to unlock
+  if ('achievement' in reward && reward.achievement && gameData.achievements) {
+    const achievements = [...gameData.achievements];
+    const achievementIndex = achievements.findIndex(a => a.id === reward.achievement);
     
     if (achievementIndex !== -1 && !achievements[achievementIndex].unlocked) {
-      // Clone achievement and update its status
-      const updatedAchievement = {
+      achievements[achievementIndex] = {
         ...achievements[achievementIndex],
         unlocked: true,
         dateUnlocked: new Date().toISOString()
       };
       
-      // Create a new array with the updated achievement
-      const updatedAchievements = [...achievements];
-      updatedAchievements[achievementIndex] = updatedAchievement;
+      updates.achievements = achievements;
       
-      // Apply any rewards from the achievement
-      if (updatedAchievement.xpReward || updatedAchievement.coinReward) {
-        allocateRewards(
-          updatedData.character as any || {},
-          {
-            xp: updatedAchievement.xpReward,
-            coins: updatedAchievement.coinReward
-          },
-          setGameData
-        );
-      }
-      
-      toast.success(`Achievement unlocked: ${updatedAchievement.title}!`);
-      return updatedAchievements;
+      toast.success(`Achievement Unlocked: ${achievements[achievementIndex].title}`, {
+        description: achievements[achievementIndex].description || ''
+      });
     }
-    
-    return achievements;
-  };
+  }
   
-  setGameData(updatedData, new Set(['achievements']));
-}
+  // Show a toast notification for the reward
+  if (reward.xp > 0 || reward.coins > 0) {
+    const rewardText = [
+      reward.xp > 0 ? `+${reward.xp} XP` : '',
+      reward.coins > 0 ? `+${reward.coins} coins` : '',
+    ].filter(Boolean).join(', ');
+    
+    toast.success(message, { description: rewardText });
+  }
+  
+  return updates;
+};
+
+// Function to apply rewards to game state
+export const applyReward = (
+  gameData: GameData, 
+  setGameData: (data: Partial<GameData>, changedFields: Set<string>) => void,
+  reward: Reward,
+  message?: string
+): void => {
+  const updates = processReward(gameData, reward, message);
+  const changedFields = new Set(Object.keys(updates));
+  setGameData(updates, changedFields);
+};
