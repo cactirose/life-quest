@@ -22,7 +22,7 @@ export function useGameDataManager() {
   const { dataStatus, updateStatus } = useDataStatus();
   
   // Handle data changes
-  const handleDataChange = useCallback((newData: Partial<GameData>, changedFields?: Set<string>) => {
+  const handleDataChange = useCallback((newData: Partial<GameData>, changedFields: Set<string> = new Set()) => {
     setGameData(prev => ({ ...prev, ...newData }));
     
     // Use provided changedFields or create a new set with keys from newData
@@ -42,8 +42,8 @@ export function useGameDataManager() {
   const { saveState, manualSave, trackChanges, immediateSave } = useSaveManager(gameData);
   const { syncFromSupabase } = useSupabaseSync(handleDataChange);
   
-  // Call useDataEffects without arguments
-  useDataEffects();
+  // Call useDataEffects with proper arguments
+  useDataEffects(gameData, handleDataChange);
 
   // Load initial data
   const loadData = useCallback(async () => {

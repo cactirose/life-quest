@@ -1,9 +1,9 @@
 
 import { createContext, useContext } from "react";
 import { Quest, QuestStatus } from "@/types/quests";
-import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { GameData } from "@/types/gameData";
+import { generateId } from "@/utils/idGenerator";
 
 interface QuestContextType {
   quests: Quest[];
@@ -23,11 +23,11 @@ export const createQuestContextValue = (
   const addQuest = (quest: Omit<Quest, "id">) => {
     const newQuest = {
       ...quest,
-      id: uuidv4(),
+      id: generateId(),
       status: "active" as QuestStatus,
       steps: quest.steps?.map(step => ({
         ...step,
-        id: step.id || uuidv4(),
+        id: step.id || generateId(),
         completed: false
       })) || []
     };

@@ -6,6 +6,8 @@ import { SkillNode } from './skills';
 import { Habit } from './habits';
 import { MoodEntry } from './mood';
 import { Achievement } from './achievements';
+import { JournalEntry } from './journal';
+import { ShoppingList } from './shopping';
 
 export interface GameData {
   character: Character;
@@ -16,6 +18,8 @@ export interface GameData {
   habits: Habit[];
   moods: MoodEntry[];
   achievements: Achievement[];
+  journalEntries?: JournalEntry[];
+  shoppingLists?: ShoppingList[];
   lastUpdate?: string;
   version?: string;
 }
@@ -35,4 +39,4 @@ export interface DataContextType {
   manualSave: () => Promise<void>;
 }
 
-export type GameDataUpdater = (newData: Partial<GameData>, changedFields: Set<string>) => void;
+export type GameDataUpdater = (newData: Partial<GameData>, changedFields?: Set<string>) => void;

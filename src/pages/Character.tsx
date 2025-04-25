@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { CharacterResetDialog } from "@/components/CharacterResetDialog";
 import { StatName } from "@/types/character";
-import { Character as CharacterType, Stats } from '@/types/character';
+import { Character as CharacterType, Stats, DEFAULT_CHARACTER } from '@/types/character';
 
 const StatDisplay = ({ 
   name, 
@@ -108,8 +108,8 @@ const EquippedGear = ({
           <>
             <p className="text-xs text-rpg-brown mt-1 line-clamp-2">{item.description}</p>
             <div className="flex flex-wrap gap-2 mt-2">
-              {Object.entries(item.statBonuses).map(([stat, value]) => (
-                Number(value) > 0 && (
+              {Object.entries(item.statBonuses || {}).map(([stat, value]) => (
+                typeof value === 'number' && value > 0 && (
                   <span key={stat} className="text-xs px-1.5 py-0.5 bg-rpg-green text-white rounded">
                     +{value} {stat}
                   </span>
@@ -140,21 +140,9 @@ const Character = () => {
   const [editedBio, setEditedBio] = useState(gameData.character?.bio || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const character = gameData.character || {
-    name: 'Adventurer',
-    bio: 'A brave adventurer',
-    level: 1,
-    xp: 0,
-    nextLevelXp: 100,
-    coins: 0,
-    stats: {
-      strength: 10,
-      dexterity: 10,
-      constitution: 10,
-      intelligence: 10,
-      wisdom: 10,
-      charisma: 10
-    }
+  const character: CharacterType = {
+    ...DEFAULT_CHARACTER,
+    ...gameData.character
   };
   
   const inventory = gameData.inventory || [];
@@ -195,11 +183,11 @@ const Character = () => {
     
     const reader = new FileReader();
     reader.onload = () => {
-      if (character) {
+      if (reader.result) {
         setGameData({
           character: {
             ...character,
-            portrait: reader.result as string
+            portrait: reader.result.toString()
           }
         }, new Set(['character']));
       }
@@ -213,18 +201,16 @@ const Character = () => {
       return;
     }
     
-    if (character) {
-      setGameData({
-        character: {
-          ...character,
-          name: editedName,
-          bio: editedBio
-        }
-      }, new Set(['character']));
+    setGameData({
+      character: {
+        ...character,
+        name: editedName,
+        bio: editedBio
+      }
+    }, new Set(['character']));
       
-      setIsEditing(false);
-      toast.success("Character updated successfully!");
-    }
+    setIsEditing(false);
+    toast.success("Character updated successfully!");
   };
   
   const handleStatUpgrade = (stat: StatName) => {
@@ -276,7 +262,7 @@ const Character = () => {
               className="w-40 h-40 mx-auto mb-4 bg-rpg-tan border-4 border-rpg-brown rounded-md overflow-hidden cursor-pointer relative"
               onClick={handleAvatarClick}
             >
-              {character?.portrait ? (
+              {character.portrait ? (
                 <img 
                   src={character.portrait} 
                   alt={character.name} 

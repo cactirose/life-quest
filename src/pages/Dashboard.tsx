@@ -1,10 +1,10 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
 import { Award, BadgeCheck, CircleCheck, Clock, Plus, Sparkle, Target, BookOpen, ListChecks, UserCircle, LayoutGrid, Sword, Info, CalendarClock } from "lucide-react";
 import { format } from "date-fns";
 import { DailyLoginCard } from "@/components/dashboard/DailyLoginCard";
+import { DEFAULT_CHARACTER } from "@/types/character";
 
 // Category icon mapping
 const categoryIcons: Record<string, JSX.Element> = {
@@ -18,10 +18,14 @@ const categoryIcons: Record<string, JSX.Element> = {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { gameData } = useGameData();
-  const { character, quests, inventory, skillTree, achievements } = gameData;
+  
+  // Extract data safely with defaults
+  const { character: rawCharacter, quests, inventory, skillTree, achievements } = gameData;
+  
+  // Make sure we always have a valid character object with all required fields
+  const character = { ...DEFAULT_CHARACTER, ...rawCharacter };
   
   // Make sure we have valid data or use defaults
-  const safeCharacter = character || { stats: {}, level: 1, xp: 0, nextLevelXp: 100, coins: 0, loginStreak: 0, dailyBonusClaimed: false };
   const safeQuests = Array.isArray(quests) ? quests : [];
   const safeInventory = Array.isArray(inventory) ? inventory : [];
   const safeSkillTree = Array.isArray(skillTree) ? skillTree : [];
@@ -217,10 +221,10 @@ const Dashboard = () => {
               {/* Character Info */}
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-rpg-tan border-2 border-rpg-brown overflow-hidden">
-                  {safeCharacter.portrait ? (
+                  {character.portrait ? (
                     <img 
-                      src={safeCharacter.portrait} 
-                      alt="Character portrait" 
+                      src={character.portrait} 
+                      alt={character.name} 
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -228,10 +232,10 @@ const Dashboard = () => {
                   )}
                 </div>
                 <div>
-                  <h3 className="font-pixel text-lg text-rpg-brown">{safeCharacter.name}</h3>
+                  <h3 className="font-pixel text-lg text-rpg-brown">{character.name}</h3>
                   <div className="flex items-center gap-1">
                     <Sparkle size={16} className="text-rpg-green" />
-                    <span className="text-sm text-rpg-brown">Level {safeCharacter.level}</span>
+                    <span className="text-sm text-rpg-brown">Level {character.level}</span>
                   </div>
                 </div>
               </div>
@@ -239,13 +243,13 @@ const Dashboard = () => {
               {/* XP Progress */}
               <div>
                 <div className="flex justify-between text-sm text-rpg-brown mb-1">
-                  <span>XP: {safeCharacter.xp}</span>
-                  <span>{safeCharacter.nextLevelXp}</span>
+                  <span>XP: {character.xp}</span>
+                  <span>{character.nextLevelXp}</span>
                 </div>
                 <div className="w-full h-2 bg-rpg-brown/30 rounded overflow-hidden">
                   <div 
                     className="h-full bg-rpg-green" 
-                    style={{ width: `${(safeCharacter.xp / safeCharacter.nextLevelXp) * 100}%` }}
+                    style={{ width: `${(character.xp / character.nextLevelXp) * 100}%` }}
                   ></div>
                 </div>
               </div>
@@ -257,12 +261,12 @@ const Dashboard = () => {
                   <circle cx="12" cy="12" r="7" fill="yellow" stroke="currentColor" strokeWidth="1" />
                   <text x="12" y="14" textAnchor="middle" fill="currentColor" fontSize="10" fontWeight="bold">$</text>
                 </svg>
-                <span className="font-pixel text-rpg-brown">{safeCharacter.coins} coins</span>
+                <span className="font-pixel text-rpg-brown">{character.coins} coins</span>
               </div>
             </div>
           </div>
           
-          {/* Daily Login Card - Use our fixed component */}
+          {/* Daily Login Card */}
           <DailyLoginCard />
           
           {/* Achievements Card */}
