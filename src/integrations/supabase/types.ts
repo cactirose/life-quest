@@ -575,12 +575,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_skills: {
+        Row: {
+          created_at: string
+          id: string
+          skill_name: string
+          updated_at: string
+          user_id: string | null
+          xp: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          skill_name: string
+          updated_at?: string
+          user_id?: string | null
+          xp?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          skill_name?: string
+          updated_at?: string
+          user_id?: string | null
+          xp?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_server_time: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

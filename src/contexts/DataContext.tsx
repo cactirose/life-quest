@@ -1,10 +1,12 @@
-import { createContext, useContext, ReactNode } from "react";
+
+import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import { CombinedProvider } from "./CombinedProvider";
 import { useGameDataManager } from "@/hooks/gameData/useGameDataManager";
 import { DEFAULT_GAME_DATA } from "../utils/defaultGameData";
 import { useDataEffects } from "../hooks/useDataEffects";
 import { GameData } from "@/types/gameData";
 import { DEFAULT_CHARACTER } from "@/types/character";
+import { SaveButton } from "@/components/ui/SaveButton";
 
 // Create context providers
 import { createQuestContextValue, QuestContext } from "./QuestContext";
@@ -51,6 +53,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     saveState,
     manualSave
   } = useGameDataManager();
+  
+  const [mounted, setMounted] = useState(false);
+
+  // Handle client-side hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Ensure gameData has all required properties with defaults
   const safeGameData = {
@@ -100,6 +109,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     manualSave
   };
 
+  // Don't render anything on server or during hydration to avoid mismatch
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <DataContext.Provider value={contextValue}>
       <CombinedProvider
@@ -112,6 +126,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
         achievementContextValue={achievementContextValue}
       >
         {children}
+        
+        {/* Global Save Button */}
+        <SaveButton 
+          isSaving={saveState.isSaving}
+          lastSaveTime={saveState.lastSaveTime}
+          onSave={manualSave}
+          pendingChanges={saveState.pendingChanges}
+        />
       </CombinedProvider>
     </DataContext.Provider>
   );

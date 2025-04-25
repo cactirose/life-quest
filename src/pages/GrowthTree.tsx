@@ -3,7 +3,7 @@ import { useGrowthSystem, SkillProgress, SkillDefinition } from "@/hooks/useGrow
 import { SkillName, SKILL_DEFINITIONS } from "@/types/skills";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
-import { GitBranch, TrendingUp, Edit2, Trash2, Plus, X } from "lucide-react";
+import { GitBranch, TrendingUp, Edit2, Trash2, Plus, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface SkillFormData {
   name: string;
@@ -87,89 +89,13 @@ const SkillCard = ({
   );
 };
 
-const SkillForm = ({
-  initialData,
-  onSubmit,
-  onClose
-}: {
-  initialData?: SkillFormData;
-  onSubmit: (data: SkillFormData) => void;
-  onClose: () => void;
-}) => {
-  const [formData, setFormData] = useState<SkillFormData>(
-    initialData || {
-      name: '',
-      description: '',
-      primaryStat: 'strength',
-    }
-  );
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-    onClose();
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Skill Name</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="primaryStat">Primary Stat</Label>
-        <Select
-          value={formData.primaryStat}
-          onValueChange={(value) => setFormData(prev => ({ ...prev, primaryStat: value }))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select a stat" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="strength">Strength</SelectItem>
-            <SelectItem value="dexterity">Dexterity</SelectItem>
-            <SelectItem value="constitution">Constitution</SelectItem>
-            <SelectItem value="intelligence">Intelligence</SelectItem>
-            <SelectItem value="wisdom">Wisdom</SelectItem>
-            <SelectItem value="charisma">Charisma</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button type="submit">
-          {initialData ? 'Update' : 'Create'} Skill
-        </Button>
-      </div>
-    </form>
-  );
-};
-
 const GrowthTree = () => {
   const { isLoading, error, addSkill, updateSkill, deleteSkill } = useGrowthSystem();
   const [filter, setFilter] = useState<'all' | 'attributes' | 'skills'>('all');
   const [isManaging, setIsManaging] = useState(false);
   const [editingSkill, setEditingSkill] = useState<SkillDefinition | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const skillGroups = {
     attributes: ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'],
@@ -181,25 +107,60 @@ const GrowthTree = () => {
     : skillGroups[filter === 'attributes' ? 'attributes' : 'skills'];
 
   const handleAddSkill = async (data: SkillFormData) => {
-    const result = await addSkill(data);
-    if (result) {
-      setIsDialogOpen(false);
+    setIsProcessing(true);
+    try {
+      const result = await addSkill(data);
+      if (result) {
+        setIsDialogOpen(false);
+        toast.success(`Added new skill: ${data.name}`);
+      } else {
+        throw new Error("Failed to add skill");
+      }
+    } catch (error) {
+      console.error("Error adding skill:", error);
+      toast.error("Failed to add skill. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleEditSkill = async (data: SkillFormData) => {
     if (!editingSkill) return;
     
-    const result = await updateSkill(editingSkill.name as SkillName, data);
-    if (result) {
-      setEditingSkill(null);
-      setIsDialogOpen(false);
+    setIsProcessing(true);
+    try {
+      const result = await updateSkill(editingSkill.name as SkillName, data);
+      if (result) {
+        setEditingSkill(null);
+        setIsDialogOpen(false);
+        toast.success(`Updated skill: ${data.name}`);
+      } else {
+        throw new Error("Failed to update skill");
+      }
+    } catch (error) {
+      console.error("Error updating skill:", error);
+      toast.error("Failed to update skill. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleDeleteSkill = async (skillName: SkillName) => {
     if (window.confirm(`Are you sure you want to delete ${skillName}?`)) {
-      await deleteSkill(skillName);
+      setIsProcessing(true);
+      try {
+        const result = await deleteSkill(skillName);
+        if (result) {
+          toast.success(`Deleted skill: ${skillName}`);
+        } else {
+          throw new Error("Failed to delete skill");
+        }
+      } catch (error) {
+        console.error("Error deleting skill:", error);
+        toast.error("Failed to delete skill. Please try again.");
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -240,13 +201,24 @@ const GrowthTree = () => {
                 id="manage-mode"
                 checked={isManaging}
                 onCheckedChange={setIsManaging}
+                className={cn(
+                  isManaging ? "bg-rpg-brown" : "bg-gray-200",
+                  "transition-colors"
+                )}
               />
             </div>
             {isManaging && (
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="pixel-button flex items-center gap-1">
-                    <Plus size={16} />
+                  <Button 
+                    className="pixel-button flex items-center gap-1"
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus size={16} />
+                    )}
                     <span>New Skill</span>
                   </Button>
                 </DialogTrigger>
@@ -263,6 +235,7 @@ const GrowthTree = () => {
                       setIsDialogOpen(false);
                       setEditingSkill(null);
                     }}
+                    isProcessing={isProcessing}
                   />
                 </DialogContent>
               </Dialog>
@@ -326,6 +299,88 @@ const GrowthTree = () => {
         ))}
       </div>
     </div>
+  );
+};
+
+// Update the SkillForm to handle processing state
+const SkillForm = ({
+  initialData,
+  onSubmit,
+  onClose,
+  isProcessing = false
+}: {
+  initialData?: SkillFormData;
+  onSubmit: (data: SkillFormData) => void;
+  onClose: () => void;
+  isProcessing?: boolean;
+}) => {
+  const [formData, setFormData] = useState<SkillFormData>(
+    initialData || {
+      name: '',
+      description: '',
+      primaryStat: 'strength',
+    }
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">Skill Name</Label>
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="primaryStat">Primary Stat</Label>
+        <Select
+          value={formData.primaryStat}
+          onValueChange={(value) => setFormData(prev => ({ ...prev, primaryStat: value }))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a stat" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="strength">Strength</SelectItem>
+            <SelectItem value="dexterity">Dexterity</SelectItem>
+            <SelectItem value="constitution">Constitution</SelectItem>
+            <SelectItem value="intelligence">Intelligence</SelectItem>
+            <SelectItem value="wisdom">Wisdom</SelectItem>
+            <SelectItem value="charisma">Charisma</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" onClick={onClose} disabled={isProcessing}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isProcessing}>
+          {isProcessing ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : null}
+          {initialData ? 'Update' : 'Create'} Skill
+        </Button>
+      </div>
+    </form>
   );
 };
 
