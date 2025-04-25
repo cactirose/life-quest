@@ -52,11 +52,15 @@ export const useJournalForm = (entryId?: string) => {
         toast.success("Journal entry updated successfully");
         navigate(`/journal/${entryId}`);
       } else {
-        // Create new entry
+        // Create new entry - make sure all required properties are provided
         const newEntry: JournalEntry = {
           id: generateId(),
-          ...data,
-          date: now.toISOString(), // Add the required 'date' property
+          title: data.title,       // Explicitly set all required fields
+          content: data.content,   // Explicitly set all required fields
+          date: now.toISOString(), // Required field
+          mood: data.mood,
+          isPrivate: data.isPrivate,
+          isFavorite: data.isFavorite,
           created_at: now.toISOString(),
           updated_at: now.toISOString()
         };
