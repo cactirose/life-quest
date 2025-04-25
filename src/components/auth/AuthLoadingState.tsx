@@ -1,14 +1,19 @@
-import { AuthCard } from "@/components/ui/card";
 
-const AuthLoadingState = () => {
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+
+export const AuthLoadingState = ({ message = "Checking authentication..." }) => {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--rpg-parchment)]">
-      <AuthCard className="w-full max-w-md border-[var(--rpg-brown)]">
-        <CardContent className="p-6 flex flex-col items-center space-y-4">
-          <div className="animate-spin w-8 h-8 border-4 border-[var(--rpg-brown)] border-t-transparent rounded-full" />
-          <p className="text-[var(--rpg-brown)]">Loading your adventure...</p>
-        </CardContent>
-      </AuthCard>
+    <div className="p-6 flex flex-col items-center">
+      <div className="flex items-center justify-center mb-4 space-x-2">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+      <div className="text-center">
+        <p className="mb-2 text-lg font-medium">{message}</p>
+        <p className="text-sm text-muted-foreground">
+          This won't take long...
+        </p>
+      </div>
     </div>
   );
-}; 
+};

@@ -7,7 +7,8 @@ import { useDailyBonus } from "./login-streak/useDailyBonus";
 import { startOfDay } from "date-fns";
 
 export const useLoginStreak = () => {
-  const { character, setCharacter, setGameData } = useGameData();
+  const gameData = useGameData();
+  const { character, setCharacter } = gameData;
   const { serverTime, fetchServerTime } = useServerTime();
   
   const { 
@@ -25,7 +26,7 @@ export const useLoginStreak = () => {
     isClaimingBonus
   } = useDailyBonus({ 
     character, 
-    setGameData 
+    setCharacter
   });
 
   // Check login streak when component mounts

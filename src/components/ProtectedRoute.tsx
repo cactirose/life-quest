@@ -17,7 +17,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isLoading: authLoading, isAuthenticated, session, refreshSession } = useAuth();
-  const { setGameData } = useGameData();
+  const gameData = useGameData();
   const isMobile = useIsMobile();
   const [showRetry, setShowRetry] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,10 +46,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       if (localData) {
         try {
           const parsedData = JSON.parse(localData);
-          setGameData(prevData => ({
-            ...prevData,
-            ...parsedData,
-          }));
+          // Update character and other data directly
+          if (gameData.setCharacter && parsedData.character) {
+            gameData.setCharacter(parsedData.character);
+          }
         } catch (error) {
           console.error("Error parsing local data during retry:", error);
         }

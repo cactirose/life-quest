@@ -1,24 +1,24 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useGameData } from "@/contexts/DataContext";
-import { Award, BadgeCheck, CircleCheck, Clock, Plus, Sparkle, Target, BookOpen, ListChecks, UserCircle, LayoutGrid, Sword, Info, CalendarClock } from "lucide-react";
+import { Award, BadgeCheck, Clock, Plus, Sparkle, Info, CalendarClock } from "lucide-react";
 import { format } from "date-fns";
 
 // Category icon mapping
 const categoryIcons: Record<string, JSX.Element> = {
-  quests: <Sword size={14} />,
-  habits: <ListChecks size={14} />,
-  skills: <BookOpen size={14} />,
-  character: <UserCircle size={14} />,
-  general: <LayoutGrid size={14} />
+  quests: <Clock size={14} />,
+  habits: <Clock size={14} />,
+  skills: <Clock size={14} />,
+  character: <Clock size={14} />,
+  general: <Clock size={14} />
 };
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { character, quests, inventory, skillTree, achievements } = useGameData();
+  const { character, quests, inventory, skillTree, achievements, claimDailyBonus } = useGameData();
   
   // Make sure we have valid data or use defaults
-  const safeCharacter = character || { stats: {}, level: 1, xp: 0, nextLevelXp: 100, coins: 0 };
+  const safeCharacter = character || { stats: {}, level: 1, xp: 0, nextLevelXp: 100, coins: 0, loginStreak: 0, dailyBonusClaimed: false };
   const safeQuests = Array.isArray(quests) ? quests : [];
   const safeInventory = Array.isArray(inventory) ? inventory : [];
   const safeSkillTree = Array.isArray(skillTree) ? skillTree : [];
@@ -155,7 +155,7 @@ const Dashboard = () => {
                     <div className="flex-grow">
                       <h4 className="font-pixel text-rpg-brown">{achievement.title}</h4>
                       <div className="flex items-center gap-1 text-xs text-rpg-brown mb-1">
-                        {categoryIcons[achievement.category] || <LayoutGrid size={14} />}
+                        {categoryIcons[achievement.category] || <Clock size={14} />}
                         <span className="capitalize">{achievement.category || 'general'}</span>
                       </div>
                       <div className="flex justify-between text-sm">
@@ -203,7 +203,7 @@ const Dashboard = () => {
               <div className="flex flex-col items-center sm:items-start mb-4 sm:mb-0">
                 <div className="flex items-center gap-2 mb-1">
                   <CalendarClock className="text-rpg-brown" size={18} />
-                  <span className="font-pixel text-rpg-brown">Day {safeCharacter.loginStreak}</span>
+                  <span className="font-pixel text-rpg-brown">Day {safeCharacter.loginStreak || 0}</span>
                 </div>
                 <p className="text-sm text-rpg-brown">Keep logging in daily to earn increasing rewards!</p>
               </div>
@@ -212,8 +212,8 @@ const Dashboard = () => {
                 disabled={safeCharacter.dailyBonusClaimed}
                 className={`pixel-button ${safeCharacter.dailyBonusClaimed ? "opacity-50 cursor-not-allowed" : ""}`}
                 onClick={() => {
-                  if (character?.claimDailyBonus) {
-                    character.claimDailyBonus();
+                  if (claimDailyBonus) {
+                    claimDailyBonus();
                   }
                 }}
               >

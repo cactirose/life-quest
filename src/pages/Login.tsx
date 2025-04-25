@@ -1,160 +1,166 @@
+
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useGameData } from "@/contexts/DataContext";
-import LoginForm from "@/features/auth/components/LoginForm";
-import LoginFooter from "@/features/auth/components/LoginFooter";
-import AuthLoader from "@/features/auth/components/AuthLoader";
-import { useAuthCheck } from "@/features/auth/hooks/useAuthCheck";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { useNavigate, Link } from "react-router-dom";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Mail, KeyRound } from "lucide-react";
-import { AuthCard } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { storeSession } from "@/utils/auth";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useAuth } from "@/features/auth/context/AuthContext";
+import { LoginFormSchema } from "@/features/auth/schemas/auth";
+import { Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useCharacter } from "@/contexts/CharacterContext";
 
-const Login = () => {
+export default function Login() {
   const navigate = useNavigate();
-  const {
-    setGameData
-  } = useGameData();
-  const {
-    authCheckDone
-  } = useAuthCheck(navigate);
-  const isMobile = useIsMobile();
+  const { login, isLoading: authLoading } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { setCharacter } = useCharacter();
 
-  // Add state variables
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<z.infer<typeof LoginFormSchema>>({
+    resolver: zodResolver(LoginFormSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  // Add handleLogin function
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
+  const onSubmit = async (data: z.infer<typeof LoginFormSchema>) => {
     try {
-      // Sign in with Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      setIsLoggingIn(true);
       
-      if (error) throw error;
+      const { email, password } = data;
       
-      if (data.session) {
-        await storeSession(data.session);
+      const { error } = await login(email, password);
+      
+      if (error) {
+        console.error("Login error:", error);
         
-        // Wait for session to be stored
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        toast.success("Login successful! Welcome back to Life Quest!");
-        
-        // Navigate to dashboard with replace
-        navigate("/dashboard", { replace: true });
-      } else {
-        throw new Error("No session returned from login");
+        // Show specific message for invalid credentials
+        if (error.message.includes("Invalid login credentials")) {
+          toast.error("Invalid email or password");
+        } else {
+          toast.error(error.message);
+        }
+        return;
       }
+      
+      // Check if the character data exists
+      try {
+        const { data, error: characterError } = await supabase
+          .from('characters')
+          .select('*')
+          .single();
+        
+        if (characterError || !data) {
+          console.log("No character data found, first time login");
+          // No need to do anything, the initialize_user_character trigger will create it
+        } else {
+          console.log("Character data found");
+          if (setCharacter) {
+            setCharacter(data);
+          }
+        }
+      } catch (fetchError) {
+        console.error("Error checking character data:", fetchError);
+      }
+      
+      toast.success("Login successful!");
+      navigate("/dashboard");
     } catch (error) {
-      console.error("Login failed:", error);
-      toast.error(error instanceof Error ? error.message : "Login failed. Please try again.");
+      console.error("Login submission error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsLoggingIn(false);
     }
   };
 
-  // Show loading state while checking auth
-  if (!authCheckDone) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-transparent">
-        <AuthCard className="w-full max-w-md border-[var(--rpg-brown)]">
-          <CardContent className="p-6 flex flex-col items-center space-y-4">
-            <div className="animate-spin w-8 h-8 border-4 border-[var(--rpg-brown)] border-t-transparent rounded-full" />
-            <p className="text-[var(--rpg-brown)]">
-              {isMobile ? "Getting your adventure ready..." : "Checking authentication status..."}
-            </p>
-          </CardContent>
-        </AuthCard>
-      </div>
-    );
-  }
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-transparent">
-      <AuthCard className="w-full max-w-md border-[var(--rpg-brown)]">
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-3xl font-pixel text-[var(--rpg-brown)]">
-            Login
-          </CardTitle>
-          <CardDescription className="text-[var(--rpg-brown)] opacity-80">
-            Enter your credentials to continue your quest
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+    <div className="flex min-h-screen flex-col items-center justify-center py-10">
+      <div className="mx-auto flex w-full flex-col justify-center space-y-8 sm:w-[350px]">
+        <div className="flex flex-col space-y-2 text-center">
+          <h1 className="text-3xl font-bold tracking-wide">Welcome Back</h1>
+          <p className="text-sm">Sign in to your account to continue</p>
+        </div>
+        <div className="grid gap-6 bg-white p-6 rounded-lg shadow-md">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="auth-label">Email</Label>
-              <div className="relative">
-                <Mail className="auth-icon" />
-                <Input 
-                  id="email" 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="hero@example.com"
-                  className="auth-input"
-                  required 
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="auth-label">Password</Label>
-              <div className="relative">
-                <KeyRound className="auth-icon" />
-                <Input 
-                  id="password" 
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="auth-input"
-                  required 
-                />
-              </div>
-            </div>
-            <Button 
-              className="auth-button" 
-              type="submit"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <span className="animate-spin">⌛</span> Logging in...
-                </span>
-              ) : (
-                "Login"
+              <label htmlFor="email" className="text-sm font-medium">
+                Email
+              </label>
+              <Input
+                id="email"
+                placeholder="name@example.com"
+                autoComplete="email"
+                {...register("email")}
+                className={errors.email ? "border-red-500" : ""}
+              />
+              {errors.email && (
+                <p className="text-xs text-red-500">{errors.email.message}</p>
               )}
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="text-sm font-medium">
+                  Password
+                </label>
+                <Link
+                  to="/reset-password"
+                  className="text-xs text-primary underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  {...register("password")}
+                  className={errors.password ? "border-red-500 pr-10" : "pr-10"}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff size={16} />
+                  ) : (
+                    <Eye size={16} />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-xs text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoggingIn || authLoading}
+            >
+              {isLoggingIn ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <div className="mt-4 text-center space-y-2">
-            <Link to="/forgot-password" className="auth-link">
-              Forgot password?
-            </Link>
-            <p className="auth-description">
-              Don't have an account?{" "}
-              <Link to="/signup" className="auth-link">
-                Sign up
-              </Link>
-            </p>
-            <Link to="/guest" className="auth-link block">
-              Continue as Guest
+          <div className="mt-4 text-center text-sm">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-primary underline">
+              Sign up
             </Link>
           </div>
-        </CardContent>
-      </AuthCard>
+        </div>
+      </div>
     </div>
   );
-};
-export default Login;
+}

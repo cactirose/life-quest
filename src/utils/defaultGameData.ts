@@ -1,3 +1,4 @@
+
 import { GameData } from "../types/gameData";
 import { DEFAULT_CHARACTER } from "../types/character";
 
@@ -23,7 +24,7 @@ export const DEFAULT_GAME_DATA: GameData = {
   updateQuest: () => {},
   deleteQuest: () => {},
   completeQuestStep: () => {},
-  completeQuest: () => {},
+  completeQuest: () => Promise.resolve(),
   
   // Inventory methods
   addToInventory: () => {},

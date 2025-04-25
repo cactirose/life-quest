@@ -4,7 +4,6 @@ import { CharacterContext } from "./CharacterContext";
 import { QuestContext } from "./QuestContext";
 import { InventoryContext } from "./InventoryContext";
 import { SkillTreeContext } from "./SkillTreeContext";
-import { ChallengeContext } from "./ChallengeContext";
 import { HabitContext } from "./HabitContext";
 import { MoodContext } from "./MoodContext";
 import { AchievementContext } from "./AchievementContext";
@@ -17,7 +16,6 @@ interface CombinedProviderProps {
   questContextValue: any;
   inventoryContextValue: any;
   skillTreeContextValue: any;
-  challengeContextValue: any;
   habitContextValue: any;
   moodContextValue: any;
   achievementContextValue: any;
@@ -30,7 +28,6 @@ export const CombinedProvider = ({
   questContextValue,
   inventoryContextValue,
   skillTreeContextValue,
-  challengeContextValue,
   habitContextValue,
   moodContextValue,
   achievementContextValue
@@ -41,15 +38,13 @@ export const CombinedProvider = ({
         <QuestContext.Provider value={questContextValue}>
           <InventoryContext.Provider value={inventoryContextValue}>
             <SkillTreeContext.Provider value={skillTreeContextValue}>
-              <ChallengeContext.Provider value={challengeContextValue}>
-                <HabitContext.Provider value={habitContextValue}>
-                  <MoodContext.Provider value={moodContextValue}>
-                    <AchievementContext.Provider value={achievementContextValue}>
-                      {children}
-                    </AchievementContext.Provider>
-                  </MoodContext.Provider>
-                </HabitContext.Provider>
-              </ChallengeContext.Provider>
+              <HabitContext.Provider value={habitContextValue}>
+                <MoodContext.Provider value={moodContextValue}>
+                  <AchievementContext.Provider value={achievementContextValue}>
+                    {children}
+                  </AchievementContext.Provider>
+                </MoodContext.Provider>
+              </HabitContext.Provider>
             </SkillTreeContext.Provider>
           </InventoryContext.Provider>
         </QuestContext.Provider>

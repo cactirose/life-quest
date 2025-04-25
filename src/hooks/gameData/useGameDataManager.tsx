@@ -1,5 +1,5 @@
+
 import { useState, useCallback, useEffect } from "react";
-// import { loadInitialData } from "@/utils/loadInitialData";
 import { GameData } from "@/types/gameData";
 import { toast } from "sonner";
 import { useDataPersistence } from "./useDataPersistence";
@@ -7,25 +7,10 @@ import { useCharacterProgression } from "./useCharacterProgression";
 import { supabase } from "@/integrations/supabase/client";
 import { isAuthenticated } from "@/utils/auth";
 import { loadAllGameData } from "@/services";
+import { DEFAULT_GAME_DATA } from "@/utils/defaultGameData";
 
 export function useGameDataManager() {
-  const [gameData, setGameData] = useState<GameData>({
-    character: {},
-    quests: [],
-    inventory: [],
-    shopItems: [],
-    skillTree: [],
-    challenges: [],
-    habits: [],
-    moods: [],
-    achievements: [],
-  } as GameData);
-  // () => {
-  // Always start with empty state, will be populated properly in useEffect
-  // const initialData = loadInitialData();
-  // console.log("Initial game data loaded:", initialData);
-  // return initialData as GameData;
-  // }
+  const [gameData, setGameData] = useState<GameData>(DEFAULT_GAME_DATA);
 
   const [isLoading, setIsLoading] = useState(true);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
@@ -84,21 +69,6 @@ export function useGameDataManager() {
           }
         } else {
           console.log("User is not authenticated, using local data");
-          // If we reached here, user is not authenticated, use local data
-          // const localData = localStorage.getItem("rpgProductivityData");
-          // if (localData) {
-          //   try {
-          //     const parsedData = JSON.parse(localData);
-          //     if (isMounted) {
-          //       setGameData((prevData) => ({
-          //         ...prevData,
-          //         ...parsedData,
-          //       }));
-          //     }
-          //   } catch (error) {
-          //     console.error("Error parsing local data:", error);
-          //   }
-          // }
         }
       } catch (error) {
         console.error("Error loading data:", error);
@@ -124,8 +94,7 @@ export function useGameDataManager() {
           loadData();
         } else if (event === "SIGNED_OUT") {
           // Reset to initial data when user signs out
-          // const initialData = loadInitialData();
-          setGameData({} as GameData);
+          setGameData(DEFAULT_GAME_DATA);
           toast.info("Signed out - local data will be used", {
             id: "signed-out",
           });

@@ -1,9 +1,9 @@
+
 // Re-export all sync functions from their respective modules
 export { syncCharacterData } from './syncCharacter';
 export { syncQuestsData } from './syncQuests';
 export { syncInventoryData } from './syncInventory';
 export { syncSkillTreeData } from './syncSkillTree';
-export { syncChallengesData } from './syncChallenges';
 export { syncHabitsData } from './syncHabits';
 export { syncMoodsData } from './syncMoods';
 export { syncAchievementsData } from './syncAchievements';
@@ -11,6 +11,8 @@ export { syncJournalEntriesData } from './syncJournalEntries';
 export { syncShoppingListsData } from './syncShoppingLists';
 export { validateEntity } from './syncUtils';
 export { retrySyncOperation } from './syncUtils';
+
+import { supabase } from "@/integrations/supabase/client";
 
 export const loadCharacterData = async () => {
   const { data, error } = await supabase

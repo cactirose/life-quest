@@ -1,10 +1,10 @@
+
 import { createContext, useContext } from "react";
 import { CombinedProvider } from "./CombinedProvider";
 import { useGameDataManager } from "../hooks/gameData";
 import { DEFAULT_GAME_DATA } from "../utils/defaultGameData";
 import { useDataEffects } from "../hooks/useDataEffects";
 import { GameData } from "../types/gameData";
-import { DEFAULT_CHARACTER } from "../types/character";
 
 // Create context providers
 import {
@@ -74,7 +74,6 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     ...habitContextValue,
     ...moodContextValue,
     ...achievementContextValue,
-    setGameData: setGameData,
   };
 
   // Use combined provider pattern

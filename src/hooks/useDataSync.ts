@@ -1,6 +1,6 @@
+
 import { useState, useCallback, useRef } from "react";
 import { useGameData } from "@/contexts/DataContext";
-// import { loadInitialData } from "@/utils/loadInitialData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useDataFetchers } from "./useDataFetchers";
@@ -11,41 +11,13 @@ export const useDataSync = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const gameContext = useGameData();
-  const { setGameData } = gameContext;
+  const { setCharacter } = gameContext;  
   const { dataStatus, updateStatus } = useDataStatus();
   const isMobile = useIsMobile();
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const dataFetchers = useDataFetchers(setGameData, updateStatus);
-
-  // Define loadLocalData first to avoid the "used before declaration" error
-  // const loadLocalData = useCallback(() => {
-  //   console.log("Loading local data as fallback due to Supabase data sync failure");
-  //   try {
-  //     const localData = localStorage.getItem("rpgProductivityData");
-  //     const initialData = localData ? JSON.parse(localData) : loadInitialData();
-
-  //     setGameData(prevData => ({
-  //       ...prevData,
-  //       ...initialData,
-  //     }));
-
-  //     console.log("Using local data as fallback (user not logged in or Supabase data sync failed)");
-  //     toast.warning("Using locally saved data. Some changes may not be synced.", {
-  //       id: "using-local-data"
-  //     });
-  //   } catch (error) {
-  //     console.error("Error loading local fallback data:", error);
-  //     const initialData = loadInitialData();
-  //     setGameData(prevData => ({
-  //       ...prevData,
-  //       ...initialData,
-  //     }));
-  //     toast.error("Error loading saved data. Starting with defaults.");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }, [setGameData]);
+  // Changed to use character updater instead of direct gameData update
+  const dataFetchers = useDataFetchers(setCharacter as any, updateStatus as any);
 
   const syncFromSupabase = useCallback(
     async (signal?: AbortSignal) => {
@@ -73,7 +45,6 @@ export const useDataSync = () => {
           console.log(
             "Supabase connection failed, loading local data as fallback"
           );
-          // loadLocalData();
           setIsSyncing(false);
           return;
         }
@@ -82,9 +53,7 @@ export const useDataSync = () => {
           dataFetchers.fetchCharacter(signal),
           dataFetchers.fetchQuests(signal),
           dataFetchers.fetchInventory(signal),
-          // Remove the direct fetchShopItems call as it's handled by fetchInventory
           dataFetchers.fetchSkillTree(signal),
-          dataFetchers.fetchChallenges(signal),
           dataFetchers.fetchHabits(signal),
           dataFetchers.fetchMoods(signal),
           dataFetchers.fetchAchievements(signal),
@@ -109,7 +78,6 @@ export const useDataSync = () => {
             toast.error(
               "Could not sync your data from Supabase. Using cached data instead."
             );
-            // loadLocalData();
           }
         } else {
           const timeoutPromise = new Promise((_, reject) =>
@@ -140,20 +108,18 @@ export const useDataSync = () => {
               toast.error(
                 "Error syncing data from Supabase. Using cached data as fallback."
               );
-              // loadLocalData();
             }
           }
         }
       } catch (error) {
         console.error("Error syncing data from Supabase:", error);
         toast.error("There was an issue syncing your data from Supabase");
-        // loadLocalData();
       } finally {
         setIsSyncing(false);
         setIsLoading(false);
       }
     },
-    [dataFetchers, isMobile]
+    [dataFetchers, isMobile, setCharacter]
   );
 
   return {
@@ -163,7 +129,6 @@ export const useDataSync = () => {
     setIsSyncing,
     dataStatus,
     syncFromSupabase,
-    // loadLocalData,
     abortControllerRef,
   };
 };
