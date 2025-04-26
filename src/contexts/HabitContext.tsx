@@ -2,7 +2,6 @@
 import { createContext, useContext } from "react";
 import { Habit } from "../types/habits";
 import { useHabitManager } from "@/features/habits/hooks/useHabitManager";
-import { useHabitCompletion } from "@/features/habits/hooks/useHabitCompletion";
 
 interface HabitContextType {
   habits: Habit[];
@@ -21,12 +20,20 @@ export const createHabitContextValue = (
   habits: Habit[],
   setGameData: React.Dispatch<React.SetStateAction<any>>
 ): HabitContextType => {
-  const habitManager = useHabitManager(habits, setGameData);
-  const habitCompletion = useHabitCompletion(habits, setGameData);
+  const { 
+    addHabit,
+    updateHabit,
+    deleteHabit,
+    completeHabit,
+    uncompleteHabit
+  } = useHabitManager(setGameData);
 
   return {
     habits,
-    ...habitManager,
-    ...habitCompletion
+    addHabit,
+    updateHabit,
+    deleteHabit,
+    completeHabit,
+    uncompleteHabit
   };
 };

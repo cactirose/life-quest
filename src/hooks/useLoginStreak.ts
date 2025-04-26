@@ -23,7 +23,8 @@ export const useLoginStreak = () => {
     claimDailyBonus,
     forceReset
   } = useDailyBonus({ 
-    character
+    character,
+    setCharacter
   });
 
   // Check login streak when component mounts

@@ -26,18 +26,19 @@ export const useSyncWithSupabase = () => {
     
     try {
       const userId = session.user.id;
+      const changedFields = new Set(Object.keys(gameData));
       
       // Run entity syncs in parallel for better performance
       const results = await Promise.allSettled([
-        syncCharacterData(gameData.character, userId),
-        syncQuestsData(gameData.quests, userId),
-        syncInventoryData(gameData.inventory, userId),
-        syncSkillTreeData(gameData.skillTree, userId),
-        syncHabitsData(gameData.habits, userId),
-        syncMoodsData(gameData.moods, userId),
-        syncAchievementsData(gameData.achievements, userId),
-        syncJournalEntriesData(gameData.journalEntries, userId),
-        syncShoppingListsData(gameData.shoppingLists, userId)
+        syncCharacterData(gameData, changedFields),
+        syncQuestsData(gameData, changedFields),
+        syncInventoryData(gameData, changedFields),
+        syncSkillTreeData(gameData, changedFields),
+        syncHabitsData(gameData, changedFields),
+        syncMoodsData(gameData, changedFields),
+        syncAchievementsData(gameData, changedFields),
+        syncJournalEntriesData(gameData, changedFields),
+        syncShoppingListsData(gameData, changedFields)
       ]);
       
       // Check for any failures

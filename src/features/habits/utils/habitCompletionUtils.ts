@@ -1,6 +1,8 @@
 
-import { Habit, HabitCompletion } from "@/types/habits";
+import { Habit, HabitCompletion, HabitFrequency, DayOfWeek } from "@/types/habits";
+import { format, isAfter, isBefore, isEqual, parseISO, startOfDay } from "date-fns";
 
+// Check if a habit is completed for a specific date
 export const isCompletedForDate = (
   habit: Habit, 
   date: string
@@ -8,6 +10,7 @@ export const isCompletedForDate = (
   return habit.completionHistory.some(c => c.date === date && c.completed);
 };
 
+// Recalculate habit streak based on completion history
 export const recalculateStreak = (
   habit: Habit, 
   completionHistory: HabitCompletion[]
@@ -42,3 +45,69 @@ export const recalculateStreak = (
   
   return streak;
 };
+
+// Check if a habit can be completed today
+export const checkIfHabitCanBeCompletedToday = (habit: Habit): { allowed: boolean; message?: string } => {
+  const today = new Date();
+  const todayStr = format(today, 'yyyy-MM-dd');
+  
+  // Check if already completed today
+  const alreadyCompleted = isCompletedForDate(habit, todayStr);
+  if (alreadyCompleted) {
+    return { allowed: false, message: "You've already completed this habit today" };
+  }
+  
+  // Check frequency constraints
+  switch (habit.frequency) {
+    case "daily":
+      return { allowed: true };
+      
+    case "weekdays":
+      const dayOfWeek = today.getDay();
+      // 0 is Sunday, 6 is Saturday in JavaScript
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return { allowed: false, message: "This habit is only for weekdays" };
+      }
+      return { allowed: true };
+      
+    case "weekends":
+      const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+      if (!isWeekend) {
+        return { allowed: false, message: "This habit is only for weekends" };
+      }
+      return { allowed: true };
+      
+    case "custom":
+      if (!habit.customDays || habit.customDays.length === 0) {
+        return { allowed: true }; // If no custom days set, allow any day
+      }
+      
+      const dayNames: Record<number, DayOfWeek> = {
+        0: "sunday",
+        1: "monday",
+        2: "tuesday",
+        3: "wednesday",
+        4: "thursday",
+        5: "friday",
+        6: "saturday"
+      };
+      
+      const currentDayName = dayNames[today.getDay()];
+      if (!habit.customDays.includes(currentDayName)) {
+        return { 
+          allowed: false, 
+          message: `This habit is only for ${habit.customDays.join(', ')}` 
+        };
+      }
+      return { allowed: true };
+      
+    default:
+      return { allowed: true };
+  }
+};
+
+// Get current streak for a habit
+export const getCurrentStreak = (habit: Habit): number => {
+  return habit.streak || 0;
+};
+

@@ -1,7 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Habit } from "@/types/habits";
+import { Habit, HabitCompletion } from "@/types/habits";
 import { toHabitCompletions } from "./utils/supabaseUtils";
 import { Json } from "@/integrations/supabase/types";
 
@@ -137,6 +136,113 @@ export const deleteHabit = async (habitId: string): Promise<void> => {
     console.error("Error in deleteHabit:", error, "Habit ID:", habitId);
     toast.error("Failed to delete habit", {
       description: error.message || "Unknown error" 
+    });
+    throw error;
+  }
+};
+
+export const completeHabit = async (habitId: string, completion: HabitCompletion): Promise<void> => {
+  try {
+    console.log("Marking habit as completed:", habitId, completion);
+    
+    // Fetch the habit first to get current data
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error("No authenticated user found");
+      throw new Error("No authenticated user");
+    }
+    
+    const { data: habitData, error: fetchError } = await supabase
+      .from("habits")
+      .select("*")
+      .eq("id", habitId)
+      .eq("user_id", user.id)
+      .single();
+    
+    if (fetchError || !habitData) {
+      console.error("Error fetching habit for completion:", fetchError);
+      throw fetchError || new Error("Habit not found");
+    }
+    
+    // Update the completion history
+    const completionHistory = toHabitCompletions(habitData.completion_history) || [];
+    completionHistory.push(completion);
+    
+    // Calculate new streak
+    let streak = habitData.streak || 0;
+    if (completion.completed) {
+      streak += 1;
+    }
+    
+    // Update the habit in the database
+    const { error: updateError } = await supabase
+      .from("habits")
+      .update({
+        completion_history: completionHistory as unknown as Json,
+        streak: streak
+      })
+      .eq("id", habitId);
+    
+    if (updateError) {
+      console.error("Error updating habit completion:", updateError);
+      throw updateError;
+    }
+    
+    console.log("Successfully completed habit:", habitId);
+  } catch (error) {
+    console.error("Error in completeHabit:", error);
+    toast.error("Failed to mark habit as complete", {
+      description: error.message || "Unknown error"
+    });
+    throw error;
+  }
+};
+
+export const resetHabit = async (habitId: string): Promise<void> => {
+  try {
+    console.log("Resetting habit streak:", habitId);
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error("No authenticated user found");
+      throw new Error("No authenticated user");
+    }
+    
+    // Fetch current habit data to calculate best streak
+    const { data: habitData, error: fetchError } = await supabase
+      .from("habits")
+      .select("*")
+      .eq("id", habitId)
+      .eq("user_id", user.id)
+      .single();
+    
+    if (fetchError || !habitData) {
+      console.error("Error fetching habit for reset:", fetchError);
+      throw fetchError || new Error("Habit not found");
+    }
+    
+    // Calculate best streak
+    const bestStreak = Math.max(habitData.streak || 0, habitData.best_streak || 0);
+    
+    // Update habit with reset streak
+    const { error: updateError } = await supabase
+      .from("habits")
+      .update({
+        streak: 0,
+        best_streak: bestStreak
+      })
+      .eq("id", habitId);
+    
+    if (updateError) {
+      console.error("Error resetting habit streak:", updateError);
+      throw updateError;
+    }
+    
+    console.log("Successfully reset habit streak:", habitId);
+  } catch (error) {
+    console.error("Error in resetHabit:", error);
+    toast.error("Failed to reset habit streak", {
+      description: error.message || "Unknown error"
     });
     throw error;
   }

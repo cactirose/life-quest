@@ -1,105 +1,98 @@
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Character } from "@/types/character";
 import { toast } from "sonner";
-import { upsertCharacter } from "@/services/characterService";
-import { upsertInventoryItem } from "@/services/inventoryService";
-import { createStreakTrophy, calculateDailyBonus } from "@/features/character/utils/dailyLoginUtils";
-import { startOfDay } from "date-fns"; // Added missing import
 
-interface UseDailyBonusProps {
-  character: Character | null;
-  setGameData: React.Dispatch<React.SetStateAction<any>>;
+export interface UseDailyBonusProps {
+  character: Character;
+  setCharacter?: (character: Character) => void;
 }
 
-export const useDailyBonus = ({ 
-  character, 
-  setGameData 
-}: UseDailyBonusProps) => {
-  const [isClaimingBonus, setIsClaimingBonus] = useState(false);
-
-  const claimDailyBonus = useCallback(async () => {
-    if (!character || character.dailyBonusClaimed || isClaimingBonus) {
-      if (character?.dailyBonusClaimed) {
-        toast.error("You've already claimed today's bonus!");
-      }
+export const useDailyBonus = ({ character, setCharacter }: UseDailyBonusProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Claim daily bonus
+  const claimDailyBonus = async () => {
+    if (!character || !setCharacter) {
+      console.error("Cannot claim daily bonus: Character or setCharacter is undefined");
       return;
     }
     
     try {
-      setIsClaimingBonus(true);
+      setIsProcessing(true);
       
-      // Calculate bonus based on streak
-      const streak = character.loginStreak;
-      const { xpBonus, coinBonus } = calculateDailyBonus(streak);
-      
-      // Every 7 days, give a special bonus
-      let specialItem = null;
-      if (streak % 7 === 0) {
-        specialItem = createStreakTrophy(streak);
-        
-        // Sync new inventory item with Supabase
-        if (specialItem) {
-          await upsertInventoryItem(specialItem);
-          toast.success(`You received a special trophy for your ${streak}-day streak!`);
-        }
+      if (character.dailyBonusClaimed) {
+        toast.error("You've already claimed your daily bonus today");
+        return;
       }
       
-      // Update character
+      // Calculate bonus amount based on streak
+      const streakBonus = Math.min(character.loginStreak || 0, 7) * 5;
+      const baseAmount = 20;
+      const totalBonus = baseAmount + streakBonus;
+      
+      // Update character with bonus
       const updatedCharacter = {
         ...character,
-        xp: character.xp + xpBonus,
-        coins: character.coins + coinBonus,
+        coins: character.coins + totalBonus,
         dailyBonusClaimed: true
       };
       
-      // Sync with Supabase
-      await upsertCharacter(updatedCharacter);
+      // Update state
+      setCharacter(updatedCharacter);
       
-      // Update local state
-      setGameData(prevData => {
-        // Update inventory if special item
-        const updatedInventory = specialItem
-          ? [...prevData.inventory, specialItem]
-          : prevData.inventory;
-        
-        return {
-          ...prevData,
-          character: updatedCharacter,
-          inventory: updatedInventory
-        };
+      toast.success(`Daily bonus claimed! +${totalBonus} coins`, {
+        description: streakBonus > 0 ? `Includes +${streakBonus} streak bonus!` : undefined
       });
-      
-      toast.success(`Daily bonus claimed! +${xpBonus} XP, +${coinBonus} coins`);
     } catch (error) {
       console.error("Error claiming daily bonus:", error);
-      toast.error("Failed to claim daily bonus. Please try again.");
+      toast.error("Failed to claim daily bonus");
     } finally {
-      setIsClaimingBonus(false);
+      setIsProcessing(false);
     }
-  }, [character, setGameData, isClaimingBonus]);
-
-  const forceReset = useCallback(async (fetchServerTime: () => Promise<Date>) => {
-    if (!character) return;
+  };
+  
+  // Force reset login streak (admin function)
+  const forceReset = async (fetchServerTime?: () => Promise<Date>) => {
+    if (!character || !setCharacter) {
+      console.error("Cannot reset streak: Character or setCharacter is undefined");
+      return;
+    }
     
-    const now = await fetchServerTime();
-    setGameData(prevData => ({
-      ...prevData,
-      character: {
-        ...character,
-        lastLoginDate: now.toISOString(),
-        dailyBonusClaimed: false
+    try {
+      setIsProcessing(true);
+      
+      // Get the current server time if a fetch function is provided
+      let serverDate: Date;
+      if (fetchServerTime) {
+        serverDate = await fetchServerTime();
+      } else {
+        serverDate = new Date();
       }
-    }));
-    
-    localStorage.setItem('lastStreakReset', startOfDay(now).toISOString());
-    
-    console.log("Forced reset of daily login status");
-  }, [character, setGameData]);
-
+      
+      // Reset streak and daily bonus claim
+      const updatedCharacter = {
+        ...character,
+        loginStreak: 0,
+        dailyBonusClaimed: false,
+        lastLoginDate: serverDate.toISOString()
+      };
+      
+      // Update state
+      setCharacter(updatedCharacter);
+      
+      toast.info("Login streak has been reset");
+    } catch (error) {
+      console.error("Error resetting login streak:", error);
+      toast.error("Failed to reset login streak");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
   return {
     claimDailyBonus,
     forceReset,
-    isClaimingBonus
+    isProcessing
   };
 };

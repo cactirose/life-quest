@@ -1,9 +1,9 @@
 
 import { useState } from "react";
-import { completeHabit, resetHabit } from "@/services/habitService";
 import { Habit, HabitCompletion } from "@/types/habits";
 import { toast } from "sonner";
 import { checkIfHabitCanBeCompletedToday, getCurrentStreak } from "../utils/habitCompletionUtils";
+import { upsertHabit } from "@/services/habitService";
 
 export const useHabitCompletion = (
   habit: Habit,
@@ -29,24 +29,25 @@ export const useHabitCompletion = (
       
       // Create a new completion record
       const newCompletion: HabitCompletion = {
-        date: today
+        date: today,
+        completed: true
       };
       
       // Update the habit locally first (optimistic update)
       const updatedHabit: Habit = {
         ...habit,
-        completions: [...(habit.completions || []), newCompletion],
-        currentStreak: getCurrentStreak(habit) + 1
+        completionHistory: [...(habit.completionHistory || []), newCompletion],
+        streak: (habit.streak || 0) + 1
       };
       
       onUpdate(updatedHabit);
       
       // Then update in the database
-      await completeHabit(habit.id, newCompletion);
+      await upsertHabit(updatedHabit);
       
       // Check if we should show a streak notification
-      if (updatedHabit.currentStreak % 7 === 0) {
-        toast.success(`🔥 ${updatedHabit.currentStreak} day streak! Keep it up!`);
+      if (updatedHabit.streak % 7 === 0) {
+        toast.success(`🔥 ${updatedHabit.streak} day streak! Keep it up!`);
       } else {
         toast.success("Habit marked as complete");
       }
@@ -64,17 +65,20 @@ export const useHabitCompletion = (
     try {
       setIsProcessing(true);
       
+      // Get current best streak
+      const bestStreak = Math.max(habit.streak || 0, habit.streak || 0);
+      
       // Update the habit locally first (optimistic update)
       const updatedHabit: Habit = {
         ...habit,
-        currentStreak: 0,
-        bestStreak: Math.max(habit.bestStreak || 0, habit.currentStreak || 0)
+        streak: 0,
+        bestStreak: bestStreak
       };
       
       onUpdate(updatedHabit);
       
       // Then update in the database
-      await resetHabit(habit.id);
+      await upsertHabit(updatedHabit);
       
       toast.info("Habit streak has been reset");
     } catch (error) {
