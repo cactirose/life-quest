@@ -65,19 +65,18 @@ export const useHabitCompletion = (
     try {
       setIsProcessing(true);
       
-      // Get current best streak
-      const bestStreak = Math.max(habit.streak || 0, habit.streak || 0);
+      // Get current streak for tracking best streak
+      const currentStreak = habit.streak || 0;
       
       // Update the habit locally first (optimistic update)
       const updatedHabit: Habit = {
         ...habit,
-        streak: 0,
-        bestStreak: bestStreak
+        streak: 0
       };
       
       onUpdate(updatedHabit);
       
-      // Then update in the database
+      // Then update in the database with streak reset
       await upsertHabit(updatedHabit);
       
       toast.info("Habit streak has been reset");

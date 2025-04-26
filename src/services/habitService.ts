@@ -208,34 +208,17 @@ export const resetHabit = async (habitId: string): Promise<void> => {
       throw new Error("No authenticated user");
     }
     
-    // Fetch current habit data to calculate best streak
-    const { data: habitData, error: fetchError } = await supabase
-      .from("habits")
-      .select("*")
-      .eq("id", habitId)
-      .eq("user_id", user.id)
-      .single();
-    
-    if (fetchError || !habitData) {
-      console.error("Error fetching habit for reset:", fetchError);
-      throw fetchError || new Error("Habit not found");
-    }
-    
-    // Calculate best streak
-    const bestStreak = Math.max(habitData.streak || 0, habitData.best_streak || 0);
-    
     // Update habit with reset streak
-    const { error: updateError } = await supabase
+    const { error } = await supabase
       .from("habits")
       .update({
-        streak: 0,
-        best_streak: bestStreak
+        streak: 0
       })
       .eq("id", habitId);
     
-    if (updateError) {
-      console.error("Error resetting habit streak:", updateError);
-      throw updateError;
+    if (error) {
+      console.error("Error resetting habit streak:", error);
+      throw error;
     }
     
     console.log("Successfully reset habit streak:", habitId);

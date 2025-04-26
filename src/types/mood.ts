@@ -1,6 +1,6 @@
 
 // Mood types
-export type MoodType = "happy" | "motivated" | "neutral" | "tired" | "stressed" | "sad";
+export type MoodType = "great" | "good" | "okay" | "bad" | "terrible";
 
 export interface MoodEntry {
   id: string;

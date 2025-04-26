@@ -21,6 +21,7 @@ type AuthContextType = {
   isLoading: boolean;
   isAuthenticated: boolean;
   signIn: (email: string) => Promise<{ error: any }>;
+  login: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, name: string) => Promise<{ error: any }>;
   verifyOtp: (email: string, token: string) => Promise<{ error: any }>;
   signInWithGoogle: () => Promise<{ error: any }>;
@@ -124,6 +125,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     setIsLoading(false);
     return { error };
+  };
+
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    setIsLoading(false);
+    return { data, error };
   };
 
   const signUp = async (email: string, name: string) => {
@@ -235,6 +246,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         isAuthenticated,
         signIn,
+        login,
         signUp,
         verifyOtp,
         signInWithGoogle,

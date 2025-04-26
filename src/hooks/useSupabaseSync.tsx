@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export function useSupabaseSync() {
   // Always initialize all hooks at the top level
   const gameContext = useGameData();
-  const { character, setCharacter, setQuests, setInventory, setSkillTree, setHabits, setMoods, setAchievements } = gameContext;
+  const { character, setCharacter } = gameContext;
 
   const { session, isAuthenticated } = useAuth();
 
@@ -80,7 +80,7 @@ export function useSupabaseSync() {
     const minTimeBetweenSyncs = 10000; // 10 seconds - reduced from 30 seconds
     
     if (lastSyncTime.current && (now.getTime() - lastSyncTime.current.getTime() < minTimeBetweenSyncs)) {
-      toast.info("Data was recently synced. Please try again in a moment.");
+      toast.info(`Data was recently synced. Please try again in a moment.`);
       return;
     }
     
