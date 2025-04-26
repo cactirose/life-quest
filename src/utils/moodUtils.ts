@@ -4,11 +4,18 @@ import { format, parseISO } from "date-fns";
 
 // Define mood colors for different mood types
 export const moodColors: Record<MoodType, string> = {
-  great: '#4ade80', // green-400 (previously excellent)
+  great: '#4ade80', // green-400
   good: '#a3e635', // lime-400
-  okay: '#facc15', // yellow-400 (previously neutral)
+  okay: '#facc15', // yellow-400
   bad: '#fb923c', // orange-400
   terrible: '#f87171', // red-400
+  // Map legacy mood values to colors as well
+  happy: '#4ade80',
+  motivated: '#a3e635',
+  neutral: '#facc15',
+  tired: '#fb923c', 
+  stressed: '#9932CC', // purple
+  sad: '#f87171'
 };
 
 // Get color for mood type
@@ -25,11 +32,18 @@ export const formatMoodDate = (date: string | Date): string => {
 // Get emojis for mood types
 export const getMoodEmoji = (mood: MoodType): string => {
   const emojiMap: Record<MoodType, string> = {
-    great: '😁', // previously excellent
+    great: '😁',
     good: '🙂',
-    okay: '😐', // previously neutral
+    okay: '😐',
     bad: '🙁',
-    terrible: '😢'
+    terrible: '😢',
+    // Map legacy mood values to emojis as well
+    happy: '😁',
+    motivated: '🚀',
+    neutral: '😐',
+    tired: '😴',
+    stressed: '😰',
+    sad: '😢'
   };
   
   return emojiMap[mood] || '❓';

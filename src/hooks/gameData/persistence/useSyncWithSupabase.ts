@@ -57,5 +57,29 @@ export const useSyncWithSupabase = () => {
     }
   }, [session]);
   
-  return { syncGameData };
+  const syncWithSupabase = useCallback(async (gameData: GameData, changedFields: Set<string>, syncErrorCount?: React.MutableRefObject<number>) => {
+    if (!session?.user.id) {
+      console.warn("Cannot sync data without user session");
+      return;
+    }
+    
+    try {
+      // Increment error count if provided
+      if (syncErrorCount) {
+        syncErrorCount.current += 1;
+      }
+      
+      await syncGameData(gameData);
+      
+      // Reset error count on success if provided
+      if (syncErrorCount) {
+        syncErrorCount.current = 0;
+      }
+    } catch (error) {
+      console.error("Error in syncWithSupabase:", error);
+      throw error;
+    }
+  }, [session, syncGameData]);
+  
+  return { syncGameData, syncWithSupabase };
 };

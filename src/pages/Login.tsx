@@ -12,7 +12,7 @@ import { LoginFormSchema } from "@/features/auth/schemas/auth";
 import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCharacter } from "@/contexts/CharacterContext";
-import { Character } from "@/types/character";
+import { Character, Stats } from "@/types/character";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -67,6 +67,10 @@ export default function Login() {
           console.log("Character data found");
           if (setCharacter) {
             // Map from database schema to Character type
+            const statsData = typeof data.stats === 'string' 
+              ? JSON.parse(data.stats) as Stats 
+              : data.stats as Stats;
+              
             const characterData: Character = {
               name: data.name,
               level: data.level,
@@ -75,7 +79,7 @@ export default function Login() {
               coins: data.coins,
               portrait: data.portrait,
               bio: data.bio,
-              stats: data.stats,
+              stats: statsData,
               lastLoginDate: data.last_login_date,
               loginStreak: data.login_streak,
               dailyBonusClaimed: data.daily_bonus_claimed
