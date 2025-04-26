@@ -1,261 +1,93 @@
 
-import { Habit } from "@/types/habits";
-import { upsertHabit } from "@/services/habitService";
-import { upsertCharacter } from "@/services/characterService";
-import { upsertAchievement } from "@/services/achievementService";
-import { upsertChallenge } from "@/services/challengeService";
-import { isCompletedForDate, recalculateStreak } from "../utils/habitCompletionUtils";
+import { useState } from "react";
+import { completeHabit, resetHabit } from "@/services/habitService";
+import { Habit, HabitCompletion } from "@/types/habits";
 import { toast } from "sonner";
+import { checkIfHabitCanBeCompletedToday, getCurrentStreak } from "../utils/habitCompletionUtils";
 
 export const useHabitCompletion = (
-  habits: Habit[],
-  setGameData: React.Dispatch<React.SetStateAction<any>>
+  habit: Habit,
+  onUpdate: (updatedHabit: Habit) => void
 ) => {
-  const completeHabit = (habitId: string, date: string) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  const handleComplete = async () => {
+    if (isProcessing) return;
+    
     try {
-      setGameData(prevData => {
-        // Safety check for invalid data
-        if (!prevData || !prevData.habits || !Array.isArray(prevData.habits)) {
-          console.error("Invalid game data for habits:", prevData);
-          return prevData;
-        }
-        
-        const habit = prevData.habits.find(h => h.id === habitId);
-        if (!habit) {
-          console.warn(`Habit with ID ${habitId} not found`);
-          return prevData;
-        }
-        
-        // Ensure completionHistory always exists
-        const completionHistory = habit.completionHistory || [];
-        
-        // Check if already completed for this date
-        if (isCompletedForDate(habit, date)) return prevData;
-        
-        // Update completion history
-        const updatedCompletionHistory = completionHistory.find(c => c.date === date)
-          ? completionHistory.map(c => c.date === date ? { ...c, completed: true } : c)
-          : [...completionHistory, { date, completed: true }];
-        
-        // Calculate new streak
-        const newStreak = recalculateStreak(habit, updatedCompletionHistory);
-        
-        // Update habit
-        const updatedHabit = {
-          ...habit,
-          completionHistory: updatedCompletionHistory,
-          streak: newStreak
-        };
-        
-        // Apply rewards - ensure character exists
-        if (!prevData.character) {
-          console.error("Character data is missing");
-          return {
-            ...prevData,
-            habits: prevData.habits.map(h => h.id === habitId ? updatedHabit : h)
-          };
-        }
-        
-        const updatedCharacter = {
-          ...prevData.character,
-          xp: (prevData.character.xp || 0) + (habit.xpReward || 0),
-          coins: (prevData.character.coins || 0) + (habit.coinReward || 0)
-        };
-        
-        // Check if any challenges should be updated
-        let updatedChallenges = prevData.challenges || [];
-        if (Array.isArray(updatedChallenges)) {
-          const habitChallenges = updatedChallenges.filter(
-            c => c && c.status === "active" && 
-            (c.title.toLowerCase().includes("habit") || c.description?.toLowerCase().includes("habit"))
-          );
-          
-          if (habitChallenges.length > 0) {
-            updatedChallenges = updatedChallenges.map(challenge => {
-              if (!challenge) return challenge;
-              
-              if (habitChallenges.find(c => c.id === challenge.id)) {
-                const newCount = (challenge.currentCount || 0) + 1;
-                const updatedChallenge = {
-                  ...challenge,
-                  currentCount: newCount,
-                  status: newCount >= (challenge.requiredCount || 0) ? "completed" : challenge.status
-                };
-                
-                // Safely sync challenge with Supabase
-                try {
-                  upsertChallenge(updatedChallenge).catch(err => 
-                    console.error("Error syncing challenge:", err, updatedChallenge)
-                  );
-                } catch (err) {
-                  console.error("Error preparing challenge for upsert:", err);
-                }
-                
-                return updatedChallenge;
-              }
-              return challenge;
-            });
-          }
-        }
-        
-        // Check if any achievements should be updated
-        let updatedAchievements = prevData.achievements || [];
-        if (Array.isArray(updatedAchievements)) {
-          const habitAchievements = updatedAchievements.filter(
-            a => a && !a.unlocked && a.category === "habits" && a.requiredCount && a.currentCount !== undefined
-          );
-          
-          if (habitAchievements.length > 0) {
-            updatedAchievements = updatedAchievements.map(achievement => {
-              if (!achievement) return achievement;
-              
-              if (habitAchievements.find(a => a.id === achievement.id)) {
-                let updatedAchievement = achievement;
-                
-                if (achievement.title === "Habit Master" && newStreak >= (achievement.requiredCount || 0)) {
-                  updatedAchievement = {
-                    ...achievement,
-                    unlocked: true,
-                    dateUnlocked: new Date().toISOString(),
-                    currentCount: newStreak
-                  };
-                } else if (achievement.currentCount !== undefined) {
-                  const newCount = achievement.currentCount + 1;
-                  const newUnlocked = newCount >= (achievement.requiredCount || 0);
-                  
-                  updatedAchievement = {
-                    ...achievement,
-                    currentCount: newCount,
-                    unlocked: newUnlocked,
-                    dateUnlocked: newUnlocked ? new Date().toISOString() : undefined
-                  };
-                }
-                
-                // Safely sync achievement with Supabase
-                if (updatedAchievement !== achievement) {
-                  try {
-                    upsertAchievement(updatedAchievement).catch(err => 
-                      console.error("Error syncing achievement:", err, updatedAchievement)
-                    );
-                  } catch (err) {
-                    console.error("Error preparing achievement for upsert:", err);
-                  }
-                }
-                
-                return updatedAchievement;
-              }
-              return achievement;
-            });
-          }
-        }
-        
-        // Sync with Supabase (safe upserts)
-        try {
-          upsertHabit(updatedHabit).catch(err => 
-            console.error("Error syncing habit:", err, updatedHabit)
-          );
-          upsertCharacter(updatedCharacter).catch(err => 
-            console.error("Error syncing character:", err, updatedCharacter)
-          );
-        } catch (err) {
-          console.error("Error preparing data for upsert:", err);
-        }
-        
-        return {
-          ...prevData,
-          character: updatedCharacter,
-          habits: prevData.habits.map(h => h.id === habitId ? updatedHabit : h),
-          challenges: updatedChallenges,
-          achievements: updatedAchievements
-        };
-      });
+      setIsProcessing(true);
       
-      toast.success("Habit completed!");
+      const canComplete = checkIfHabitCanBeCompletedToday(habit);
+      
+      if (!canComplete.allowed) {
+        toast.error(canComplete.message || "Cannot complete this habit now");
+        return;
+      }
+      
+      // Get today's date in ISO format (YYYY-MM-DD)
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Create a new completion record
+      const newCompletion: HabitCompletion = {
+        date: today
+      };
+      
+      // Update the habit locally first (optimistic update)
+      const updatedHabit: Habit = {
+        ...habit,
+        completions: [...(habit.completions || []), newCompletion],
+        currentStreak: getCurrentStreak(habit) + 1
+      };
+      
+      onUpdate(updatedHabit);
+      
+      // Then update in the database
+      await completeHabit(habit.id, newCompletion);
+      
+      // Check if we should show a streak notification
+      if (updatedHabit.currentStreak % 7 === 0) {
+        toast.success(`🔥 ${updatedHabit.currentStreak} day streak! Keep it up!`);
+      } else {
+        toast.success("Habit marked as complete");
+      }
     } catch (error) {
-      console.error("Error in completeHabit:", error);
+      console.error("Error completing habit:", error);
       toast.error("Failed to complete habit");
+    } finally {
+      setIsProcessing(false);
     }
   };
   
-  const uncompleteHabit = (habitId: string, date: string) => {
+  const handleReset = async () => {
+    if (isProcessing) return;
+    
     try {
-      setGameData(prevData => {
-        // Safety check for invalid data
-        if (!prevData || !prevData.habits || !Array.isArray(prevData.habits)) {
-          console.error("Invalid game data for habits:", prevData);
-          return prevData;
-        }
-        
-        const habit = prevData.habits.find(h => h.id === habitId);
-        if (!habit) {
-          console.warn(`Habit with ID ${habitId} not found`);
-          return prevData;
-        }
-        
-        // Ensure completionHistory always exists
-        const completionHistory = habit.completionHistory || [];
-        
-        // Check if completed for this date
-        if (!isCompletedForDate(habit, date)) return prevData;
-        
-        // Update completion history
-        const updatedCompletionHistory = completionHistory.map(c => 
-          c.date === date ? { ...c, completed: false } : c
-        );
-        
-        // Recalculate streak
-        const newStreak = recalculateStreak(habit, updatedCompletionHistory);
-        
-        // Update habit
-        const updatedHabit = {
-          ...habit,
-          completionHistory: updatedCompletionHistory,
-          streak: newStreak
-        };
-        
-        // Remove rewards - ensure character exists
-        if (!prevData.character) {
-          console.error("Character data is missing");
-          return {
-            ...prevData,
-            habits: prevData.habits.map(h => h.id === habitId ? updatedHabit : h)
-          };
-        }
-        
-        const updatedCharacter = {
-          ...prevData.character,
-          xp: Math.max(0, (prevData.character.xp || 0) - (habit.xpReward || 0)),
-          coins: Math.max(0, (prevData.character.coins || 0) - (habit.coinReward || 0))
-        };
-        
-        // Sync with Supabase (safe upserts)
-        try {
-          upsertHabit(updatedHabit).catch(err => 
-            console.error("Error syncing habit:", err, updatedHabit)
-          );
-          upsertCharacter(updatedCharacter).catch(err => 
-            console.error("Error syncing character:", err, updatedCharacter)
-          );
-        } catch (err) {
-          console.error("Error preparing data for upsert:", err);
-        }
-        
-        return {
-          ...prevData,
-          character: updatedCharacter,
-          habits: prevData.habits.map(h => h.id === habitId ? updatedHabit : h)
-        };
-      });
+      setIsProcessing(true);
       
-      toast.info("Habit marked as incomplete");
+      // Update the habit locally first (optimistic update)
+      const updatedHabit: Habit = {
+        ...habit,
+        currentStreak: 0,
+        bestStreak: Math.max(habit.bestStreak || 0, habit.currentStreak || 0)
+      };
+      
+      onUpdate(updatedHabit);
+      
+      // Then update in the database
+      await resetHabit(habit.id);
+      
+      toast.info("Habit streak has been reset");
     } catch (error) {
-      console.error("Error in uncompleteHabit:", error);
-      toast.error("Failed to update habit");
+      console.error("Error resetting habit:", error);
+      toast.error("Failed to reset habit");
+    } finally {
+      setIsProcessing(false);
     }
   };
-
+  
   return {
-    completeHabit,
-    uncompleteHabit
+    handleComplete,
+    handleReset,
+    isProcessing
   };
 };

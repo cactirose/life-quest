@@ -4,7 +4,6 @@ import { useGameData } from "@/contexts/DataContext";
 import { useServerTime } from "./login-streak/useServerTime";
 import { useStreakChecker } from "./login-streak/useStreakChecker";
 import { useDailyBonus } from "./login-streak/useDailyBonus";
-import { startOfDay } from "date-fns";
 
 export const useLoginStreak = () => {
   const gameData = useGameData();
@@ -22,11 +21,9 @@ export const useLoginStreak = () => {
   
   const { 
     claimDailyBonus,
-    forceReset,
-    isClaimingBonus
+    forceReset
   } = useDailyBonus({ 
-    character, 
-    setCharacter
+    character
   });
 
   // Check login streak when component mounts
@@ -44,7 +41,6 @@ export const useLoginStreak = () => {
   return { 
     claimDailyBonus,
     forceReset: adaptedForceReset,
-    isCheckingLogin,
-    isClaimingBonus
+    isCheckingLogin
   };
 };

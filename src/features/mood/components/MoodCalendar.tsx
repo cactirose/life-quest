@@ -8,7 +8,7 @@ import {
   isSameDay 
 } from "date-fns";
 import { MoodEntry, MoodType } from "@/types/mood";
-import { moodColors } from "@/utils/moodUtils";
+import { getMoodColor } from "@/utils/moodUtils";
 
 interface MoodCalendarProps {
   month: Date;
@@ -71,7 +71,7 @@ export const MoodCalendar = ({ month, moods, onDateClick }: MoodCalendarProps) =
                 isToday ? "border-rpg-green border-2" : "border-rpg-tan"
               }`}
               style={{
-                backgroundColor: mood ? moodColors[mood] : 'transparent'
+                backgroundColor: mood ? getMoodColor(mood) : 'transparent'
               }}
               onClick={() => onDateClick && onDateClick(day)}
               title={mood ? `${format(day, "MMM d")}: ${mood}` : format(day, "MMM d")}

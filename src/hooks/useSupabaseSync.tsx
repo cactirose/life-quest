@@ -9,7 +9,8 @@ import { toast } from "sonner";
 export function useSupabaseSync() {
   // Always initialize all hooks at the top level
   const gameContext = useGameData();
-  const { setGameData } = gameContext;
+  const { character, setCharacter, setQuests, setInventory, setSkillTree, setHabits, setMoods, setAchievements } = gameContext;
+
   const { session, isAuthenticated } = useAuth();
 
   const {
