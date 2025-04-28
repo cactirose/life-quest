@@ -9,7 +9,7 @@ export function CTASection() {
 
   return (
     <section className="bg-gradient-to-b from-rpg-parchment to-rpg-tan/20 p-0">
-      <div className="w-full flex flex-col justify-center items-center py-8">
+      <div className="w-full flex flex-col justify-center items-center py-8 pb-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -37,7 +37,7 @@ export function CTASection() {
         </motion.div>
       </div>
       {/* Footer */}
-      <footer className="border-t border-rpg-brown/20 w-full mt-0">
+      <footer className="border-t border-rpg-brown/20 w-full mt-8">
         <div className="w-full flex flex-col md:flex-row justify-between items-center gap-2 px-4 py-2 max-w-7xl mx-auto">
           <div className="flex items-center gap-4">
             <Link 
