@@ -78,9 +78,67 @@ export const useHabitManager = (
     });
   };
 
+  const completeHabit = (habitId: string, date: string) => {
+    setGameData(prevData => {
+      const habits = prevData.habits || [];
+      const updatedHabits = habits.map(habit => {
+        if (habit.id !== habitId) return habit;
+        // Check if already completed for this date
+        const alreadyCompleted = habit.completionHistory?.some(c => c.date === date && c.completed);
+        if (alreadyCompleted) return habit;
+        // Add completion record
+        const newCompletionHistory = [
+          ...(habit.completionHistory || []),
+          { date, completed: true }
+        ];
+        // Calculate new streak (simple: +1)
+        const newStreak = (habit.streak || 0) + 1;
+        const updatedHabit = {
+          ...habit,
+          completionHistory: newCompletionHistory,
+          streak: newStreak
+        };
+        // Sync with Supabase
+        upsertHabit(updatedHabit).catch(error => {
+          console.error("Error completing habit:", error, updatedHabit);
+        });
+        return updatedHabit;
+      });
+      return { ...prevData, habits: updatedHabits };
+    });
+  };
+
+  const uncompleteHabit = (habitId: string, date: string) => {
+    setGameData(prevData => {
+      const habits = prevData.habits || [];
+      const updatedHabits = habits.map(habit => {
+        if (habit.id !== habitId) return habit;
+        // Remove completion for this date
+        const newCompletionHistory = (habit.completionHistory || []).filter(
+          c => !(c.date === date && c.completed)
+        );
+        // Recalculate streak (simple: -1, or recalc if needed)
+        const newStreak = Math.max((habit.streak || 1) - 1, 0);
+        const updatedHabit = {
+          ...habit,
+          completionHistory: newCompletionHistory,
+          streak: newStreak
+        };
+        // Sync with Supabase
+        upsertHabit(updatedHabit).catch(error => {
+          console.error("Error uncompleting habit:", error, updatedHabit);
+        });
+        return updatedHabit;
+      });
+      return { ...prevData, habits: updatedHabits };
+    });
+  };
+
   return {
     addHabit,
     updateHabit,
-    deleteHabit
+    deleteHabit,
+    completeHabit,
+    uncompleteHabit
   };
 };
