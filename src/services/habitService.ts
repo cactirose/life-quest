@@ -109,31 +109,40 @@ export const upsertHabit = async (habit: Habit): Promise<void> => {
 
 export const deleteHabit = async (habitId: string): Promise<void> => {
   try {
-    console.log("Deleting habit from Supabase:", habitId);
+    console.log("habitService: Starting habit deletion for ID:", habitId);
     
     // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(habitId)) {
-      console.error("Invalid UUID format for habit:", habitId);
+      console.error("habitService: Invalid UUID format for habit:", habitId);
       throw new Error("Invalid UUID format");
     }
     
+    console.log("habitService: Getting current user");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error("habitService: No authenticated user found");
+      throw new Error("No authenticated user");
+    }
+    
+    console.log("habitService: Sending delete request to Supabase");
     const { error } = await supabase
       .from("habits")
       .delete()
-      .eq("id", habitId);
+      .eq("id", habitId)
+      .eq("user_id", user.id);
 
     if (error) {
-      console.error("Error deleting habit:", error, "Habit ID:", habitId);
+      console.error("habitService: Error deleting habit:", error, "Habit ID:", habitId);
       toast.error("Failed to delete habit", {
         description: error.message
       });
       throw error;
     }
     
-    console.log("Successfully deleted habit:", habitId);
+    console.log("habitService: Successfully deleted habit:", habitId);
   } catch (error) {
-    console.error("Error in deleteHabit:", error, "Habit ID:", habitId);
+    console.error("habitService: Error in deleteHabit:", error, "Habit ID:", habitId);
     toast.error("Failed to delete habit", {
       description: error.message || "Unknown error" 
     });

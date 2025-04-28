@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useGameData } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
@@ -69,6 +68,14 @@ const Habits = () => {
   };
   
   const handleDeleteHabit = (habitId: string) => {
+    console.log("Attempting to delete habit with ID:", habitId);
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(habitId)) {
+      console.error("Invalid UUID format for habit:", habitId);
+      toast.error("Failed to delete habit: Invalid ID format");
+      return;
+    }
     deleteHabit(habitId);
     toast.success("Habit deleted successfully!");
   };

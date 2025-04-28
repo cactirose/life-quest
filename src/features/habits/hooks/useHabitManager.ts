@@ -1,4 +1,3 @@
-
 import { Habit } from "@/types/habits";
 import { generateId } from "@/utils/idGenerator";
 import { 
@@ -7,7 +6,7 @@ import {
 } from "@/services/habitService";
 
 export const useHabitManager = (
-  habits: Habit[],
+  gameData: any, // GameData type
   setGameData: React.Dispatch<React.SetStateAction<any>>
 ) => {
   const addHabit = (habit: Omit<Habit, "id" | "completionHistory" | "streak">) => {
@@ -22,7 +21,7 @@ export const useHabitManager = (
 
     setGameData(prevData => ({
       ...prevData,
-      habits: [...prevData.habits, newHabit]
+      habits: [...(prevData.habits || []), newHabit]
     }));
 
     // Sync with Supabase
@@ -41,7 +40,7 @@ export const useHabitManager = (
 
     setGameData(prevData => ({
       ...prevData,
-      habits: prevData.habits.map(h => 
+      habits: (prevData.habits || []).map(h => 
         h.id === habit.id ? habit : h
       )
     }));
@@ -53,21 +52,29 @@ export const useHabitManager = (
   };
 
   const deleteHabit = (habitId: string) => {
+    console.log("useHabitManager: Starting habit deletion for ID:", habitId);
+    
     // Validate UUID format before deleting
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(habitId)) {
-      console.error("Invalid UUID format for habit, cannot delete:", habitId);
+      console.error("useHabitManager: Invalid UUID format for habit, cannot delete:", habitId);
       return;
     }
 
-    setGameData(prevData => ({
-      ...prevData,
-      habits: prevData.habits.filter(h => h.id !== habitId)
-    }));
+    console.log("useHabitManager: Updating local state to remove habit");
+    setGameData(prevData => {
+      const newHabits = (prevData.habits || []).filter(h => h.id !== habitId);
+      console.log("useHabitManager: New habits count:", newHabits.length);
+      return {
+        ...prevData,
+        habits: newHabits
+      };
+    });
 
     // Sync with Supabase
+    console.log("useHabitManager: Calling deleteHabitService");
     deleteHabitService(habitId).catch(error => {
-      console.error("Error deleting habit:", error, "Habit ID:", habitId);
+      console.error("useHabitManager: Error deleting habit:", error, "Habit ID:", habitId);
     });
   };
 

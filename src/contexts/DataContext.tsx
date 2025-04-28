@@ -1,4 +1,3 @@
-
 import { createContext, useContext } from "react";
 import { CombinedProvider } from "./CombinedProvider";
 import { useGameDataManager } from "../hooks/gameData";
@@ -52,7 +51,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     setGameData
   );
   const habitContextValue = createHabitContextValue(
-    gameData.habits,
+    gameData,
     setGameData
   );
   const moodContextValue = createMoodContextValue(gameData.moods, setGameData);
