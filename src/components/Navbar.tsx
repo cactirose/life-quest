@@ -123,34 +123,41 @@ const Navbar = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] shadow-md py-2">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
+          {/* Left section - Logo */}
+          <div className="flex items-center w-1/4">
             <Link to="/" className="flex items-center gap-2">
               <h1 className="text-xl font-pixel text-[hsl(var(--nav-text))]">Life Quest</h1>
             </Link>
           </div>
           
-          <div className="hidden md:flex items-center gap-4">
-            <StatusBar />
+          {/* Center section - Main Navigation */}
+          <div className="flex-1 flex justify-center">
+            {!isMobile && (
+              <DesktopNav navStructure={navStructure} />
+            )}
           </div>
           
-          {!isMobile && (
-            <DesktopNav navStructure={navStructure} />
-          )}
-          
-          {isMobile && (
-            <div className="flex items-center ml-auto z-[100]">
-              <MobileNavMenu 
-                items={mobileMenuItems} 
-                onLogout={handleLogout} 
-                statusBar={<StatusBar />} 
-              />
+          {/* Right section - Status Bar, Theme Settings, and Mobile Menu */}
+          <div className="flex items-center justify-end w-1/4 gap-4">
+            <div className="hidden md:flex items-center">
+              <StatusBar />
             </div>
-          )}
-          
-          <div className="hidden md:block">
-            <ThemeSettings />
+            
+            {isMobile && (
+              <div className="flex items-center">
+                <MobileNavMenu 
+                  items={mobileMenuItems} 
+                  onLogout={handleLogout} 
+                  statusBar={<StatusBar />} 
+                />
+              </div>
+            )}
+            
+            <div className="hidden md:block">
+              <ThemeSettings />
+            </div>
           </div>
         </div>
       </div>

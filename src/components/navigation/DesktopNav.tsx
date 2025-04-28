@@ -1,4 +1,3 @@
-
 import { useLocation } from "react-router-dom";
 import { 
   HomeIcon, 
@@ -32,7 +31,7 @@ const DesktopNav = ({ navStructure }: DesktopNavProps) => {
 
   return (
     <NavigationMenu className="font-pixel hidden md:flex">
-      <NavigationMenuList>
+      <NavigationMenuList className="flex items-center justify-center space-x-2">
         <NavigationMenuItem className="relative">
           <NavItem 
             path="/dashboard" 
