@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useGameData, MoodEntry, MoodType } from "@/contexts/DataContext";
 import { Button } from "@/components/ui/button";
@@ -126,11 +125,11 @@ const MoodCalendar = ({ entries }: { entries: MoodEntry[] }) => {
         <h2 className="text-xl font-pixel text-rpg-brown">Monthly Mood Overview</h2>
       </div>
       
-      <div className="flex justify-end">
-        <ScrollArea hideScrollbar className="w-full">
+      <div className="flex justify-start">
+        <ScrollArea hideScrollbar>
           <Calendar
             mode="single"
-            className="rounded-md scale-110 transform origin-right"
+            className="rounded-md"
             modifiers={{
               happy: (date) => getMoodForDate(date) === "happy",
               motivated: (date) => getMoodForDate(date) === "motivated",
