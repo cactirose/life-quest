@@ -124,9 +124,8 @@ const MoodCalendar = ({ entries }: { entries: MoodEntry[] }) => {
         <CalendarDays className="text-rpg-brown" size={20} />
         <h2 className="text-xl font-pixel text-rpg-brown">Monthly Mood Overview</h2>
       </div>
-      
-      <div className="flex justify-start">
-        <ScrollArea hideScrollbar>
+      <div className="flex flex-row items-start gap-8">
+        <div className="flex-1 min-w-[260px]">
           <Calendar
             mode="single"
             className="rounded-md"
@@ -147,19 +146,18 @@ const MoodCalendar = ({ entries }: { entries: MoodEntry[] }) => {
               sad: { backgroundColor: `${moodColors.sad}30` }
             }}
           />
-        </ScrollArea>
-      </div>
-      
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        {(Object.keys(moodNames) as MoodType[]).map(mood => (
-          <div key={mood} className="flex items-center gap-1 text-xs">
-            <div 
-              className="h-3 w-3 rounded-full" 
-              style={{ backgroundColor: moodColors[mood] }}
-            />
-            <span>{moodNames[mood]}</span>
-          </div>
-        ))}
+        </div>
+        <div className="flex flex-col gap-3 justify-center min-w-[120px]">
+          {(Object.keys(moodNames) as MoodType[]).map(mood => (
+            <div key={mood} className="flex items-center gap-2 text-xs">
+              <div 
+                className="h-3 w-3 rounded-full" 
+                style={{ backgroundColor: moodColors[mood] }}
+              />
+              <span>{moodNames[mood]}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

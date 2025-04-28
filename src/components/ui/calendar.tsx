@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -15,7 +14,7 @@ function Calendar({
   ...props
 }: CalendarProps) {
   return (
-    <div className="calendar-container flex justify-center">
+    <div className="justify-center">
       <DayPicker
         showOutsideDays={showOutsideDays}
         className={cn("p-4 pointer-events-auto", className)}
