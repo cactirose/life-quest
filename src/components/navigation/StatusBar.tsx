@@ -1,9 +1,14 @@
-
 import { useGameData } from "@/contexts/DataContext";
+import { useAuth } from "@/features/auth/context/AuthContext";
 
 const StatusBar = () => {
   const { character } = useGameData();
-  
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   // Make sure character data is available
   if (!character || !character.level) {
     return (

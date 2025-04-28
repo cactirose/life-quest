@@ -3,9 +3,11 @@ import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/utils/auth";
 import { toast } from "sonner";
+import { useAuth } from "@/features/auth/context/AuthContext";
 
 const NavActions = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -17,6 +19,10 @@ const NavActions = () => {
       toast.error("An error occurred while logging out. Please try again.");
     }
   };
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <Button 
