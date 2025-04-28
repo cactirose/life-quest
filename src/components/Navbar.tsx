@@ -72,10 +72,6 @@ const Navbar = () => {
         path: "/mood",
         icon: <Smile size={18} />
       }, {
-        label: "Challenges",
-        path: "/challenges",
-        icon: <Flag size={18} />
-      }, {
         label: "Journal",
         path: "/journal",
         icon: <Book size={18} />
