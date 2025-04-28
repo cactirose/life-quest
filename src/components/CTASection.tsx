@@ -8,7 +8,7 @@ export function CTASection() {
   const navigate = useNavigate();
 
   return (
-    <section className="bg-gradient-to-b from-rpg-parchment to-rpg-tan/20 p-0">
+    <section className="bg-rpg-parchment p-0">
       <div className="w-full flex flex-col justify-center items-center py-8 pb-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

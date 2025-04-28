@@ -63,7 +63,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section className="py-20 bg-gradient-to-b from-rpg-tan/20 to-rpg-parchment">
+    <section className="py-20 bg-rpg-parchment">
       <div className="max-w-6xl mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
