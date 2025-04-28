@@ -276,14 +276,20 @@ const MoodForm = ({
             <button
               key={moodType}
               type="button"
-              onClick={() => setMood(moodType)}
+              onClick={() => { console.log('Mood button clicked:', moodType); setMood(moodType); }}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 p-3 rounded-md border-2",
+                "relative flex flex-col items-center justify-center gap-1 p-3 rounded-md border-2 transition-all duration-150",
                 mood === moodType
-                  ? "border-rpg-brown bg-rpg-tan/30"
+                  ? "border-4 border-rpg-brown bg-rpg-tan/50 shadow-lg"
                   : "border-border hover:bg-muted"
               )}
             >
+              {/* Checkmark overlay for selected mood */}
+              {mood === moodType && (
+                <span className="absolute top-1 right-1 text-green-600 text-lg font-bold bg-white rounded-full w-5 h-5 flex items-center justify-center shadow">
+                  ✓
+                </span>
+              )}
               <div 
                 className="h-10 w-10 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: moodColors[moodType] }}
