@@ -70,7 +70,7 @@ export function HowItWorksSection() {
               whileHover={{ scale: 1.02 }}
               className="relative"
             >
-              <div className="absolute -top-4 -left-4 w-8 h-8 bg-rpg-brown text-rpg-tan rounded-full flex items-center justify-center font-pixel z-20 border-4 border-white shadow-lg">
+              <div className="absolute -top-4 -left-4 w-8 h-8 bg-rpg-brown text-rpg-tan rounded-full flex items-center justify-center font-pixel z-30 border-4 border-white shadow-lg">
                 {index + 1}
               </div>
               <div className={`p-6 rounded-lg border-2 border-rpg-brown/20 ${step.color} backdrop-blur-sm`}>
