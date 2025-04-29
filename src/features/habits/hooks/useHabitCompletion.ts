@@ -1,15 +1,15 @@
-
 import { useState } from "react";
 import { Habit, HabitCompletion } from "@/types/habits";
 import { toast } from "sonner";
-import { checkIfHabitCanBeCompletedToday, getCurrentStreak } from "../utils/habitCompletionUtils";
-import { upsertHabit } from "@/services/habitService";
+import { checkIfHabitCanBeCompletedToday } from "../utils/habitCompletionUtils";
+import { useGameData } from "@/contexts/DataContext";
 
 export const useHabitCompletion = (
   habit: Habit,
   onUpdate: (updatedHabit: Habit) => void
 ) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const { completeHabit: completeHabitInContext } = useGameData();
   
   const handleComplete = async () => {
     if (isProcessing) return;
@@ -27,13 +27,17 @@ export const useHabitCompletion = (
       // Get today's date in ISO format (YYYY-MM-DD)
       const today = new Date().toISOString().split('T')[0];
       
-      // Create a new completion record
+      // Use the game data context's completeHabit function
+      // This will handle both the habit completion and the character rewards
+      completeHabitInContext(habit.id, today);
+      
+      // Create a new completion record for the UI update
       const newCompletion: HabitCompletion = {
         date: today,
         completed: true
       };
       
-      // Update the habit locally first (optimistic update)
+      // Update the habit locally for the UI
       const updatedHabit: Habit = {
         ...habit,
         completionHistory: [...(habit.completionHistory || []), newCompletion],
@@ -42,14 +46,11 @@ export const useHabitCompletion = (
       
       onUpdate(updatedHabit);
       
-      // Then update in the database
-      await upsertHabit(updatedHabit);
-      
-      // Check if we should show a streak notification
+      // Show success message
       if (updatedHabit.streak % 7 === 0) {
         toast.success(`🔥 ${updatedHabit.streak} day streak! Keep it up!`);
       } else {
-        toast.success("Habit marked as complete");
+        toast.success(`Habit completed! +${habit.xpReward} XP, +${habit.coinReward} coins`);
       }
     } catch (error) {
       console.error("Error completing habit:", error);
@@ -77,7 +78,21 @@ export const useHabitCompletion = (
       onUpdate(updatedHabit);
       
       // Then update in the database with streak reset
-      await upsertHabit(updatedHabit);
+      // We need to update the completion history to remove today's completion
+      const today = new Date().toISOString().split('T')[0];
+      const updatedCompletionHistory = (habit.completionHistory || []).filter(
+        c => !(c.date === today && c.completed)
+      );
+      
+      const habitToUpdate = {
+        ...habit,
+        completionHistory: updatedCompletionHistory,
+        streak: 0
+      };
+      
+      // Use the game data context's updateHabit function
+      const { updateHabit } = useGameData();
+      updateHabit(habitToUpdate);
       
       toast.info("Habit streak has been reset");
     } catch (error) {

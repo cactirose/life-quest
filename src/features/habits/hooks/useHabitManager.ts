@@ -104,6 +104,26 @@ export const useHabitManager = (
         });
         return updatedHabit;
       });
+      
+      // Find the completed habit to get its rewards
+      const completedHabit = habits.find(h => h.id === habitId);
+      
+      // Update character XP and coins if habit was found and completed
+      if (completedHabit) {
+        const updatedCharacter = {
+          ...prevData.character,
+          xp: prevData.character.xp + completedHabit.xpReward,
+          coins: prevData.character.coins + completedHabit.coinReward
+        };
+        
+        // Update character in game data
+        return { 
+          ...prevData, 
+          habits: updatedHabits,
+          character: updatedCharacter
+        };
+      }
+      
       return { ...prevData, habits: updatedHabits };
     });
   };
