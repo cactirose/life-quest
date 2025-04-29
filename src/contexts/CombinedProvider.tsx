@@ -1,9 +1,7 @@
-
 import { ReactNode } from "react";
 import { CharacterContext } from "./CharacterContext";
 import { QuestContext } from "./QuestContext";
 import { InventoryContext } from "./InventoryContext";
-import { SkillTreeContext } from "./SkillTreeContext";
 import { HabitContext } from "./HabitContext";
 import { MoodContext } from "./MoodContext";
 import { AchievementContext } from "./AchievementContext";
@@ -15,7 +13,6 @@ interface CombinedProviderProps {
   characterContextValue: any;
   questContextValue: any;
   inventoryContextValue: any;
-  skillTreeContextValue: any;
   habitContextValue: any;
   moodContextValue: any;
   achievementContextValue: any;
@@ -27,7 +24,6 @@ export const CombinedProvider = ({
   characterContextValue,
   questContextValue,
   inventoryContextValue,
-  skillTreeContextValue,
   habitContextValue,
   moodContextValue,
   achievementContextValue
@@ -37,15 +33,13 @@ export const CombinedProvider = ({
       <CharacterContext.Provider value={characterContextValue}>
         <QuestContext.Provider value={questContextValue}>
           <InventoryContext.Provider value={inventoryContextValue}>
-            <SkillTreeContext.Provider value={skillTreeContextValue}>
-              <HabitContext.Provider value={habitContextValue}>
-                <MoodContext.Provider value={moodContextValue}>
-                  <AchievementContext.Provider value={achievementContextValue}>
-                    {children}
-                  </AchievementContext.Provider>
-                </MoodContext.Provider>
-              </HabitContext.Provider>
-            </SkillTreeContext.Provider>
+            <HabitContext.Provider value={habitContextValue}>
+              <MoodContext.Provider value={moodContextValue}>
+                <AchievementContext.Provider value={achievementContextValue}>
+                  {children}
+                </AchievementContext.Provider>
+              </MoodContext.Provider>
+            </HabitContext.Provider>
           </InventoryContext.Provider>
         </QuestContext.Provider>
       </CharacterContext.Provider>

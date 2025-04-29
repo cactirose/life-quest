@@ -4,6 +4,8 @@ import { useGameDataManager } from "../hooks/gameData";
 import { DEFAULT_GAME_DATA } from "../utils/defaultGameData";
 import { useDataEffects } from "../hooks/useDataEffects";
 import { GameData } from "../types/gameData";
+import { Skill, SAMPLE_SKILLS } from "@/types/skills";
+import { generateId } from "../utils/idGenerator";
 
 // Create context providers
 import {
@@ -15,10 +17,6 @@ import {
   createInventoryContextValue,
   InventoryContext,
 } from "./InventoryContext";
-import {
-  createSkillTreeContextValue,
-  SkillTreeContext,
-} from "./SkillTreeContext";
 import { createHabitContextValue, HabitContext } from "./HabitContext";
 import { createMoodContextValue, MoodContext } from "./MoodContext";
 import {
@@ -46,10 +44,6 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     gameData.shopItems,
     setGameData
   );
-  const skillTreeContextValue = createSkillTreeContextValue(
-    gameData.skillTree,
-    setGameData
-  );
   const habitContextValue = createHabitContextValue(
     gameData,
     setGameData
@@ -63,16 +57,50 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   // Handle side effects
   useDataEffects(characterContextValue);
 
+  // Add these functions
+  const addSkill = (skillData: Omit<Skill, "id" | "createdAt">) => {
+    const id = generateId();
+    const skill: Skill = {
+      ...skillData,
+      id,
+      createdAt: new Date()
+    };
+    
+    setGameData(prev => ({
+      ...prev,
+      skills: [...prev.skills, skill]
+    }));
+    
+    return id;
+  };
+
+  const updateSkill = (skill: Skill) => {
+    setGameData(prev => ({
+      ...prev,
+      skills: prev.skills.map(s => s.id === skill.id ? skill : s)
+    }));
+  };
+
+  const deleteSkill = (skillId: string) => {
+    setGameData(prev => ({
+      ...prev,
+      skills: prev.skills.filter(s => s.id !== skillId)
+    }));
+  };
+
   // Combined context value
   const contextValue: GameData = {
     ...gameData,
     ...characterContextValue,
     ...questContextValue,
     ...inventoryContextValue,
-    ...skillTreeContextValue,
     ...habitContextValue,
     ...moodContextValue,
     ...achievementContextValue,
+    skills: gameData.skills,
+    addSkill,
+    updateSkill,
+    deleteSkill,
   };
 
   // Use combined provider pattern
@@ -83,7 +111,6 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
         characterContextValue={characterContextValue}
         questContextValue={questContextValue}
         inventoryContextValue={inventoryContextValue}
-        skillTreeContextValue={skillTreeContextValue}
         habitContextValue={habitContextValue}
         moodContextValue={moodContextValue}
         achievementContextValue={achievementContextValue}
@@ -107,7 +134,7 @@ export const useGameData = () => {
 export type { Character, StatName, Stats } from "../types/character";
 export type { Quest, QuestType, QuestStatus, QuestStep } from "../types/quests";
 export type { GearItem, GearType, GearRarity } from "../types/inventory";
-export type { SkillNode } from "../types/skills";
+export type { Skill } from "../types/skills";
 export type {
   Habit,
   HabitFrequency,

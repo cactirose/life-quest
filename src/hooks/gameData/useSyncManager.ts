@@ -5,7 +5,6 @@ import {
   syncCharacterData,
   syncQuestsData,
   syncInventoryData,
-  syncSkillTreeData,
   syncHabitsData,
   syncMoodsData,
   syncAchievementsData,
@@ -177,10 +176,6 @@ const syncAllData = async (
     
     if (changedFields.has('inventory') && gameData.inventory) {
       promises.push(syncInventoryData(gameData, changedFields));
-    }
-    
-    if (changedFields.has('skillTree') && gameData.skillTree) {
-      promises.push(syncSkillTreeData(gameData, changedFields));
     }
     
     if (changedFields.has('habits') && gameData.habits) {

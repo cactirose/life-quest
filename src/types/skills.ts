@@ -1,27 +1,52 @@
-
 import { StatName } from "./character";
 
-// Skill tree types
-export interface SkillNode {
+// Skill types
+export interface Skill {
   id: string;
   name: string;
-  description: string;
   icon: string;
-  unlocked: boolean;
-  statBonuses: Partial<Record<StatName, number>>;
-  position: { x: number, y: number };
-  connectedTo: string[];
+  color: string;
+  description?: string;
+  xp: number;
+  createdAt: Date;
 }
 
-// Sample skill tree for first run
-export const SAMPLE_SKILL_TREE: Omit<SkillNode, "id">[] = [
+// Helper function to calculate level and progress
+export function getSkillLevelAndProgress(xp: number): {
+  level: number;
+  currentXp: number;
+  nextLevelXp: number;
+} {
+  const level = Math.floor(0.1 * Math.sqrt(xp));
+  const nextLevelXp = Math.pow((level + 1) / 0.1, 2);
+  return {
+    level,
+    currentXp: xp,
+    nextLevelXp
+  };
+}
+
+// Sample skills for first run
+export const SAMPLE_SKILLS: Omit<Skill, "id" | "createdAt">[] = [
   {
-    name: "Adventurer Basics",
-    description: "The foundation of your journey",
-    icon: "🌟",
-    unlocked: true,
-    statBonuses: { strength: 1, constitution: 1 },
-    position: { x: 400, y: 300 },
-    connectedTo: []
+    name: "Focus",
+    icon: "🧠",
+    color: "#4CAF50",
+    description: "Your ability to concentrate and maintain attention",
+    xp: 0
+  },
+  {
+    name: "Discipline",
+    icon: "⚔️",
+    color: "#2196F3",
+    description: "Your ability to maintain consistent habits and routines",
+    xp: 0
+  },
+  {
+    name: "Creativity",
+    icon: "🎨",
+    color: "#9C27B0",
+    description: "Your ability to think outside the box and generate new ideas",
+    xp: 0
   }
 ];

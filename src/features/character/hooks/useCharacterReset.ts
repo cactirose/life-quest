@@ -1,10 +1,8 @@
-
 import { Character } from "@/types/character";
 import { GameDataUpdater } from "@/utils/contextTypes";
 import { upsertCharacter } from "@/services/characterService";
 import { upsertQuest } from "@/services/questService";
 import { deleteInventoryItem } from "@/services/inventoryService";
-import { upsertSkillNode } from "@/services/skillTreeService";
 import { prepareCharacterReset } from "../utils/characterResetUtils";
 
 export const useCharacterReset = (
@@ -32,17 +30,11 @@ export const useCharacterReset = (
         deleteInventoryItem(item.id);
       });
       
-      // Update skill tree
-      resetData.skillTree.forEach(node => {
-        upsertSkillNode(node);
-      });
-      
       return {
         ...prevData,
         character: resetData.character,
         inventory: resetData.inventory,
-        quests: resetData.quests,
-        skillTree: resetData.skillTree
+        quests: resetData.quests
       };
     });
   };

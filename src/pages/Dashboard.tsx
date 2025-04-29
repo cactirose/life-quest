@@ -15,13 +15,13 @@ const categoryIcons: Record<string, JSX.Element> = {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { character, quests, inventory, skillTree, achievements, claimDailyBonus } = useGameData();
+  const { character, quests, inventory, skills, achievements, claimDailyBonus } = useGameData();
   
   // Make sure we have valid data or use defaults
   const safeCharacter = character || { stats: {}, level: 1, xp: 0, nextLevelXp: 100, coins: 0, loginStreak: 0, dailyBonusClaimed: false };
   const safeQuests = Array.isArray(quests) ? quests : [];
   const safeInventory = Array.isArray(inventory) ? inventory : [];
-  const safeSkillTree = Array.isArray(skillTree) ? skillTree : [];
+  const safeSkills = Array.isArray(skills) ? skills : [];
   const safeAchievements = Array.isArray(achievements) ? achievements : [];
   
   // Filter active quests and completed achievements
@@ -41,8 +41,8 @@ const Dashboard = () => {
   const equippedItems = safeInventory.filter(item => item.equipped);
   
   // Count unlocked skills
-  const unlockedSkills = safeSkillTree.filter(node => node.unlocked).length;
-  const totalSkills = safeSkillTree.length;
+  const unlockedSkills = Array.isArray(skills) ? skills.filter(skill => (skill.xp ?? 0) > 0).length : 0;
+  const totalSkills = Array.isArray(skills) ? skills.length : 0;
 
   return (
     <div className="container mx-auto animate-fade-in">

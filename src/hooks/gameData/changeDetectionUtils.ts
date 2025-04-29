@@ -4,7 +4,9 @@ import { Quest } from "@/types/quests";
 /**
  * Deep comparison of arrays
  */
-function areArraysEqual<T>(arr1: T[], arr2: T[], compareFunc?: (a: T, b: T) => boolean): boolean {
+function areArraysEqual<T>(arr1: T[] = [], arr2: T[] = [], compareFunc?: (a: T, b: T) => boolean): boolean {
+  arr1 = arr1 || [];
+  arr2 = arr2 || [];
   if (arr1.length !== arr2.length) return false;
   
   if (compareFunc) {

@@ -11,7 +11,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Quests from "./pages/Quests";
 import Character from "./pages/Character";
-import SkillTree from "./pages/SkillTree";
+import Skills from "./pages/Skills";
 import Shop from "./pages/Shop";
 import Inventory from "./pages/Inventory";
 import NotFound from "./pages/NotFound";
@@ -183,7 +183,7 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <Layout>
-                        <SkillTree />
+                        <Skills />
                       </Layout>
                     </ProtectedRoute>
                   }

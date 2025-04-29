@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { toast } from "sonner";
@@ -7,7 +6,6 @@ import {
   syncCharacterData,
   syncQuestsData,
   syncInventoryData,
-  syncSkillTreeData,
   syncHabitsData,
   syncMoodsData,
   syncAchievementsData,
@@ -33,7 +31,6 @@ export const useSyncWithSupabase = () => {
         syncCharacterData(gameData, changedFields),
         syncQuestsData(gameData, changedFields),
         syncInventoryData(gameData, changedFields),
-        syncSkillTreeData(gameData, changedFields),
         syncHabitsData(gameData, changedFields),
         syncMoodsData(gameData, changedFields),
         syncAchievementsData(gameData, changedFields),

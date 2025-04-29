@@ -1,8 +1,7 @@
-
 import { Character, StatName } from "./character";
 import { Quest } from "./quests";
 import { GearItem } from "./inventory";
-import { SkillNode } from "./skills";
+import { Skill } from "./skills";
 import { Habit } from "./habits";
 import { MoodEntry } from "./mood";
 import { Achievement } from "./achievements";
@@ -15,7 +14,7 @@ export interface GameData {
   quests: Quest[];
   inventory: GearItem[];
   shopItems: GearItem[];
-  skillTree: SkillNode[];
+  skills: Skill[];
   habits: Habit[];
   moods: MoodEntry[];
   achievements: Achievement[];
@@ -45,11 +44,10 @@ export interface GameData {
   updateShopItem: (item: GearItem) => void;
   deleteShopItem: (itemId: string) => void;
   
-  // Skill tree methods
-  addSkillNode: (node: Omit<SkillNode, "id">) => string;
-  updateSkillNode: (node: SkillNode) => void;
-  deleteSkillNode: (nodeId: string) => void;
-  unlockSkillNode: (nodeId: string) => void;
+  // Skill methods
+  addSkill: (skill: Omit<Skill, "id" | "createdAt">) => string;
+  updateSkill: (skill: Skill) => void;
+  deleteSkill: (skillId: string) => void;
   
   // Habit methods
   addHabit: (habit: Omit<Habit, "id" | "completionHistory" | "streak">) => void;

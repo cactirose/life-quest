@@ -1,8 +1,7 @@
-
 import { Character, StatName } from "../types/character";
 import { Quest } from "../types/quests";
 import { GearItem } from "../types/inventory";
-import { SkillNode } from "../types/skills";
+import { SkillNode, Skill } from "../types/skills";
 import { Habit } from "../types/habits";
 import { MoodEntry } from "../types/mood";
 import { Achievement } from "../types/achievements";
@@ -40,13 +39,12 @@ export interface InventoryContextType {
   purchaseItem: (itemId: string) => boolean;
 }
 
-// Skill Tree Context Types
-export interface SkillTreeContextType {
-  skillTree: SkillNode[];
-  addSkillNode: (node: Omit<SkillNode, "id">) => string;
-  updateSkillNode: (node: SkillNode) => void;
-  deleteSkillNode: (nodeId: string) => void;
-  unlockSkillNode: (nodeId: string) => void;
+// Skill Context Types
+export interface SkillContextType {
+  skills: Skill[];
+  addSkill: (skill: Omit<Skill, "id" | "createdAt">) => string;
+  updateSkill: (skill: Skill) => void;
+  deleteSkill: (skillId: string) => void;
 }
 
 // Habit Context Types

@@ -1,9 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCharacter } from "./characterService";
 import { fetchQuests } from "./questService";
 import { fetchInventory, fetchShopItems } from "./inventoryService";
-import { fetchSkillTree } from "./skillTreeService";
+import { fetchSkills } from "./skillService";
 import { fetchHabits } from "./habitService";
 import { fetchMoodEntries } from "./moodService";
 import { fetchAchievements } from "./achievementService";
@@ -57,7 +56,7 @@ export const loadAllGameData = async () => {
         quests,
         inventory,
         shopItems,
-        skillTree,
+        skills,
         habits,
         moods,
         achievements
@@ -78,8 +77,8 @@ export const loadAllGameData = async () => {
           console.error("Error fetching shop items:", err);
           return [];
         }),
-        fetchSkillTree().catch(err => {
-          console.error("Error fetching skill tree:", err);
+        fetchSkills().catch(err => {
+          console.error("Error fetching skills:", err);
           return [];
         }),
         fetchHabits().catch(err => {
@@ -105,7 +104,7 @@ export const loadAllGameData = async () => {
       if (quests && quests.length > 0) result.quests = quests;
       if (inventory && inventory.length > 0) result.inventory = inventory;
       if (shopItems && shopItems.length > 0) result.shopItems = shopItems;
-      if (skillTree && skillTree.length > 0) result.skillTree = skillTree;
+      if (skills && skills.length > 0) result.skills = skills;
       if (habits && habits.length > 0) result.habits = habits;
       if (moods && moods.length > 0) result.moods = moods;
       if (achievements && achievements.length > 0) result.achievements = achievements;
@@ -132,7 +131,7 @@ export {
   fetchQuests,
   fetchInventory,
   fetchShopItems,
-  fetchSkillTree,
+  fetchSkills,
   fetchHabits,
   fetchMoodEntries,
   fetchAchievements
@@ -150,10 +149,6 @@ export {
 export {
   upsertInventoryItem
 } from "./inventoryService";
-
-export {
-  upsertSkillNode
-} from "./skillTreeService";
 
 export {
   upsertHabit

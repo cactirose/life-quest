@@ -1,6 +1,6 @@
-
 import { GameData } from "../types/gameData";
 import { DEFAULT_CHARACTER } from "../types/character";
+import { SAMPLE_SKILLS } from "@/types/skills";
 
 // Initial Empty Data
 export const DEFAULT_GAME_DATA: GameData = {
@@ -8,7 +8,7 @@ export const DEFAULT_GAME_DATA: GameData = {
   quests: [],
   inventory: [],
   shopItems: [],
-  skillTree: [],
+  skills: [],
   habits: [],
   moods: [],
   achievements: [],
@@ -38,11 +38,10 @@ export const DEFAULT_GAME_DATA: GameData = {
   updateShopItem: () => {},
   deleteShopItem: () => {},
   
-  // Skill tree methods
-  addSkillNode: () => "",
-  updateSkillNode: () => {},
-  deleteSkillNode: () => {},
-  unlockSkillNode: () => {},
+  // Skill methods
+  addSkill: () => "",
+  updateSkill: () => {},
+  deleteSkill: () => {},
   
   // Habit methods
   addHabit: () => {},
