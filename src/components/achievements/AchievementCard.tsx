@@ -1,4 +1,3 @@
-
 import { Achievement, AchievementCategory } from "@/types/achievements";
 import { Badge, BadgeCheck, BadgePercent, Coins, Edit, Sparkle, Trash2, Award, ListChecks, BookOpen, UserCircle, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,7 +40,7 @@ const AchievementCard = ({
       }`}
     >
       {achievement.unlocked && (
-        <div className="absolute top-0 right-0 bg-rpg-green text-white px-2 py-1 text-xs transform translate-x-2 -translate-y-2 rotate-45">
+        <div className="absolute top-2 right-2 bg-rpg-green text-white px-2 py-1 text-xs rounded-md shadow-md">
           Unlocked
         </div>
       )}
