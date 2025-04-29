@@ -1,4 +1,3 @@
-
 import { createContext, useContext } from "react";
 import { Quest, QuestStatus, QuestRepeatInterval, StatReward } from "../types/quests";
 import { generateId } from "../utils/idGenerator";
@@ -11,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface QuestContextType {
   quests: Quest[];
   addQuest: (quest: Omit<Quest, "id">) => void;
-  updateQuest: (quest: Quest) => void;
+  updateQuest: (questId: string, updates: Partial<Quest>) => void;
   deleteQuest: (questId: string) => void;
   completeQuestStep: (questId: string, stepId: string) => void;
   completeQuest: (questId: string) => Promise<void>; // Changed to async
@@ -27,29 +26,45 @@ export const createQuestContextValue = (
 ): QuestContextType => {
   const { deleteQuest } = useQuestManager(quests, setGameData);
 
-  const addQuest = (quest: Omit<Quest, "id">) => {
-    const newQuest = {
+  const addQuest = (quest: Omit<Quest, 'id'>) => {
+    const newQuest: Quest = {
       ...quest,
       id: generateId(),
-      steps: quest.steps.map(step => ({
-        ...step,
-        id: step.id || generateId()
-      }))
     };
-
-    setGameData(prevData => ({
-      ...prevData,
-      quests: [...prevData.quests, newQuest]
-    }));
+    
+    console.log('Adding new quest:', newQuest);
+    
+    setGameData((prevData) => {
+      const newData = {
+        ...prevData,
+        quests: [...prevData.quests, newQuest],
+      };
+      
+      // Force change detection by creating new array
+      newData.quests = [...newData.quests];
+      
+      return newData;
+    });
   };
 
-  const updateQuest = (quest: Quest) => {
-    setGameData(prevData => ({
-      ...prevData,
-      quests: prevData.quests.map(q => 
-        q.id === quest.id ? quest : q
-      )
-    }));
+  const updateQuest = (questId: string, updates: Partial<Quest>) => {
+    console.log('Updating quest:', questId, updates);
+    
+    setGameData((prevData) => {
+      const questIndex = prevData.quests.findIndex((q) => q.id === questId);
+      if (questIndex === -1) return prevData;
+
+      const updatedQuests = [...prevData.quests];
+      updatedQuests[questIndex] = {
+        ...updatedQuests[questIndex],
+        ...updates,
+      };
+
+      return {
+        ...prevData,
+        quests: updatedQuests, // This creates a new array reference
+      };
+    });
   };
 
   const completeQuestStep = (questId: string, stepId: string) => {

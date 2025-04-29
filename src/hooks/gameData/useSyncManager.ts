@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { GameData } from '@/types/gameData';
 import {
@@ -27,10 +26,12 @@ export const useSyncManager = (
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [lastSyncTime, setLastSyncTime] = useState<number>(0);
   const [throttleTime, setThrottleTime] = useState<number>(INITIAL_THROTTLE_TIME);
+  const syncInProgressRef = useRef<boolean>(false);
+  const pendingSyncRef = useRef<boolean>(false);
 
   // Manual save function with visual feedback
   const manualSave = async (): Promise<boolean> => {
-    if (syncStatus === 'syncing') {
+    if (syncStatus === 'syncing' || syncInProgressRef.current) {
       toast.info("Already saving your progress...");
       return false;
     }
@@ -42,6 +43,7 @@ export const useSyncManager = (
 
     try {
       setSyncStatus('syncing');
+      syncInProgressRef.current = true;
       
       const saveToast = toast.loading("Saving your progress...");
       const success = await syncAllData(gameData, onChange);
@@ -62,78 +64,95 @@ export const useSyncManager = (
       setSyncStatus('error');
       toast.error("Failed to save progress. Try again later.");
       return false;
+    } finally {
+      syncInProgressRef.current = false;
     }
   };
 
   // Auto-sync effect
   useEffect(() => {
     // Skip if no changes or currently syncing
-    if (onChange.size === 0 || syncStatus === 'syncing') {
+    if (onChange.size === 0 || syncStatus === 'syncing' || syncInProgressRef.current) {
       return;
     }
 
-    // Check if enough time has passed since the last sync
-    const now = Date.now();
-    const timeSinceLastSync = now - lastSyncTime;
+    const timeSinceLastSync = Date.now() - lastSyncTime;
     
+    // If we're within the throttle time, wait
     if (timeSinceLastSync < throttleTime) {
-      const delayTime = throttleTime - timeSinceLastSync;
-      
-      // Set a timer to sync after the throttle time
-      const timerId = setTimeout(() => {
+      const remainingTime = throttleTime - timeSinceLastSync;
+      const timeoutId = setTimeout(() => {
+        setSyncStatus('syncing');
+        syncInProgressRef.current = true;
+        
         syncAllData(gameData, onChange)
           .then(success => {
             if (success) {
               setSyncStatus('success');
               setLastSyncTime(Date.now());
-              // Reset throttle time on success
               setThrottleTime(INITIAL_THROTTLE_TIME);
             } else {
               setSyncStatus('error');
-              // Increase throttle time on failure
               setThrottleTime(prev => Math.min(prev * THROTTLE_INCREASE_FACTOR, MAX_THROTTLE_TIME));
             }
           })
           .catch(error => {
-            console.error("Auto sync failed:", error);
+            console.error("Delayed sync failed:", error);
             setSyncStatus('error');
-            // Increase throttle time on error
             setThrottleTime(prev => Math.min(prev * THROTTLE_INCREASE_FACTOR, MAX_THROTTLE_TIME));
+          })
+          .finally(() => {
+            syncInProgressRef.current = false;
           });
-      }, delayTime);
+      }, remainingTime);
       
-      // Clean up the timer if the component is unmounted
-      return () => clearTimeout(timerId);
+      return () => clearTimeout(timeoutId);
     } else {
       // If sufficient time has passed, sync immediately
       setSyncStatus('syncing');
+      syncInProgressRef.current = true;
       
       syncAllData(gameData, onChange)
         .then(success => {
           if (success) {
             setSyncStatus('success');
             setLastSyncTime(Date.now());
-            // Reset throttle time on success
             setThrottleTime(INITIAL_THROTTLE_TIME);
           } else {
             setSyncStatus('error');
-            // Increase throttle time on failure
             setThrottleTime(prev => Math.min(prev * THROTTLE_INCREASE_FACTOR, MAX_THROTTLE_TIME));
           }
         })
         .catch(error => {
           console.error("Immediate sync failed:", error);
           setSyncStatus('error');
-          // Increase throttle time on error
           setThrottleTime(prev => Math.min(prev * THROTTLE_INCREASE_FACTOR, MAX_THROTTLE_TIME));
+        })
+        .finally(() => {
+          syncInProgressRef.current = false;
         });
     }
   }, [gameData, onChange, syncStatus, lastSyncTime, throttleTime]);
-  
+
+  // Add beforeunload handler
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (syncInProgressRef.current || pendingSyncRef.current) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   return {
     syncStatus,
     lastSyncTime,
-    manualSave
+    manualSave,
+    isSyncing: syncInProgressRef.current
   };
 };
 

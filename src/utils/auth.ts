@@ -1,6 +1,18 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { NavigateFunction } from "react-router-dom";
+import {
+  syncCharacterData,
+  syncQuestsData,
+  syncInventoryData,
+  syncSkillTreeData,
+  syncHabitsData,
+  syncMoodsData,
+  syncAchievementsData,
+  syncJournalEntriesData,
+  syncShoppingListsData
+} from '@/hooks/gameData/persistence/entitySync';
 
 // Check if user is authenticated by retrieving session from Supabase
 export const isAuthenticated = async (): Promise<boolean> => {
@@ -75,24 +87,94 @@ export const isAuthenticatedSync = (): boolean => {
 };
 
 // Log user out through Supabase and clear local data
-export const logout = async (navigate?: (path: string, options?: { replace: boolean }) => void): Promise<void> => {
+export const logout = async (navigate?: NavigateFunction): Promise<void> => {
   try {
-    // Clear local state first to ensure UI responsiveness
-    localStorage.removeItem("isAuthenticated");
+    // Get the current game data from context
+    const gameData = JSON.parse(localStorage.getItem('rpgProductivityData') || '{}');
     
-    // Then sign out from Supabase
+    // Only attempt sync if we have valid data and user is still authenticated
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user && gameData) {
+      try {
+        // Create a sync promise that will resolve when all data is synced
+        const syncPromise = new Promise<void>((resolve, reject) => {
+          const syncTimeout = setTimeout(() => {
+            resolve(); // Just resolve instead of reject on timeout
+          }, 5000); // Reduced timeout to 5 seconds
+
+          // Attempt to sync all data
+          const syncAllData = async () => {
+            try {
+              // Only sync data that exists and is valid
+              const syncPromises = [];
+              
+              if (gameData.character) {
+                syncPromises.push(syncCharacterData(gameData, new Set(['character'])));
+              }
+              
+              if (Array.isArray(gameData.quests)) {
+                syncPromises.push(syncQuestsData(gameData, new Set(['quests'])));
+              }
+              
+              if (Array.isArray(gameData.inventory)) {
+                syncPromises.push(syncInventoryData(gameData, new Set(['inventory'])));
+              }
+              
+              if (Array.isArray(gameData.habits)) {
+                syncPromises.push(syncHabitsData(gameData, new Set(['habits'])));
+              }
+              
+              if (Array.isArray(gameData.moods)) {
+                syncPromises.push(syncMoodsData(gameData, new Set(['moods'])));
+              }
+              
+              if (Array.isArray(gameData.achievements)) {
+                syncPromises.push(syncAchievementsData(gameData, new Set(['achievements'])));
+              }
+
+              // Wait for all valid syncs to complete or timeout
+              await Promise.all(syncPromises.map(p => p.catch(e => console.log('Sync operation skipped:', e))));
+              
+              clearTimeout(syncTimeout);
+              resolve();
+            } catch (error) {
+              clearTimeout(syncTimeout);
+              resolve(); // Resolve instead of reject to continue logout
+            }
+          };
+
+          syncAllData();
+        });
+
+        // Wait for sync to complete or timeout
+        await syncPromise;
+      } catch (error) {
+        console.log('Final sync attempt skipped:', error);
+      }
+    }
+
+    // Clear local state
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("rpgProductivityData");
+    
+    // Sign out from Supabase
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     
     console.log("User logged out successfully");
     
-    // If navigate function was provided, redirect to index page
     if (navigate) {
       navigate("/", { replace: true });
     }
   } catch (error) {
     console.error("Error during logout:", error);
-    throw error;
+    // Even if sync fails, we should still log out
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("rpgProductivityData");
+    await supabase.auth.signOut();
+    if (navigate) {
+      navigate("/", { replace: true });
+    }
   }
 };
 

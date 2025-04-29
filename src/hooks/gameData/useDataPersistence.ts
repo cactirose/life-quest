@@ -14,6 +14,8 @@ export function useDataPersistence(gameData: GameData) {
   const previousData = useRef<GameData | null>(null);
   const syncErrorCount = useRef<number>(0);
   const isInitialSync = useRef<boolean>(true);
+  const pendingSyncRef = useRef<boolean>(false);
+  const syncQueueRef = useRef<Array<() => Promise<void>>>([]);
 
   // Different sync delays for mobile vs desktop
   const getSyncDelay = () => {
@@ -26,6 +28,27 @@ export function useDataPersistence(gameData: GameData) {
   const { syncWithSupabase } = useSyncWithSupabase();
   
   const debouncedSync = useDebounce(async () => {
+    if (pendingSyncRef.current) {
+      // If a sync is already in progress, queue this one
+      syncQueueRef.current.push(async () => {
+        try {
+          await performSync();
+        } catch (error) {
+          console.error("Queued sync error:", error);
+        }
+      });
+      return;
+    }
+
+    try {
+      await performSync();
+    } catch (error) {
+      console.error("Sync error:", error);
+    }
+  }, getSyncDelay());
+
+  const performSync = async () => {
+    pendingSyncRef.current = true;
     try {
       // Ensure valid session before sync
       const hasValidSession = await ensureValidSession();
@@ -36,10 +59,27 @@ export function useDataPersistence(gameData: GameData) {
 
       await syncWithSupabase(gameData, changedFields.current, syncErrorCount);
       isInitialSync.current = false;
+      
+      // Process any queued syncs
+      while (syncQueueRef.current.length > 0) {
+        const nextSync = syncQueueRef.current.shift();
+        if (nextSync) {
+          await nextSync();
+        }
+      }
     } catch (error) {
       console.error("Sync error:", error);
+      // Store failed sync attempt
+      const pendingSync = {
+        timestamp: Date.now(),
+        gameData,
+        changedFields: Array.from(changedFields.current)
+      };
+      localStorage.setItem('pendingSync', JSON.stringify(pendingSync));
+    } finally {
+      pendingSyncRef.current = false;
     }
-  }, getSyncDelay());
+  };
 
   // Add sync recovery
   useEffect(() => {
@@ -47,12 +87,13 @@ export function useDataPersistence(gameData: GameData) {
       const pendingSync = localStorage.getItem('pendingSync');
       if (pendingSync) {
         try {
-          const { timestamp, operations, gameData: failedData } = JSON.parse(pendingSync);
+          const { timestamp, gameData: failedData, changedFields: failedFields } = JSON.parse(pendingSync);
           
-          // Only retry if the pending sync is less than 1 hour old
+          // Only retry if the pending sync is less than an hour old
           if (Date.now() - timestamp < 3600000) {
             console.log('Attempting to recover failed sync operations');
-            await syncWithSupabase(failedData, new Set(operations.map(op => op.field)), syncErrorCount);
+            await syncWithSupabase(failedData, new Set(failedFields), syncErrorCount);
+            localStorage.removeItem('pendingSync');
           } else {
             localStorage.removeItem('pendingSync');
           }
@@ -68,112 +109,38 @@ export function useDataPersistence(gameData: GameData) {
     return () => window.removeEventListener('online', attemptRecovery);
   }, []);
 
-  // Add health check system
+  // Add beforeunload handler to ensure sync on page close
   useEffect(() => {
-    const checkDatabaseHealth = async () => {
-      try {
-        // Define tables that should be checked, ensuring they match the table names in Supabase
-        // Use 'as const' to make TypeScript infer the literal types rather than just string
-        const tables = [
-          'characters',
-          'quests',
-          'mood_entries',
-          'achievements',
-          'habits',
-          'inventory_items',
-          'challenges',
-          'skill_nodes',
-          'shop_items',
-          'journal_entries',
-          'shopping_lists'
-        ] as const; // This is crucial for type safety
-
-        const results = await Promise.all(tables.map(async (table) => {
-          try {
-            // Test read permission only
-            const { error: readError } = await supabase
-              .from(table)
-              .select('id')
-              .limit(1);
-
-            return {
-              table,
-              status: !readError ? 'healthy' : 'error',
-              error: readError
-            };
-          } catch (error) {
-            return { table, status: 'error', error };
-          }
-        }));
-
-        const unhealthyTables = results.filter(r => r.status === 'error');
-        if (unhealthyTables.length > 0) {
-          console.error('Unhealthy tables detected:', unhealthyTables);
-          toast.error('Some features may not work properly', {
-            description: 'Please contact support if issues persist'
-          });
-        }
-      } catch (error) {
-        console.error('Health check failed:', error);
+    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
+      if (pendingSyncRef.current || syncQueueRef.current.length > 0) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
       }
     };
 
-    checkDatabaseHealth();
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  // Modify the sync effect
+  // Track changes and trigger sync
   useEffect(() => {
-    const validateData = (data: any, field: string): boolean => {
-      if (!data) return false;
-      
-      switch(field) {
-        case 'character':
-          return data.id && data.name;
-        case 'moods':
-          return Array.isArray(data) && data.every(item => item.id && item.mood && item.date);
-        case 'achievements':
-          return Array.isArray(data) && data.every(item => item.id && item.category && item.title);
-        case 'habits':
-          return Array.isArray(data) && data.every(item => item.id && item.name && item.frequency);
-        case 'quests':
-          return Array.isArray(data) && data.every(item => item.id && item.title);
-        case 'inventory':
-          return Array.isArray(data) && data.every(item => item.id && item.name);
-        case 'skillTree':
-          return Array.isArray(data) && data.every(item => item.id && item.name);
-        case 'challenges':
-          return Array.isArray(data) && data.every(item => item.id && item.title);
-        default:
-          return true;
-      }
-    };
-
-    try {
-      if (!previousData.current) {
-        previousData.current = JSON.parse(JSON.stringify(gameData));
-        return;
-      }
-      
-      const changes = detectChangedFields(previousData.current, gameData);
-      
-      // Only sync fields that have valid data
-      const validChanges = changes.filter(field => validateData(gameData[field], field));
-      validChanges.forEach(field => changedFields.current.add(field));
-      
-      if (changedFields.current.size > 0) {
-        console.log("Valid changes detected:", Array.from(changedFields.current));
-        debouncedSync();
-      }
-      
-      // Update previous data regardless of sync
-      previousData.current = JSON.parse(JSON.stringify(gameData));
-    } catch (error) {
-      console.error("Error during data persistence:", error);
-      toast.error('Error saving changes', {
-        description: error.message
-      });
+    if (!previousData.current) {
+      previousData.current = gameData;
+      return;
     }
+
+    const changes = detectChangedFields(previousData.current, gameData);
+    if (changes.size > 0) {
+      changedFields.current = changes;
+      debouncedSync();
+    }
+
+    previousData.current = gameData;
   }, [gameData, debouncedSync]);
 
-  return null;
+  return {
+    syncErrorCount: syncErrorCount.current,
+    isInitialSync: isInitialSync.current
+  };
 }
