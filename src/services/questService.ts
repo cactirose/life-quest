@@ -71,8 +71,8 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.error('No authenticated user found during quest upsert');
-      throw new Error("No authenticated user");
+      console.log('No authenticated user found during quest upsert, skipping operation');
+      return; // Silently skip the operation instead of throwing
     }
     console.log('User authenticated, proceeding with quest upsert');
 
@@ -128,6 +128,11 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
 
     console.log('Quest upserted successfully:', data);
   } catch (error) {
+    // Check if it's an authentication error
+    if (error.message?.includes('No authenticated user') || error.message?.includes('JWT expired')) {
+      console.log('Authentication error in upsertQuest, skipping operation:', error);
+      return; // Silently skip the operation
+    }
     console.error("Error in upsertQuest:", error);
     throw error;
   }

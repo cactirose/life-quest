@@ -34,8 +34,7 @@ const SkillCard = ({
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-3">
           <div 
-            className="w-12 h-12 flex items-center justify-center rounded-full text-2xl"
-            style={{ backgroundColor: skill.color + "20" }}
+            className="w-12 h-12 flex items-center justify-center rounded-full text-2xl bg-secondary/20"
           >
             {skill.icon}
           </div>
@@ -73,8 +72,7 @@ const SkillCard = ({
         </div>
         <div className="h-2 bg-rpg-tan rounded-full overflow-hidden">
           <motion.div 
-            className="h-full rounded-full"
-            style={{ backgroundColor: skill.color }}
+            className="h-full rounded-full bg-secondary"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.5 }}
@@ -110,7 +108,6 @@ const SkillForm = ({
 }) => {
   const [name, setName] = useState(initialData?.name || "");
   const [icon, setIcon] = useState(initialData?.icon || "🌟");
-  const [color, setColor] = useState(initialData?.color || "#4CAF50");
   const [description, setDescription] = useState(initialData?.description || "");
 
   const handleSubmit = () => {
@@ -122,7 +119,6 @@ const SkillForm = ({
     onSubmit({
       name,
       icon,
-      color,
       description,
       xp: initialData?.xp || 0
     });
@@ -168,27 +164,6 @@ const SkillForm = ({
           placeholder="Custom icon (emoji)"
           className="w-full"
         />
-      </div>
-
-      <div>
-        <label htmlFor="color" className="block text-sm font-medium mb-1">
-          Color
-        </label>
-        <div className="flex gap-2">
-          <Input
-            id="color"
-            type="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            className="w-12 h-10 p-1"
-          />
-          <Input
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            placeholder="#000000"
-            className="flex-1"
-          />
-        </div>
       </div>
 
       <div>
@@ -262,46 +237,79 @@ const Skills = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [addingXPSkill, setAddingXPSkill] = useState<Skill | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Handle adding a new skill
-  const handleAddSkill = (skillData: Omit<Skill, "id" | "createdAt">) => {
-    addSkill(skillData);
-    setShowAddDialog(false);
-    toast.success("Skill added successfully!");
+  const handleAddSkill = async (skillData: Omit<Skill, "id" | "createdAt">) => {
+    setIsLoading(true);
+    try {
+      await addSkill(skillData);
+      setShowAddDialog(false);
+      toast.success("Skill added successfully!");
+    } catch (error) {
+      console.error("Error adding skill:", error);
+      toast.error("Failed to add skill");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   // Handle editing a skill
-  const handleEditSkill = (updatedSkill: Omit<Skill, "id" | "createdAt">) => {
+  const handleEditSkill = async (updatedSkill: Omit<Skill, "id" | "createdAt">) => {
     if (!editingSkill) return;
     
-    const skill = {
-      ...editingSkill,
-      ...updatedSkill
-    };
-    
-    updateSkill(skill);
-    setEditingSkill(null);
-    toast.success("Skill updated successfully!");
+    setIsLoading(true);
+    try {
+      const skill = {
+        ...editingSkill,
+        ...updatedSkill
+      };
+      
+      await updateSkill(skill);
+      setEditingSkill(null);
+      toast.success("Skill updated successfully!");
+    } catch (error) {
+      console.error("Error updating skill:", error);
+      toast.error("Failed to update skill");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   // Handle deleting a skill
-  const handleDeleteSkill = (skillId: string) => {
-    deleteSkill(skillId);
-    toast.success("Skill deleted successfully!");
+  const handleDeleteSkill = async (skillId: string) => {
+    setIsLoading(true);
+    try {
+      await deleteSkill(skillId);
+      toast.success("Skill deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting skill:", error);
+      toast.error("Failed to delete skill");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   // Handle adding XP to a skill
-  const handleAddXP = (skillId: string, xp: number) => {
+  const handleAddXP = async (skillId: string, xp: number) => {
     const skill = skills.find(s => s.id === skillId);
     if (!skill) return;
     
-    updateSkill({
-      ...skill,
-      xp: skill.xp + xp
-    });
-    
-    setAddingXPSkill(null);
-    toast.success(`Added ${xp} XP to ${skill.name}!`);
+    setIsLoading(true);
+    try {
+      await updateSkill({
+        ...skill,
+        xp: skill.xp + xp
+      });
+      
+      setAddingXPSkill(null);
+      toast.success(`Added ${xp} XP to ${skill.name}!`);
+    } catch (error) {
+      console.error("Error adding XP to skill:", error);
+      toast.error("Failed to add XP");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (
@@ -313,6 +321,7 @@ const Skills = () => {
           <Button 
             onClick={() => setShowAddDialog(true)}
             className="pixel-button"
+            disabled={isLoading}
           >
             <PlusCircle size={16} className="mr-2" />
             Add Skill
@@ -380,6 +389,7 @@ const Skills = () => {
             <Button 
               onClick={() => setShowAddDialog(true)}
               className="pixel-button"
+              disabled={isLoading}
             >
               <PlusCircle size={16} className="mr-2" />
               Add Your First Skill

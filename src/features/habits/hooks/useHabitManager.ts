@@ -8,6 +8,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAchievementManager } from "@/features/achievements/hooks/useAchievementManager";
 import { toast } from "sonner";
+import { addXPToSkill } from "@/services/skillService";
 
 export const useHabitManager = (
   gameData: any, // GameData type
@@ -88,45 +89,27 @@ export const useHabitManager = (
   };
 
   const completeHabit = async (habitId: string) => {
-    let completed = false;
-    
     setGameData(prevData => {
       const habit = prevData.habits.find(h => h.id === habitId);
       if (!habit) return prevData;
-      
-      completed = true;
-      
-      // Calculate streak
-      const today = new Date();
-      const lastCompleted = habit.lastCompleted ? new Date(habit.lastCompleted) : null;
-      const isConsecutiveDay = lastCompleted && 
-        today.getDate() - lastCompleted.getDate() === 1 &&
-        today.getMonth() === lastCompleted.getMonth() &&
-        today.getFullYear() === lastCompleted.getFullYear();
-      
-      const newStreak = isConsecutiveDay ? habit.streak + 1 : 1;
-      
-      // Update character XP and coins
-      const updatedCharacter = {
-        ...prevData.character,
-        xp: prevData.character.xp + habit.xpReward,
-        coins: prevData.character.coins + habit.coinReward
-      };
-      
-      // Update habit status
-      const updatedHabit = {
-        ...habit,
-        streak: newStreak,
-        lastCompleted: today.toISOString(),
-        completionHistory: [
-          ...habit.completionHistory,
-          { date: today.toISOString().split('T')[0], completed: true }
-        ]
-      };
-      
-      // Update linked skill if exists
+
       let updatedSkills = [...prevData.skills];
+
+      // Update habit completion
+      const updatedHabits = prevData.habits.map(h => {
+        if (h.id === habitId) {
+          return {
+            ...h,
+            lastCompletedAt: new Date(),
+            completionCount: (h.completionCount || 0) + 1
+          };
+        }
+        return h;
+      });
+
+      // If habit has skill reward, update skill XP
       if (habit.skillId && habit.skillXpReward) {
+        // Update local state immediately for UI responsiveness
         updatedSkills = updatedSkills.map(skill => {
           if (skill.id === habit.skillId) {
             return {
@@ -138,92 +121,32 @@ export const useHabitManager = (
         });
 
         // Update skill in Supabase
-        const updatedSkill = updatedSkills.find(s => s.id === habit.skillId);
-        if (updatedSkill) {
-          supabase
-            .from("skills")
-            .update({ xp: updatedSkill.xp })
-            .eq("id", updatedSkill.id)
-            .then(({ error }) => {
-              if (error) {
-                console.error("Error updating skill XP in Supabase:", error);
+        addXPToSkill(habit.skillId, habit.skillXpReward).catch(error => {
+          console.error("Error updating skill XP:", error);
+          toast.error("Failed to update skill XP");
+          
+          // Revert local state on error
+          setGameData(currentData => ({
+            ...currentData,
+            skills: currentData.skills.map(skill => {
+              if (skill.id === habit.skillId) {
+                return {
+                  ...skill,
+                  xp: skill.xp - habit.skillXpReward
+                };
               }
-            });
-        }
-      }
-      
-      // Update linked achievement if exists
-      let updatedAchievements = [...prevData.achievements];
-      if (habit.achievementId && habit.achievementXpReward) {
-        updatedAchievements = updatedAchievements.map(achievement => {
-          if (achievement.id === habit.achievementId) {
-            const newXp = achievement.currentXp + (habit.achievementXpReward || 0);
-            const isCompleted = newXp >= achievement.requiredXp;
-            
-            // If achievement is newly completed, give rewards
-            if (isCompleted && !achievement.unlocked) {
-              updatedCharacter.xp += achievement.xpReward;
-              updatedCharacter.coins += achievement.coinReward;
-              
-              // Show achievement completion message
-              setTimeout(() => {
-                toast.success(`Achievement unlocked: ${achievement.title}! You earned ${achievement.xpReward} XP and ${achievement.coinReward} coins.`);
-              }, 1000);
-            }
-            
-            return {
-              ...achievement,
-              currentXp: newXp,
-              unlocked: isCompleted,
-              dateUnlocked: isCompleted && !achievement.unlocked ? new Date().toISOString() : achievement.dateUnlocked
-            };
-          }
-          return achievement;
-        });
-
-        // Update achievement in Supabase
-        const updatedAchievement = updatedAchievements.find(a => a.id === habit.achievementId);
-        if (updatedAchievement) {
-          supabase
-            .from("achievements")
-            .update({
-              current_xp: updatedAchievement.currentXp,
-              unlocked: updatedAchievement.unlocked,
-              date_unlocked: updatedAchievement.dateUnlocked
+              return skill;
             })
-            .eq("id", updatedAchievement.id)
-            .then(({ error }) => {
-              if (error) {
-                console.error("Error updating achievement in Supabase:", error);
-              }
-            });
-        }
-      }
-      
-      // Update character in Supabase
-      supabase
-        .from("characters")
-        .update({
-          xp: updatedCharacter.xp,
-          coins: updatedCharacter.coins
-        })
-        .eq("user_id", prevData.character.userId || "")
-        .then(({ error }) => {
-          if (error) {
-            console.error("Error updating character stats in Supabase:", error);
-          }
+          }));
         });
-      
+      }
+
       return {
         ...prevData,
-        character: updatedCharacter,
-        habits: prevData.habits.map(h => h.id === habitId ? updatedHabit : h),
-        skills: updatedSkills,
-        achievements: updatedAchievements
+        habits: updatedHabits,
+        skills: updatedSkills
       };
     });
-    
-    return completed;
   };
 
   const uncompleteHabit = (habitId: string, date: string) => {

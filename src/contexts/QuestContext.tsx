@@ -102,80 +102,80 @@ export const createQuestContextValue = (
       // Update quest status
       updateQuest(questId, { status: "completed" });
 
+      // Update character XP and coins in local state
       setGameData(prevData => {
-        // Update character XP and coins
         const updatedCharacter = {
           ...prevData.character,
           xp: prevData.character.xp + quest.xpReward,
           coins: prevData.character.coins + quest.coinReward
         };
 
-        // Add XP to linked skill if exists
-        let updatedSkills = [...prevData.skills];
-        if (quest.skillId && quest.skillXpReward) {
-          updatedSkills = updatedSkills.map(skill => {
-            if (skill.id === quest.skillId) {
-              return {
-                ...skill,
-                xp: skill.xp + quest.skillXpReward
-              };
-            }
-            return skill;
-          });
-        }
-
-        // Add XP to linked achievement if exists
-        if (quest.achievementId && quest.achievementXpReward) {
-          achievementManager.addXPToAchievementAndCheckUnlock(quest.achievementId, quest.achievementXpReward);
-        }
-
-        // Handle repeatable quests
-        if (quest.repeatType && quest.repeatType !== "none") {
-          const now = new Date();
-          let nextRepeatDate: Date;
-
-          switch (quest.repeatType) {
-            case "daily":
-              nextRepeatDate = addDays(now, 1);
-              break;
-            case "weekly":
-              nextRepeatDate = addWeeks(now, 1);
-              break;
-            case "monthly":
-              nextRepeatDate = addMonths(now, 1);
-              break;
-            case "custom":
-              if (quest.customResetDays && quest.customResetDays.length > 0) {
-                const today = now.getDay();
-                const nextDay = quest.customResetDays.find(day => day > today) || quest.customResetDays[0];
-                const daysToAdd = nextDay > today ? nextDay - today : 7 - today + nextDay;
-                nextRepeatDate = addDays(now, daysToAdd);
-              } else {
-                nextRepeatDate = addDays(now, 1);
-              }
-              break;
-            default:
-              nextRepeatDate = addDays(now, 1);
-          }
-
-          // Create a new quest with the next repeat date
-          const newQuest: Omit<Quest, "id"> = {
-            ...quest,
-            status: "active",
-            steps: quest.steps.map(step => ({ ...step, completed: false })),
-            dueDate: format(nextRepeatDate, "yyyy-MM-dd")
-          };
-
-          addQuest(newQuest);
-        }
-
         return {
           ...prevData,
-          quests: prevData.quests.map(q => q.id === questId ? { ...quest, status: "completed" } : q),
-          character: updatedCharacter,
-          skills: updatedSkills
+          character: updatedCharacter
         };
       });
+
+      // Add XP to linked skill if exists
+      if (quest.skillId && quest.skillXpReward) {
+        try {
+          // Update skill XP in Supabase first
+          await skillManager.addXpToSkill(quest.skillId, quest.skillXpReward);
+        } catch (error) {
+          console.error("Error updating skill XP:", error);
+          toast.error("Failed to update skill XP");
+        }
+      }
+
+      // Add XP to linked achievement if exists
+      if (quest.achievementId && quest.achievementXpReward) {
+        try {
+          await achievementManager.addXPToAchievementAndCheckUnlock(quest.achievementId, quest.achievementXpReward);
+        } catch (error) {
+          console.error("Error updating achievement:", error);
+          toast.error("Failed to update achievement progress");
+        }
+      }
+
+      // Handle repeatable quests
+      if (quest.repeatType && quest.repeatType !== "none") {
+        const now = new Date();
+        let nextRepeatDate: Date;
+
+        switch (quest.repeatType) {
+          case "daily":
+            nextRepeatDate = addDays(now, 1);
+            break;
+          case "weekly":
+            nextRepeatDate = addWeeks(now, 1);
+            break;
+          case "monthly":
+            nextRepeatDate = addMonths(now, 1);
+            break;
+          case "custom":
+            if (quest.customResetDays && quest.customResetDays.length > 0) {
+              const today = now.getDay();
+              const nextDay = quest.customResetDays.find(day => day > today) || quest.customResetDays[0];
+              const daysToAdd = nextDay > today ? nextDay - today : 7 - today + nextDay;
+              nextRepeatDate = addDays(now, daysToAdd);
+            } else {
+              nextRepeatDate = addDays(now, 1);
+            }
+            break;
+          default:
+            nextRepeatDate = addDays(now, 1);
+        }
+
+        // Create a new quest with the next repeat date
+        const newQuest: Omit<Quest, "id"> = {
+          ...quest,
+          status: "active",
+          steps: quest.steps.map(step => ({ ...step, completed: false })),
+          dueDate: format(nextRepeatDate, "yyyy-MM-dd")
+        };
+
+        addQuest(newQuest);
+      }
 
       toast.success("Quest completed!");
     } catch (error) {

@@ -86,7 +86,7 @@ const AchievementCard = ({
             <span>Progress: {achievement.currentXp}/{achievement.requiredXp} XP</span>
             <span>{Math.round(progress)}%</span>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className="h-3" />
         </div>
       )}
       

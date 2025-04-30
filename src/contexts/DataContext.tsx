@@ -4,6 +4,8 @@ import { useGameDataManager } from "@/hooks/gameData/useGameDataManager";
 import { useDataEffects } from "@/hooks/useDataEffects";
 import { Skill } from "@/types/skills";
 import { generateId } from "@/utils/idGenerator";
+import { addSkill as addSkillService, updateSkill as updateSkillService, deleteSkill as deleteSkillService } from "@/services/skillService";
+import { toast } from "sonner";
 
 // Import all context-related items in grouped imports
 import {
@@ -79,34 +81,73 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const moodContextValue = createMoodContextValue(gameData.moods, setGameData);
 
   // Add these functions
-  const addSkill = (skillData: Omit<Skill, "id" | "createdAt">) => {
-    const id = generateId();
-    const skill: Skill = {
-      ...skillData,
-      id,
-      createdAt: new Date()
-    };
-    
-    setGameData(prev => ({
-      ...prev,
-      skills: [...prev.skills, skill]
-    }));
-    
-    return id;
+  const addSkill = async (skillData: Omit<Skill, "id" | "createdAt">) => {
+    try {
+      // First add to Supabase to get the real ID
+      const skillId = await addSkillService(skillData);
+      
+      if (!skillId) {
+        throw new Error("Failed to add skill to database");
+      }
+
+      // Then update local state with the real ID from Supabase
+      const newSkill: Skill = {
+        ...skillData,
+        id: skillId,
+        createdAt: new Date()
+      };
+
+      setGameData(prev => ({
+        ...prev,
+        skills: [...prev.skills, newSkill]
+      }));
+
+      return skillId;
+    } catch (error) {
+      console.error("Error in addSkill:", error);
+      toast.error("Failed to add skill");
+      return null;
+    }
   };
 
-  const updateSkill = (skill: Skill) => {
-    setGameData(prev => ({
-      ...prev,
-      skills: prev.skills.map(s => s.id === skill.id ? skill : s)
-    }));
+  const updateSkill = async (skill: Skill) => {
+    try {
+      // First update in Supabase
+      const success = await updateSkillService(skill);
+      
+      if (!success) {
+        throw new Error("Failed to update skill in database");
+      }
+
+      // Then update local state
+      setGameData(prev => ({
+        ...prev,
+        skills: prev.skills.map(s => s.id === skill.id ? skill : s)
+      }));
+    } catch (error) {
+      console.error("Error in updateSkill:", error);
+      toast.error("Failed to update skill");
+    }
   };
 
-  const deleteSkill = (skillId: string) => {
-    setGameData(prev => ({
-      ...prev,
-      skills: prev.skills.filter(s => s.id !== skillId)
-    }));
+  const deleteSkill = async (skillId: string) => {
+    try {
+      // First delete from Supabase
+      const success = await deleteSkillService(skillId);
+      
+      if (!success) {
+        throw new Error("Failed to delete skill from database");
+      }
+
+      // Then update local state
+      setGameData(prev => ({
+        ...prev,
+        skills: prev.skills.filter(s => s.id !== skillId)
+      }));
+    } catch (error) {
+      console.error("Error in deleteSkill:", error);
+      toast.error("Failed to delete skill");
+    }
   };
 
   // Combined context value

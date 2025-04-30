@@ -2,9 +2,34 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Skill } from "@/types/skills";
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const withRetry = async <T>(operation: () => Promise<T>, operationName: string): Promise<T> => {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error as Error;
+      console.error(`Attempt ${attempt} failed for ${operationName}:`, error);
+      
+      if (attempt < MAX_RETRIES) {
+        await sleep(RETRY_DELAY * attempt);
+        continue;
+      }
+    }
+  }
+  
+  throw lastError;
+};
+
 // Fetch all skills for the current user
 export const fetchSkills = async (): Promise<Skill[]> => {
-  try {
+  return withRetry(async () => {
     const user = await supabase.auth.getUser();
     if (!user.data.user) return [];
     
@@ -16,7 +41,7 @@ export const fetchSkills = async (): Promise<Skill[]> => {
 
     if (error) {
       console.error("Error fetching skills:", error);
-      return [];
+      throw error;
     }
 
     return data.map(skill => ({
@@ -28,15 +53,12 @@ export const fetchSkills = async (): Promise<Skill[]> => {
       xp: skill.xp,
       createdAt: new Date(skill.created_at)
     }));
-  } catch (error) {
-    console.error("Error in fetchSkills:", error);
-    return [];
-  }
+  }, "fetchSkills");
 };
 
 // Add a new skill
 export const addSkill = async (skill: Omit<Skill, "id" | "createdAt">): Promise<string | null> => {
-  try {
+  return withRetry(async () => {
     const user = await supabase.auth.getUser();
     if (!user.data.user) return null;
     
@@ -55,21 +77,16 @@ export const addSkill = async (skill: Omit<Skill, "id" | "createdAt">): Promise<
 
     if (error) {
       console.error("Error adding skill:", error);
-      toast.error("Failed to add skill");
-      return null;
+      throw error;
     }
 
     return data.id;
-  } catch (error) {
-    console.error("Error in addSkill:", error);
-    toast.error("Failed to add skill");
-    return null;
-  }
+  }, "addSkill");
 };
 
 // Update an existing skill
 export const updateSkill = async (skill: Skill): Promise<boolean> => {
-  try {
+  return withRetry(async () => {
     const user = await supabase.auth.getUser();
     if (!user.data.user) return false;
     
@@ -87,21 +104,16 @@ export const updateSkill = async (skill: Skill): Promise<boolean> => {
 
     if (error) {
       console.error("Error updating skill:", error);
-      toast.error("Failed to update skill");
-      return false;
+      throw error;
     }
 
     return true;
-  } catch (error) {
-    console.error("Error in updateSkill:", error);
-    toast.error("Failed to update skill");
-    return false;
-  }
+  }, "updateSkill");
 };
 
 // Delete a skill
 export const deleteSkill = async (skillId: string): Promise<boolean> => {
-  try {
+  return withRetry(async () => {
     const user = await supabase.auth.getUser();
     if (!user.data.user) return false;
     
@@ -113,21 +125,16 @@ export const deleteSkill = async (skillId: string): Promise<boolean> => {
 
     if (error) {
       console.error("Error deleting skill:", error);
-      toast.error("Failed to delete skill");
-      return false;
+      throw error;
     }
 
     return true;
-  } catch (error) {
-    console.error("Error in deleteSkill:", error);
-    toast.error("Failed to delete skill");
-    return false;
-  }
+  }, "deleteSkill");
 };
 
 // Add XP to a skill
 export const addXPToSkill = async (skillId: string, xp: number): Promise<boolean> => {
-  try {
+  return withRetry(async () => {
     const user = await supabase.auth.getUser();
     if (!user.data.user) return false;
     
@@ -141,7 +148,7 @@ export const addXPToSkill = async (skillId: string, xp: number): Promise<boolean
 
     if (fetchError || !skill) {
       console.error("Error fetching skill:", fetchError);
-      return false;
+      throw fetchError || new Error("Skill not found");
     }
 
     // Then update with new XP
@@ -153,14 +160,9 @@ export const addXPToSkill = async (skillId: string, xp: number): Promise<boolean
 
     if (updateError) {
       console.error("Error updating skill XP:", updateError);
-      toast.error("Failed to add XP");
-      return false;
+      throw updateError;
     }
 
     return true;
-  } catch (error) {
-    console.error("Error in addXPToSkill:", error);
-    toast.error("Failed to add XP");
-    return false;
-  }
+  }, "addXPToSkill");
 }; 
