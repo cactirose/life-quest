@@ -1,14 +1,44 @@
-
 import { Quest } from "@/types/quests";
-import { deleteQuest as deleteQuestService } from "@/services/questService";
+import { GameDataUpdater } from "@/utils/contextTypes";
+import { generateId } from "@/utils/idGenerator";
+import { upsertQuest, deleteQuest as deleteQuestService } from "@/services/questService";
+import { useAchievementManager } from "@/features/achievements/hooks/useAchievementManager";
 import { toast } from "sonner";
 import { useState } from "react";
 
 export const useQuestManager = (
   quests: Quest[],
-  setGameData: React.Dispatch<React.SetStateAction<any>>
+  setGameData: GameDataUpdater
 ) => {
   const [isDeletingQuest, setIsDeletingQuest] = useState<string | null>(null);
+  const achievementManager = useAchievementManager([], setGameData);
+
+  const addQuest = (quest: Omit<Quest, "id" | "createdAt" | "completed">) => {
+    const newQuest = {
+      ...quest,
+      id: generateId(),
+      createdAt: new Date(),
+      completed: false
+    };
+
+    setGameData(prevData => ({
+      ...prevData,
+      quests: [...prevData.quests, newQuest]
+    }));
+
+    upsertQuest(newQuest as Quest);
+  };
+
+  const updateQuest = (quest: Quest) => {
+    setGameData(prevData => ({
+      ...prevData,
+      quests: prevData.quests.map(q => 
+        q.id === quest.id ? quest : q
+      )
+    }));
+
+    upsertQuest(quest);
+  };
 
   const deleteQuest = async (questId: string) => {
     try {
@@ -57,7 +87,74 @@ export const useQuestManager = (
     }
   };
 
+  const completeQuest = async (questId: string) => {
+    let completed = false;
+    
+    setGameData(prevData => {
+      const quest = prevData.quests.find(q => q.id === questId);
+      if (!quest || quest.completed) return prevData;
+      
+      completed = true;
+      
+      // Update character XP and coins
+      const updatedCharacter = {
+        ...prevData.character,
+        xp: prevData.character.xp + quest.xpReward,
+        coins: prevData.character.coins + quest.coinReward
+      };
+      
+      // Update quest status
+      const updatedQuest = {
+        ...quest,
+        completed: true,
+        completedAt: new Date().toISOString()
+      };
+      
+      // Update linked skill if exists
+      if (quest.skillId && quest.skillXpReward) {
+        const skill = prevData.skills.find(s => s.id === quest.skillId);
+        if (skill) {
+          const updatedSkill = {
+            ...skill,
+            xp: skill.xp + quest.skillXpReward
+          };
+          
+          setGameData(prev => ({
+            ...prev,
+            skills: prev.skills.map(s => 
+              s.id === skill.id ? updatedSkill : s
+            )
+          }));
+        }
+      }
+      
+      // Update linked achievement if exists
+      if (quest.achievementId) {
+        const achievement = prevData.achievements.find(a => a.id === quest.achievementId);
+        if (achievement) {
+          achievementManager.addXPToAchievementAndCheckUnlock(achievement.id, achievement.xpPerCompletion);
+        }
+      }
+      
+      // Update quests list
+      const updatedQuests = prevData.quests.map(q => 
+        q.id === questId ? updatedQuest : q
+      );
+      
+      return {
+        ...prevData,
+        character: updatedCharacter,
+        quests: updatedQuests
+      };
+    });
+    
+    return completed;
+  };
+
   return {
-    deleteQuest
+    addQuest,
+    updateQuest,
+    deleteQuest,
+    completeQuest
   };
 };

@@ -108,7 +108,11 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
       stat_rewards: statRewardsAsJson,
       steps: stepsAsJson as unknown as Json,
       repeat_type: quest.repeatType || "none",
-      custom_reset_days: quest.customResetDays || []
+      custom_reset_days: quest.customResetDays || [],
+      skill_id: quest.skillId || null,
+      skill_xp_reward: quest.skillXpReward || null,
+      achievement_id: quest.achievementId || null,
+      achievement_xp_reward: quest.achievementXpReward || null
     };
     console.log('Prepared quest data for upsert:', questData);
 
@@ -119,16 +123,12 @@ export const upsertQuest = async (quest: Quest): Promise<void> => {
 
     if (error) {
       console.error("Error upserting quest:", error);
-      console.error("Failed quest data:", questData);
-      toast.error("Failed to save quest data");
       throw error;
     }
 
-    console.log('Quest upsert successful:', data);
+    console.log('Quest upserted successfully:', data);
   } catch (error) {
     console.error("Error in upsertQuest:", error);
-    console.error("Quest that failed:", quest);
-    toast.error("Failed to save quest data");
     throw error;
   }
 };

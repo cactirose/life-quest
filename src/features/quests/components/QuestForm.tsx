@@ -1,6 +1,6 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Quest, QuestStep, QuestType, QuestRepeatInterval, StatReward } from "@/types/quests";
 import { StatName } from "@/types/character";
 import { DialogFooter } from "@/components/ui/dialog";
@@ -9,6 +9,9 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useGameData } from "@/contexts/DataContext";
+import { SkillSelector } from "@/components/skills/SkillSelector";
+import { AchievementSelector } from "@/components/achievements/AchievementSelector";
 
 // Import refactored components
 import { QuestBasicInfoSection } from "./form-sections/QuestBasicInfoSection";
@@ -17,6 +20,8 @@ import { BasicRewardsSection } from "./form-sections/BasicRewardsSection";
 import { StatRewardsSection } from "./form-sections/StatRewardsSection";
 import { QuestTagsSection } from "./form-sections/QuestTagsSection";
 import { RepeatabilitySection } from "./form-sections/RepeatabilitySection";
+import { SkillRewardsSection } from "./form-sections/SkillRewardsSection";
+import { AchievementRewardsSection } from "./form-sections/AchievementRewardsSection";
 
 // Define validation schema
 const questFormSchema = z.object({
@@ -32,6 +37,10 @@ const questFormSchema = z.object({
   ),
   xpReward: z.number().int().min(0),
   coinReward: z.number().int().min(0),
+  skillId: z.string().optional(),
+  skillXpReward: z.number().int().min(0).optional(),
+  achievementId: z.string().optional(),
+  achievementXpReward: z.number().int().min(0).optional(),
   tags: z.array(z.string()).optional(),
   repeatType: z.enum(["none", "daily", "weekly", "monthly", "custom"] as const),
   customResetDays: z.array(z.number()).optional(),
@@ -65,6 +74,8 @@ export const QuestForm = ({
   const [isSubmittingInternal, setIsSubmittingInternal] = useState(false);
   const isProcessing = isSubmitting || isSubmittingInternal;
   
+  const { skills, achievements } = useGameData();
+
   // Create initial values for the form
   const defaultValues: QuestFormValues = {
     title: initialData?.title || "",
@@ -77,6 +88,10 @@ export const QuestForm = ({
     })) || [],
     xpReward: initialData?.xpReward || 20,
     coinReward: initialData?.coinReward || 10,
+    skillId: initialData?.skillId,
+    skillXpReward: initialData?.skillXpReward,
+    achievementId: initialData?.achievementId,
+    achievementXpReward: initialData?.achievementXpReward || 0,
     tags: initialData?.tags || [],
     repeatType: initialData?.repeatType || "none",
     customResetDays: initialData?.customResetDays || [],
@@ -120,6 +135,10 @@ export const QuestForm = ({
         })),
         xpReward: data.xpReward,
         coinReward: data.coinReward,
+        skillId: data.skillId,
+        skillXpReward: data.skillXpReward,
+        achievementId: data.achievementId,
+        achievementXpReward: data.achievementXpReward,
         tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
         repeatType: data.repeatType,
         customResetDays: data.repeatType === "custom" ? data.customResetDays : undefined,
@@ -151,15 +170,12 @@ export const QuestForm = ({
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(handleFormSubmit)} className="space-y-4 p-1">
           <QuestBasicInfoSection />
-
           <QuestTagsSection />
-
           <QuestStepsSection />
-
           <RepeatabilitySection />
-
           <BasicRewardsSection />
-
+          <SkillRewardsSection />
+          <AchievementRewardsSection />
           <StatRewardsSection statNames={statNames} />
 
           <DialogFooter className="flex justify-between">

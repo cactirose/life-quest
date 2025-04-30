@@ -4,8 +4,12 @@ import { generateId } from "../utils/idGenerator";
 import { StatName } from "../types/character";
 import { addDays, addMonths, addWeeks, format } from "date-fns";
 import { useQuestManager } from "@/features/quests/hooks/useQuestManager";
+import { useAchievementManager } from "@/features/achievements/hooks/useAchievementManager";
+import { useSkillManager } from "@/features/skills/hooks/useSkillManager";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Achievement } from "@/types/achievements";
+import { Skill } from "@/types/skills";
 
 interface QuestContextType {
   quests: Quest[];
@@ -13,7 +17,7 @@ interface QuestContextType {
   updateQuest: (questId: string, updates: Partial<Quest>) => void;
   deleteQuest: (questId: string) => void;
   completeQuestStep: (questId: string, stepId: string) => void;
-  completeQuest: (questId: string) => Promise<void>; // Changed to async
+  completeQuest: (questId: string) => Promise<void>;
 }
 
 export const QuestContext = createContext<QuestContextType>({} as QuestContextType);
@@ -22,9 +26,13 @@ export const useQuests = () => useContext(QuestContext);
 
 export const createQuestContextValue = (
   quests: Quest[],
+  achievements: Achievement[],
+  skills: Skill[],
   setGameData: React.Dispatch<React.SetStateAction<any>>
 ): QuestContextType => {
   const { deleteQuest } = useQuestManager(quests, setGameData);
+  const achievementManager = useAchievementManager(achievements, setGameData);
+  const skillManager = useSkillManager(skills, setGameData);
 
   const addQuest = (quest: Omit<Quest, 'id'>) => {
     const newQuest: Quest = {
@@ -62,7 +70,7 @@ export const createQuestContextValue = (
 
       return {
         ...prevData,
-        quests: updatedQuests, // This creates a new array reference
+        quests: updatedQuests,
       };
     });
   };
@@ -84,117 +92,95 @@ export const createQuestContextValue = (
   };
 
   const completeQuest = async (questId: string) => {
-    // Find the quest to complete
-    const quest = quests.find(q => q.id === questId);
-    if (!quest || quest.status === "completed") {
-      toast.error("Quest not found or already completed");
-      return;
-    }
-
     try {
-      // Update the quest status to completed in Supabase
-      const { error: questError } = await supabase
-        .from("quests")
-        .update({ status: "completed" })
-        .eq("id", questId);
-
-      if (questError) {
-        console.error("Error completing quest in Supabase:", questError);
-        toast.error("Failed to complete quest. Please try again.");
+      const quest = quests.find(q => q.id === questId);
+      if (!quest) {
+        toast.error("Quest not found");
         return;
       }
 
+      // Update quest status
+      updateQuest(questId, { status: "completed" });
+
       setGameData(prevData => {
-        // Get the current character data to apply rewards
+        // Update character XP and coins
         const updatedCharacter = {
           ...prevData.character,
           xp: prevData.character.xp + quest.xpReward,
-          coins: prevData.character.coins + quest.coinReward,
+          coins: prevData.character.coins + quest.coinReward
         };
 
-        // Apply stat rewards if they exist
-        if (quest.statRewards && quest.statRewards.length > 0) {
-          quest.statRewards.forEach(reward => {
-            updatedCharacter.stats = {
-              ...updatedCharacter.stats,
-              [reward.stat]: updatedCharacter.stats[reward.stat] + reward.value
-            };
+        // Add XP to linked skill if exists
+        let updatedSkills = [...prevData.skills];
+        if (quest.skillId && quest.skillXpReward) {
+          updatedSkills = updatedSkills.map(skill => {
+            if (skill.id === quest.skillId) {
+              return {
+                ...skill,
+                xp: skill.xp + quest.skillXpReward
+              };
+            }
+            return skill;
           });
         }
 
-        // Update the quest status to completed
-        let updatedQuests = prevData.quests.map(q => 
-          q.id === questId ? { ...q, status: "completed" as QuestStatus } : q
-        );
+        // Add XP to linked achievement if exists
+        if (quest.achievementId && quest.achievementXpReward) {
+          achievementManager.addXPToAchievementAndCheckUnlock(quest.achievementId, quest.achievementXpReward);
+        }
 
-        // If the quest is repeatable, create a new instance
+        // Handle repeatable quests
         if (quest.repeatType && quest.repeatType !== "none") {
           const now = new Date();
-          let nextResetDate: Date;
-          
+          let nextRepeatDate: Date;
+
           switch (quest.repeatType) {
             case "daily":
-              nextResetDate = addDays(now, 1);
+              nextRepeatDate = addDays(now, 1);
               break;
             case "weekly":
-              nextResetDate = addWeeks(now, 1);
+              nextRepeatDate = addWeeks(now, 1);
               break;
             case "monthly":
-              nextResetDate = addMonths(now, 1);
+              nextRepeatDate = addMonths(now, 1);
               break;
             case "custom":
-              nextResetDate = addDays(now, quest.customResetDays?.[0] || 3);
+              if (quest.customResetDays && quest.customResetDays.length > 0) {
+                const today = now.getDay();
+                const nextDay = quest.customResetDays.find(day => day > today) || quest.customResetDays[0];
+                const daysToAdd = nextDay > today ? nextDay - today : 7 - today + nextDay;
+                nextRepeatDate = addDays(now, daysToAdd);
+              } else {
+                nextRepeatDate = addDays(now, 1);
+              }
               break;
             default:
-              nextResetDate = addDays(now, 1);
+              nextRepeatDate = addDays(now, 1);
           }
-          
-          const newQuestInstance: Quest = {
+
+          // Create a new quest with the next repeat date
+          const newQuest: Omit<Quest, "id"> = {
             ...quest,
-            id: generateId(),
             status: "active",
-            steps: quest.steps.map(step => ({
-              ...step,
-              completed: false
-            })),
-            repeat: {
-              interval: quest.repeatType,
-              nextRepeatDate: nextResetDate.toISOString(),
-            }
+            steps: quest.steps.map(step => ({ ...step, completed: false })),
+            dueDate: format(nextRepeatDate, "yyyy-MM-dd")
           };
-          
-          // Add the new quest instance to the list
-          updatedQuests = [...updatedQuests, newQuestInstance];
+
+          addQuest(newQuest);
         }
 
-        // Update character data in Supabase (we don't await this to avoid blocking UI)
-        supabase
-          .from("characters")
-          .update({
-            xp: updatedCharacter.xp,
-            coins: updatedCharacter.coins,
-            stats: updatedCharacter.stats
-          })
-          .eq("user_id", prevData.character.userId || "")
-          .then(({ error }) => {
-            if (error) {
-              console.error("Error updating character stats in Supabase:", error);
-            }
-          });
-
-        // Return the updated game data
-        return { 
-          ...prevData, 
+        return {
+          ...prevData,
+          quests: prevData.quests.map(q => q.id === questId ? { ...quest, status: "completed" } : q),
           character: updatedCharacter,
-          quests: updatedQuests
+          skills: updatedSkills
         };
       });
 
-      // Show success message
-      toast.success(`Quest completed! You earned ${quest.xpReward} XP and ${quest.coinReward} coins.`);
+      toast.success("Quest completed!");
     } catch (error) {
       console.error("Error completing quest:", error);
-      toast.error("Failed to complete quest. Please try again.");
+      toast.error("Failed to complete quest");
     }
   };
 

@@ -1,4 +1,3 @@
-
 // Habit types
 export type HabitFrequency = "daily" | "weekdays" | "weekends" | "weekly" | "custom";
 export type DayOfWeek = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
@@ -24,6 +23,9 @@ export interface Habit {
   streak: number;
   xpReward: number;
   coinReward: number;
+  skillId?: string; // Reference to the skill this habit contributes to
+  skillXpReward?: number; // XP gained for the skill upon completion
+  achievementId?: string; // Reference to the achievement this habit contributes to
   reminder?: string; // Time string for reminder
   completionHistory: HabitCompletion[];
   color: string; // CSS color for the habit

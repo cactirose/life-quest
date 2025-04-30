@@ -9,7 +9,8 @@ import {
   CheckCircle as CheckIcon,
   Circle,
   Trophy,
-  Calendar 
+  Calendar,
+  BookOpen
 } from "lucide-react";
 import { format } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,6 +21,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useGameData } from "@/contexts/DataContext";
+import { getSkillLevelAndProgress } from "@/types/skills";
 
 interface QuestCardProps {
   quest: Quest;
@@ -37,10 +40,14 @@ export const QuestCard = ({
   onComplete
 }: QuestCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { skills } = useGameData();
   
   const completedSteps = quest.steps.filter(step => step.completed).length;
   const totalSteps = quest.steps.length;
   const progress = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+  
+  // Get linked skill info if it exists
+  const linkedSkill = quest.skillId ? skills.find(s => s.id === quest.skillId) : null;
   
   const questTypeColors = {
     main: "bg-rpg-red text-white",
@@ -180,6 +187,13 @@ export const QuestCard = ({
             <span>{progress}% complete</span>
           </div>
           
+          {linkedSkill && quest.skillXpReward && (
+            <div className="flex items-center gap-2 text-xs text-rpg-brown mb-3">
+              <BookOpen size={14} />
+              <span>{linkedSkill.icon} {linkedSkill.name}: +{quest.skillXpReward} XP</span>
+            </div>
+          )}
+          
           {!isCompleted && hasNoSteps && (
             <div className="mt-4">
               <Button 
@@ -242,6 +256,14 @@ export const QuestCard = ({
                     <div className="flex items-center text-rpg-brown">
                       <span className="bg-rpg-yellow/20 px-2 py-1 rounded text-sm">
                         +{quest.coinReward} Coins
+                      </span>
+                    </div>
+                  )}
+
+                  {linkedSkill && quest.skillXpReward && (
+                    <div className="flex items-center text-rpg-brown">
+                      <span className="bg-rpg-green/20 px-2 py-1 rounded text-sm">
+                        +{quest.skillXpReward} {linkedSkill.name} XP
                       </span>
                     </div>
                   )}

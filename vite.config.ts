@@ -19,4 +19,12 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    // Add process.env if it's used in your code
+    'process.env': {},
+    // If you need just process
+    'process': {
+      env: {}
+    }
+  }
 }));

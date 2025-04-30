@@ -1,6 +1,6 @@
-
 import { useState } from "react";
-import { useGameData, Achievement } from "@/contexts/DataContext";
+import { Achievement } from "@/contexts/DataContext";
+import { useAchievements } from "@/contexts/AchievementContext";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { PlusCircle } from "lucide-react";
@@ -18,7 +18,7 @@ const Achievements = () => {
     updateAchievement, 
     deleteAchievement, 
     checkAndUnlockAchievement 
-  } = useGameData();
+  } = useAchievements();
   
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
@@ -40,34 +40,45 @@ const Achievements = () => {
     ? Math.round((unlockedAchievements.length / achievements.length) * 100)
     : 0;
   
-  const handleAddAchievement = (achievement: Omit<Achievement, "id" | "unlocked" | "dateUnlocked">) => {
-    addAchievement(achievement);
-    setShowAddDialog(false);
-    toast.success("Achievement added successfully!");
-  };
-  
-  const handleUpdateAchievement = (achievement: Omit<Achievement, "id" | "unlocked" | "dateUnlocked">) => {
-    if (editingAchievement) {
-      updateAchievement({
-        ...editingAchievement,
-        ...achievement,
-      });
-      setEditingAchievement(null);
-      toast.success("Achievement updated successfully!");
+  const handleAddAchievement = async (achievement: Omit<Achievement, "id" | "unlocked">) => {
+    try {
+      await addAchievement(achievement);
+      setShowAddDialog(false);
+      toast.success("Achievement added successfully!");
+    } catch (error) {
+      toast.error("Failed to add achievement");
+      console.error(error);
     }
   };
   
-  const handleDeleteAchievement = (achievementId: string) => {
-    deleteAchievement(achievementId);
-    toast.success("Achievement deleted successfully!");
+  const handleUpdateAchievement = async (achievement: Achievement) => {
+    try {
+      await updateAchievement(achievement);
+      setEditingAchievement(null);
+      toast.success("Achievement updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update achievement");
+      console.error(error);
+    }
   };
   
-  const handleUnlockAchievement = (achievementId: string) => {
-    const unlocked = checkAndUnlockAchievement(achievementId);
-    if (unlocked) {
-      toast.success("Achievement unlocked! Rewards added to your character.");
-    } else {
-      toast.error("Failed to unlock achievement.");
+  const handleDeleteAchievement = async (id: string) => {
+    try {
+      await deleteAchievement(id);
+      toast.success("Achievement deleted successfully!");
+    } catch (error) {
+      toast.error("Failed to delete achievement");
+      console.error(error);
+    }
+  };
+  
+  const handleUnlockAchievement = async (achievement: Achievement) => {
+    try {
+      await checkAndUnlockAchievement(achievement.id);
+      toast.success("Achievement unlocked!");
+    } catch (error) {
+      toast.error("Failed to unlock achievement");
+      console.error(error);
     }
   };
   

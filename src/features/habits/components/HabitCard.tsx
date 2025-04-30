@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -14,9 +13,12 @@ import {
   Edit, 
   Sparkle,
   Coins,
-  PenLine
+  PenLine,
+  BookOpen
 } from "lucide-react";
 import { Habit, HabitFrequency, DayOfWeek } from "@/types/habits";
+import { useGameData } from "@/contexts/DataContext";
+import { getSkillLevelAndProgress } from "@/types/skills";
 
 const DAYS_OF_WEEK: { label: string; value: DayOfWeek }[] = [
   { label: "Monday", value: "monday" },
@@ -45,6 +47,7 @@ export const HabitCard = ({
 }: HabitCardProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const { skills } = useGameData();
   
   // Get today's date string
   const today = new Date().toISOString().split('T')[0];
@@ -61,6 +64,10 @@ export const HabitCard = ({
   const isSelectedDateCompleted = habit.completionHistory.some(
     comp => comp.date.startsWith(selectedDateString) && comp.completed
   );
+
+  // Get linked skill info if it exists
+  const linkedSkill = habit.skillId ? skills.find(s => s.id === habit.skillId) : null;
+  const skillLevelInfo = linkedSkill ? getSkillLevelAndProgress(linkedSkill.xp) : null;
   
   // Function to determine if habit should be completed on a given day based on frequency
   const shouldBeCompletedOn = (date: Date): boolean => {
@@ -163,6 +170,25 @@ export const HabitCard = ({
           </div>
         )}
       </div>
+      
+      {linkedSkill && skillLevelInfo && (
+        <div className="mb-3">
+          <div className="flex items-center gap-2 text-xs text-rpg-brown mb-1">
+            <BookOpen size={14} />
+            <span>{linkedSkill.icon} {linkedSkill.name} - Level {skillLevelInfo.level}</span>
+          </div>
+          <div className="w-full bg-rpg-tan/50 rounded-full h-2">
+            <div 
+              className="bg-rpg-brown h-2 rounded-full" 
+              style={{ width: `${(skillLevelInfo.currentXp / skillLevelInfo.nextLevelXp) * 100}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-rpg-brown mt-1">
+            <span>{skillLevelInfo.currentXp} XP</span>
+            <span>{skillLevelInfo.nextLevelXp} XP to next level</span>
+          </div>
+        </div>
+      )}
       
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3 text-xs text-rpg-brown">

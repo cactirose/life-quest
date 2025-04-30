@@ -1,31 +1,57 @@
 import { createContext, useContext } from "react";
-import { CombinedProvider } from "./CombinedProvider";
-import { useGameDataManager } from "../hooks/gameData";
-import { DEFAULT_GAME_DATA } from "../utils/defaultGameData";
-import { useDataEffects } from "../hooks/useDataEffects";
-import { GameData } from "../types/gameData";
-import { Skill, SAMPLE_SKILLS } from "@/types/skills";
-import { generateId } from "../utils/idGenerator";
+import { GameData } from "@/types/gameData";
+import { useGameDataManager } from "@/hooks/gameData/useGameDataManager";
+import { useDataEffects } from "@/hooks/useDataEffects";
+import { Skill } from "@/types/skills";
+import { generateId } from "@/utils/idGenerator";
 
-// Create context providers
+// Import all context-related items in grouped imports
 import {
   createCharacterContextValue,
   CharacterContext,
 } from "./CharacterContext";
-import { createQuestContextValue, QuestContext } from "./QuestContext";
+import { 
+  createQuestContextValue, 
+  QuestContext 
+} from "./QuestContext";
 import {
   createInventoryContextValue,
   InventoryContext,
 } from "./InventoryContext";
-import { createHabitContextValue, HabitContext } from "./HabitContext";
-import { createMoodContextValue, MoodContext } from "./MoodContext";
+import { 
+  createHabitContextValue, 
+  HabitContext 
+} from "./HabitContext";
+import { 
+  createMoodContextValue, 
+  MoodContext 
+} from "./MoodContext";
 import {
   createAchievementContextValue,
   AchievementContext,
+  AchievementProvider,
 } from "./AchievementContext";
 
 // Create context
-export const DataContext = createContext<GameData>(DEFAULT_GAME_DATA);
+export const DataContext = createContext<GameData | null>(null);
+
+export const useGameData = () => {
+  const context = useContext(DataContext);
+  if (!context) {
+    throw new Error("useGameData must be used within a DataProvider");
+  }
+  return context;
+};
+
+interface CombinedProviderProps {
+  contextValue: GameData;
+  children: React.ReactNode;
+}
+
+const CombinedProvider = ({ contextValue, children }: CombinedProviderProps) => {
+  useDataEffects(contextValue);
+  return children;
+};
 
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const { gameData, setGameData } = useGameDataManager();
@@ -37,6 +63,8 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   );
   const questContextValue = createQuestContextValue(
     gameData.quests,
+    gameData.achievements,
+    gameData.skills,
     setGameData
   );
   const inventoryContextValue = createInventoryContextValue(
@@ -49,13 +77,6 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     setGameData
   );
   const moodContextValue = createMoodContextValue(gameData.moods, setGameData);
-  const achievementContextValue = createAchievementContextValue(
-    gameData.achievements,
-    setGameData
-  );
-
-  // Handle side effects
-  useDataEffects(characterContextValue);
 
   // Add these functions
   const addSkill = (skillData: Omit<Skill, "id" | "createdAt">) => {
@@ -96,38 +117,24 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     ...inventoryContextValue,
     ...habitContextValue,
     ...moodContextValue,
-    ...achievementContextValue,
     skills: gameData.skills,
     addSkill,
     updateSkill,
     deleteSkill,
   };
 
-  // Use combined provider pattern
   return (
     <DataContext.Provider value={contextValue}>
-      <CombinedProvider
-        contextValue={contextValue}
-        characterContextValue={characterContextValue}
-        questContextValue={questContextValue}
-        inventoryContextValue={inventoryContextValue}
-        habitContextValue={habitContextValue}
-        moodContextValue={moodContextValue}
-        achievementContextValue={achievementContextValue}
+      <AchievementProvider 
+        achievements={gameData.achievements}
+        setGameData={setGameData}
       >
-        {children}
-      </CombinedProvider>
+        <CombinedProvider contextValue={contextValue}>
+          {children}
+        </CombinedProvider>
+      </AchievementProvider>
     </DataContext.Provider>
   );
-};
-
-// Custom hook for using the context
-export const useGameData = () => {
-  const context = useContext(DataContext);
-  if (context === undefined) {
-    throw new Error("useGameData must be used within a DataProvider");
-  }
-  return context;
 };
 
 // Re-export types

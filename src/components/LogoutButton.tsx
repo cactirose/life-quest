@@ -4,7 +4,7 @@ import { LogOut } from "lucide-react";
 import { logout } from "@/utils/auth";
 import { toast } from "sonner";
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 const LogoutButton = () => {
   const navigate = useNavigate();

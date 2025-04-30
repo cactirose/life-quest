@@ -1,4 +1,3 @@
-
 export type AchievementCategory = "quests" | "habits" | "skills" | "character" | "general";
 
 export interface Achievement {
@@ -16,9 +15,13 @@ export interface Achievement {
   };
   unlocked: boolean;
   dateUnlocked?: string;
+  // XP tracking properties
+  requiredXp: number;
+  currentXp: number;
+  xpPerCompletion: number;
+  // Legacy tracking properties (kept for backward compatibility)
   requiredCount?: number;
   currentCount?: number;
-  // Add tracking properties
   requiredLevel?: number;
   requiredCoins?: number;
   requiredChallenges?: number;
@@ -33,8 +36,9 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "🏆",
     xpReward: 50,
     coinReward: 25,
-    requiredCount: 1,
-    currentCount: 0
+    requiredXp: 100,
+    currentXp: 0,
+    xpPerCompletion: 100
   },
   {
     title: "Habit Master",
@@ -43,8 +47,9 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "🔥",
     xpReward: 100,
     coinReward: 50,
-    requiredCount: 7,
-    currentCount: 0
+    requiredXp: 700,
+    currentXp: 0,
+    xpPerCompletion: 100
   },
   {
     title: "Skill Seeker",
@@ -53,8 +58,9 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "🌟",
     xpReward: 75,
     coinReward: 30,
-    requiredCount: 1,
-    currentCount: 0
+    requiredXp: 100,
+    currentXp: 0,
+    xpPerCompletion: 100
   },
   {
     title: "Well Equipped",
@@ -62,7 +68,10 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     category: "character",
     icon: "⚔️",
     xpReward: 125,
-    coinReward: 75
+    coinReward: 75,
+    requiredXp: 100,
+    currentXp: 0,
+    xpPerCompletion: 100
   },
   {
     title: "Wealthy Adventurer",
@@ -71,9 +80,9 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "💰",
     xpReward: 150,
     coinReward: 0,
-    requiredCount: 500,
-    currentCount: 0,
-    requiredCoins: 500
+    requiredXp: 500,
+    currentXp: 0,
+    xpPerCompletion: 100
   },
   {
     title: "Level Up",
@@ -82,7 +91,9 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "⭐",
     xpReward: 100,
     coinReward: 50,
-    requiredLevel: 5
+    requiredXp: 500,
+    currentXp: 0,
+    xpPerCompletion: 100
   },
   {
     title: "Challenge Accepted",
@@ -91,6 +102,8 @@ export const SAMPLE_ACHIEVEMENTS: Omit<Achievement, "id" | "unlocked" | "dateUnl
     icon: "🏅",
     xpReward: 125,
     coinReward: 75,
-    requiredChallenges: 3
+    requiredXp: 300,
+    currentXp: 0,
+    xpPerCompletion: 100
   }
 ];

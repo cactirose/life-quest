@@ -1,8 +1,7 @@
-
 import { Achievement } from "@/types/achievements";
 import { GameDataUpdater } from "@/utils/contextTypes";
 import { generateId } from "@/utils/idGenerator";
-import { upsertAchievement, deleteAchievement as deleteAchievementService } from "@/services/achievementService";
+import { upsertAchievement, deleteAchievement as deleteAchievementService, addXPToAchievement } from "@/services/achievementService";
 import { upsertInventoryItem } from "@/services/inventoryService";
 import { upsertCharacter } from "@/services/characterService";
 
@@ -45,52 +44,73 @@ export const useAchievementManager = (
     deleteAchievementService(achievementId);
   };
 
-  const checkAndUnlockAchievement = (achievementId: string): boolean => {
+  const addXPToAchievementAndCheckUnlock = async (achievementId: string, xp: number): Promise<boolean> => {
     let unlocked = false;
     
     setGameData(prevData => {
       const achievement = prevData.achievements.find(a => a.id === achievementId);
       if (!achievement || achievement.unlocked) return prevData;
       
-      unlocked = true;
+      const newXp = achievement.currentXp + xp;
+      const shouldUnlock = newXp >= achievement.requiredXp;
       
-      const updatedCharacter = {
-        ...prevData.character,
-        xp: prevData.character.xp + achievement.xpReward,
-        coins: prevData.character.coins + achievement.coinReward
-      };
-      
-      let updatedInventory = [...prevData.inventory];
-      if (achievement.specialReward) {
-        const newItem = {
-          ...achievement.specialReward,
-          id: achievement.specialReward.id || generateId()
-        };
-        updatedInventory = [...updatedInventory, newItem];
+      if (shouldUnlock) {
+        unlocked = true;
         
-        upsertInventoryItem(newItem);
+        const updatedCharacter = {
+          ...prevData.character,
+          xp: prevData.character.xp + achievement.xpReward,
+          coins: prevData.character.coins + achievement.coinReward
+        };
+        
+        let updatedInventory = [...prevData.inventory];
+        if (achievement.specialReward) {
+          const newItem = {
+            ...achievement.specialReward,
+            id: achievement.specialReward.id || generateId()
+          };
+          updatedInventory = [...updatedInventory, newItem];
+          
+          upsertInventoryItem(newItem);
+        }
+        
+        const updatedAchievement = {
+          ...achievement,
+          currentXp: newXp,
+          unlocked: true,
+          dateUnlocked: new Date().toISOString()
+        };
+        
+        upsertAchievement(updatedAchievement);
+        upsertCharacter(updatedCharacter);
+        
+        const updatedAchievements = prevData.achievements.map(a => 
+          a.id === achievementId ? updatedAchievement : a
+        );
+        
+        return {
+          ...prevData,
+          character: updatedCharacter,
+          inventory: updatedInventory,
+          achievements: updatedAchievements
+        };
+      } else {
+        const updatedAchievement = {
+          ...achievement,
+          currentXp: newXp
+        };
+        
+        upsertAchievement(updatedAchievement);
+        
+        const updatedAchievements = prevData.achievements.map(a => 
+          a.id === achievementId ? updatedAchievement : a
+        );
+        
+        return {
+          ...prevData,
+          achievements: updatedAchievements
+        };
       }
-      
-      const updatedAchievement = {
-        ...achievement, 
-        unlocked: true, 
-        dateUnlocked: new Date().toISOString()
-      };
-      
-      upsertAchievement(updatedAchievement);
-      
-      upsertCharacter(updatedCharacter);
-      
-      const updatedAchievements = prevData.achievements.map(a => 
-        a.id === achievementId ? updatedAchievement : a
-      );
-      
-      return { 
-        ...prevData, 
-        character: updatedCharacter,
-        inventory: updatedInventory,
-        achievements: updatedAchievements
-      };
     });
     
     return unlocked;
@@ -100,6 +120,6 @@ export const useAchievementManager = (
     addAchievement,
     updateAchievement,
     deleteAchievement,
-    checkAndUnlockAchievement
+    addXPToAchievementAndCheckUnlock
   };
 };

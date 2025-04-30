@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +17,10 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2, Plus } from "lucide-react";
 import { generateId } from "@/utils/idGenerator";
+import { HabitSkillSection } from "./form-sections/HabitSkillSection";
+import { useGameData } from "@/contexts/DataContext";
+import { SkillSelector } from "@/components/skills/SkillSelector";
+import { AchievementSelector } from "@/components/achievements/AchievementSelector";
 
 // List of emoji icons to choose from
 const EMOJI_OPTIONS = ["✅", "🏃", "💧", "📚", "💻", "🧠", "🧘", "💤", "🥗", "🍎", "🌞", "🧹", "💊", "🌱", "👨‍👩‍👧‍👦", "💰", "🚶", "💪", "🎯", "⏰"];
@@ -69,9 +72,13 @@ export const HabitForm = ({
   const [xpReward, setXpReward] = useState(initialData?.xpReward || 10);
   const [coinReward, setCoinReward] = useState(initialData?.coinReward || 5);
   const [color, setColor] = useState(initialData?.color || "#4682B4");
+  const [skillId, setSkillId] = useState(initialData?.skillId);
+  const [skillXpReward, setSkillXpReward] = useState(initialData?.skillXpReward);
   const [steps, setSteps] = useState<Omit<HabitStep, "completed">[]>(
     initialData?.steps?.map(step => ({ id: step.id, description: step.description })) || []
   );
+  const [achievementId, setAchievementId] = useState(initialData?.achievementId);
+  const { skills, achievements } = useGameData();
   
   const handleSubmit = () => {
     if (!name.trim()) {
@@ -100,6 +107,9 @@ export const HabitForm = ({
       customDays: frequency === "custom" ? customDays : undefined,
       xpReward,
       coinReward,
+      skillId,
+      skillXpReward,
+      achievementId,
       reminder: reminder || undefined,
       color,
       steps: validSteps.length > 0 ? validSteps.map(step => ({
@@ -293,6 +303,23 @@ export const HabitForm = ({
             />
           </div>
         </div>
+
+        <HabitSkillSection />
+        
+        <SkillSelector
+          skills={skills}
+          selectedSkillId={skillId}
+          skillXpReward={skillXpReward}
+          onSkillChange={(skillId, xpReward) => {
+            setSkillId(skillId);
+            setSkillXpReward(xpReward);
+          }}
+        />
+        <AchievementSelector
+          achievements={achievements}
+          selectedAchievementId={achievementId}
+          onAchievementChange={setAchievementId}
+        />
         
         {/* Steps Section */}
         <div>

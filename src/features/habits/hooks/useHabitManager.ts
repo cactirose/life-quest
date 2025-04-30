@@ -1,20 +1,27 @@
 import { Habit } from "@/types/habits";
+import { GameDataUpdater } from "@/utils/contextTypes";
 import { generateId } from "@/utils/idGenerator";
 import { 
   upsertHabit, 
   deleteHabit as deleteHabitService
 } from "@/services/habitService";
+import { supabase } from "@/integrations/supabase/client";
+import { useAchievementManager } from "@/features/achievements/hooks/useAchievementManager";
+import { toast } from "sonner";
 
 export const useHabitManager = (
   gameData: any, // GameData type
   setGameData: React.Dispatch<React.SetStateAction<any>>
 ) => {
-  const addHabit = (habit: Omit<Habit, "id" | "completionHistory" | "streak">) => {
+  const achievementManager = useAchievementManager([], setGameData);
+
+  const addHabit = (habit: Omit<Habit, "id" | "createdAt" | "streak" | "lastCompleted">) => {
     const newHabit = {
       ...habit,
-      id: generateId(), // This now generates a proper UUID
-      completionHistory: [],
-      streak: 0
+      id: generateId(),
+      createdAt: new Date(),
+      streak: 0,
+      lastCompleted: null
     };
 
     console.log("Creating new habit with ID:", newHabit.id);
@@ -25,7 +32,7 @@ export const useHabitManager = (
     }));
 
     // Sync with Supabase
-    upsertHabit(newHabit).catch(error => {
+    upsertHabit(newHabit as Habit).catch(error => {
       console.error("Error saving new habit:", error);
     });
   };
@@ -78,54 +85,139 @@ export const useHabitManager = (
     });
   };
 
-  const completeHabit = (habitId: string, date: string) => {
+  const completeHabit = async (habitId: string) => {
+    let completed = false;
+    
     setGameData(prevData => {
-      const habits = prevData.habits || [];
-      const updatedHabits = habits.map(habit => {
-        if (habit.id !== habitId) return habit;
-        // Check if already completed for this date
-        const alreadyCompleted = habit.completionHistory?.some(c => c.date === date && c.completed);
-        if (alreadyCompleted) return habit;
-        // Add completion record
-        const newCompletionHistory = [
-          ...(habit.completionHistory || []),
-          { date, completed: true }
-        ];
-        // Calculate new streak (simple: +1)
-        const newStreak = (habit.streak || 0) + 1;
-        const updatedHabit = {
-          ...habit,
-          completionHistory: newCompletionHistory,
-          streak: newStreak
-        };
-        // Sync with Supabase
-        upsertHabit(updatedHabit).catch(error => {
-          console.error("Error completing habit:", error, updatedHabit);
+      const habit = prevData.habits.find(h => h.id === habitId);
+      if (!habit) return prevData;
+      
+      completed = true;
+      
+      // Calculate streak
+      const today = new Date();
+      const lastCompleted = habit.lastCompleted ? new Date(habit.lastCompleted) : null;
+      const isConsecutiveDay = lastCompleted && 
+        today.getDate() - lastCompleted.getDate() === 1 &&
+        today.getMonth() === lastCompleted.getMonth() &&
+        today.getFullYear() === lastCompleted.getFullYear();
+      
+      const newStreak = isConsecutiveDay ? habit.streak + 1 : 1;
+      
+      // Update character XP and coins
+      const updatedCharacter = {
+        ...prevData.character,
+        xp: prevData.character.xp + habit.xpReward,
+        coins: prevData.character.coins + habit.coinReward
+      };
+      
+      // Update habit status
+      const updatedHabit = {
+        ...habit,
+        streak: newStreak,
+        lastCompleted: today.toISOString()
+      };
+      
+      // Update linked skill if exists
+      let updatedSkills = [...prevData.skills];
+      if (habit.skillId && habit.skillXpReward) {
+        updatedSkills = updatedSkills.map(skill => {
+          if (skill.id === habit.skillId) {
+            return {
+              ...skill,
+              xp: skill.xp + habit.skillXpReward
+            };
+          }
+          return skill;
         });
-        return updatedHabit;
-      });
-      
-      // Find the completed habit to get its rewards
-      const completedHabit = habits.find(h => h.id === habitId);
-      
-      // Update character XP and coins if habit was found and completed
-      if (completedHabit) {
-        const updatedCharacter = {
-          ...prevData.character,
-          xp: prevData.character.xp + completedHabit.xpReward,
-          coins: prevData.character.coins + completedHabit.coinReward
-        };
-        
-        // Update character in game data
-        return { 
-          ...prevData, 
-          habits: updatedHabits,
-          character: updatedCharacter
-        };
+
+        // Update skill in Supabase
+        const updatedSkill = updatedSkills.find(s => s.id === habit.skillId);
+        if (updatedSkill) {
+          supabase
+            .from("skills")
+            .update({ xp: updatedSkill.xp })
+            .eq("id", updatedSkill.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error("Error updating skill XP in Supabase:", error);
+              }
+            });
+        }
       }
       
-      return { ...prevData, habits: updatedHabits };
+      // Update linked achievement if exists
+      let updatedAchievements = [...prevData.achievements];
+      if (habit.achievementId) {
+        updatedAchievements = updatedAchievements.map(achievement => {
+          if (achievement.id === habit.achievementId) {
+            const newXp = achievement.currentXp + achievement.xpPerCompletion;
+            const isCompleted = newXp >= achievement.requiredXp;
+            
+            // If achievement is newly completed, give rewards
+            if (isCompleted && !achievement.unlocked) {
+              updatedCharacter.xp += achievement.xpReward;
+              updatedCharacter.coins += achievement.coinReward;
+              
+              // Show achievement completion message
+              setTimeout(() => {
+                toast.success(`Achievement unlocked: ${achievement.title}! You earned ${achievement.xpReward} XP and ${achievement.coinReward} coins.`);
+              }, 1000);
+            }
+            
+            return {
+              ...achievement,
+              currentXp: newXp,
+              unlocked: isCompleted,
+              dateUnlocked: isCompleted && !achievement.unlocked ? new Date().toISOString() : achievement.dateUnlocked
+            };
+          }
+          return achievement;
+        });
+
+        // Update achievement in Supabase
+        const updatedAchievement = updatedAchievements.find(a => a.id === habit.achievementId);
+        if (updatedAchievement) {
+          supabase
+            .from("achievements")
+            .update({
+              current_xp: updatedAchievement.currentXp,
+              unlocked: updatedAchievement.unlocked,
+              date_unlocked: updatedAchievement.dateUnlocked
+            })
+            .eq("id", updatedAchievement.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error("Error updating achievement in Supabase:", error);
+              }
+            });
+        }
+      }
+      
+      // Update character in Supabase
+      supabase
+        .from("characters")
+        .update({
+          xp: updatedCharacter.xp,
+          coins: updatedCharacter.coins
+        })
+        .eq("user_id", prevData.character.userId || "")
+        .then(({ error }) => {
+          if (error) {
+            console.error("Error updating character stats in Supabase:", error);
+          }
+        });
+      
+      return {
+        ...prevData,
+        character: updatedCharacter,
+        habits: prevData.habits.map(h => h.id === habitId ? updatedHabit : h),
+        skills: updatedSkills,
+        achievements: updatedAchievements
+      };
     });
+    
+    return completed;
   };
 
   const uncompleteHabit = (habitId: string, date: string) => {

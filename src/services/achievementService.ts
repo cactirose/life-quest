@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Achievement } from "@/types/achievements";
@@ -30,6 +29,9 @@ export const fetchAchievements = async (): Promise<Achievement[]> => {
       specialReward: achievement.special_reward as any,
       unlocked: achievement.unlocked,
       dateUnlocked: achievement.date_unlocked || undefined,
+      requiredXp: achievement.required_xp,
+      currentXp: achievement.current_xp,
+      xpPerCompletion: achievement.xp_per_completion,
       requiredCount: achievement.required_count,
       currentCount: achievement.current_count
     }) as Achievement);
@@ -58,6 +60,9 @@ export const upsertAchievement = async (achievement: Achievement): Promise<void>
         special_reward: achievement.specialReward as any,
         unlocked: achievement.unlocked,
         date_unlocked: achievement.dateUnlocked,
+        required_xp: achievement.requiredXp,
+        current_xp: achievement.currentXp,
+        xp_per_completion: achievement.xpPerCompletion,
         required_count: achievement.requiredCount,
         current_count: achievement.currentCount
       });
@@ -86,5 +91,53 @@ export const deleteAchievement = async (achievementId: string): Promise<void> =>
   } catch (error) {
     console.error("Error in deleteAchievement:", error);
     toast.error("Failed to delete achievement");
+  }
+};
+
+// Add XP to an achievement
+export const addXPToAchievement = async (achievementId: string, xp: number): Promise<boolean> => {
+  try {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) return false;
+    
+    // First get the current achievement
+    const { data: achievement, error: fetchError } = await supabase
+      .from("achievements")
+      .select("*")
+      .eq("id", achievementId)
+      .eq("user_id", user.data.user.id)
+      .single();
+
+    if (fetchError || !achievement) {
+      console.error("Error fetching achievement:", fetchError);
+      return false;
+    }
+
+    // Calculate new XP and check if achievement should unlock
+    const newXp = achievement.current_xp + xp;
+    const shouldUnlock = !achievement.unlocked && newXp >= achievement.required_xp;
+
+    // Update achievement with new XP and potentially unlock it
+    const { error: updateError } = await supabase
+      .from("achievements")
+      .update({ 
+        current_xp: newXp,
+        unlocked: shouldUnlock,
+        date_unlocked: shouldUnlock ? new Date().toISOString() : achievement.date_unlocked
+      })
+      .eq("id", achievementId)
+      .eq("user_id", user.data.user.id);
+
+    if (updateError) {
+      console.error("Error updating achievement XP:", updateError);
+      toast.error("Failed to add XP");
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in addXPToAchievement:", error);
+    toast.error("Failed to add XP");
+    return false;
   }
 };

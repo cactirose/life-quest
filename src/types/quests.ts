@@ -1,4 +1,3 @@
-
 import { StatName } from "./character";
 
 export type QuestType = "main" | "side" | "boss";
@@ -32,6 +31,10 @@ export interface Quest {
   xpReward: number;
   coinReward: number;
   statRewards?: StatReward[];
+  skillId?: string; // Reference to the skill this quest contributes to
+  skillXpReward?: number; // XP gained for the skill upon completion
+  achievementId?: string; // Reference to the achievement this quest contributes to
+  achievementXpReward?: number; // XP gained for the achievement upon completion
   steps: QuestStep[];
   dueDate?: string;
   tags?: string[];
