@@ -115,16 +115,19 @@ export const HabitCard = ({
   };
   
   return (
-    <div className="quest-card">
+    <div className={cn(
+      "quest-card relative",
+      isTodayCompleted && "border-rpg-green bg-rpg-green/10"
+    )}>
       <div className="flex justify-between mb-3">
         <div className="flex items-center gap-2">
           <div 
-            className="h-6 w-6 flex items-center justify-center rounded-full" 
+            className={"h-6 w-6 flex items-center justify-center rounded-full"}
             style={{ backgroundColor: habit.color }}
           >
             <span className="text-white">{habit.icon}</span>
           </div>
-          <h3 className="font-pixel text-lg text-rpg-brown">{habit.name}</h3>
+          <h3 className={"font-pixel text-lg text-rpg-brown"}>{habit.name}</h3>
         </div>
         
         <div className="flex items-center">
@@ -154,7 +157,7 @@ export const HabitCard = ({
       </div>
       
       {habit.description && (
-        <p className="text-sm text-rpg-brown mb-3">{habit.description}</p>
+        <p className={"text-sm text-rpg-brown mb-3"}>{habit.description}</p>
       )}
       
       <div className="flex justify-between items-center mb-3">
@@ -272,21 +275,21 @@ export const HabitCard = ({
           : onComplete(habit.id, today)
         }
         className={cn(
-          "w-full font-pixel", 
-          isTodayCompleted 
-            ? "bg-rpg-green text-white hover:bg-rpg-green/80"
+          "w-full font-pixel",
+          isTodayCompleted
+            ? "bg-secondary text-primary hover:bg-secondary/90"
             : "bg-rpg-tan text-rpg-brown hover:bg-rpg-brown hover:text-rpg-tan"
         )}
       >
         {isTodayCompleted ? (
           <>
             <Check size={16} className="mr-2" />
-            Completed Today
+            Completed
           </>
         ) : (
           <>
             <PenLine size={16} className="mr-2" />
-            Mark Today Complete
+            Mark Complete
           </>
         )}
       </Button>

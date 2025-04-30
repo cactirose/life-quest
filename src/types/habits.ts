@@ -26,6 +26,7 @@ export interface Habit {
   skillId?: string; // Reference to the skill this habit contributes to
   skillXpReward?: number; // XP gained for the skill upon completion
   achievementId?: string; // Reference to the achievement this habit contributes to
+  achievementXpReward?: number; // XP contributed to the achievement upon completion
   reminder?: string; // Time string for reminder
   completionHistory: HabitCompletion[];
   color: string; // CSS color for the habit

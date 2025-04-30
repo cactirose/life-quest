@@ -13,6 +13,9 @@ export const AchievementSelector = ({
   selectedAchievementId,
   onAchievementChange
 }: AchievementSelectorProps) => {
+  // Filter out completed achievements
+  const uncompletedAchievements = achievements.filter(achievement => !achievement.unlocked);
+
   return (
     <div>
       <Label>Related Achievement</Label>
@@ -25,7 +28,7 @@ export const AchievementSelector = ({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="none">No achievement</SelectItem>
-          {achievements.map(achievement => (
+          {uncompletedAchievements.map(achievement => (
             <SelectItem key={achievement.id} value={achievement.id}>
               {achievement.title} {achievement.icon && `(${achievement.icon})`}
             </SelectItem>

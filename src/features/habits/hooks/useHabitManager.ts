@@ -15,13 +15,14 @@ export const useHabitManager = (
 ) => {
   const achievementManager = useAchievementManager([], setGameData);
 
-  const addHabit = (habit: Omit<Habit, "id" | "createdAt" | "streak" | "lastCompleted">) => {
+  const addHabit = (habit: Omit<Habit, "id" | "createdAt" | "streak" | "lastCompleted" | "completionHistory">) => {
     const newHabit = {
       ...habit,
       id: generateId(),
       createdAt: new Date(),
       streak: 0,
-      lastCompleted: null
+      lastCompleted: null,
+      completionHistory: []
     };
 
     console.log("Creating new habit with ID:", newHabit.id);
@@ -34,6 +35,7 @@ export const useHabitManager = (
     // Sync with Supabase
     upsertHabit(newHabit as Habit).catch(error => {
       console.error("Error saving new habit:", error);
+      toast.error("Failed to save habit");
     });
   };
 
@@ -115,7 +117,11 @@ export const useHabitManager = (
       const updatedHabit = {
         ...habit,
         streak: newStreak,
-        lastCompleted: today.toISOString()
+        lastCompleted: today.toISOString(),
+        completionHistory: [
+          ...habit.completionHistory,
+          { date: today.toISOString().split('T')[0], completed: true }
+        ]
       };
       
       // Update linked skill if exists
@@ -148,10 +154,10 @@ export const useHabitManager = (
       
       // Update linked achievement if exists
       let updatedAchievements = [...prevData.achievements];
-      if (habit.achievementId) {
+      if (habit.achievementId && habit.achievementXpReward) {
         updatedAchievements = updatedAchievements.map(achievement => {
           if (achievement.id === habit.achievementId) {
-            const newXp = achievement.currentXp + achievement.xpPerCompletion;
+            const newXp = achievement.currentXp + (habit.achievementXpReward || 0);
             const isCompleted = newXp >= achievement.requiredXp;
             
             // If achievement is newly completed, give rewards
