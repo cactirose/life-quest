@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCharacter } from "./characterService";
-import { fetchQuests } from "./questService";
+import { fetchQuests, deleteQuest } from "./questService";
 import { fetchInventory, fetchShopItems } from "./inventoryService";
 import { fetchSkills } from "./skillService";
 import { fetchHabits } from "./habitService";
@@ -143,7 +143,8 @@ export {
 } from "./characterService";
 
 export {
-  upsertQuest
+  upsertQuest,
+  deleteQuest
 } from "./questService";
 
 export {

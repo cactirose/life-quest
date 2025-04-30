@@ -29,15 +29,33 @@ const Signup = () => {
     checkSession();
   }, [navigate]);
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    
+    // Get form data directly from the form element
+    const formData = new FormData(e.currentTarget);
+    const formUsername = formData.get('username') as string;
+    const formEmail = formData.get('email') as string;
+    const formPassword = formData.get('password') as string;
+
     try {
-      // Simple validation
-      if (!username || !email || !password) {
-        throw new Error("Please fill in all fields");
+      // Update state with form values
+      setUsername(formUsername);
+      setEmail(formEmail);
+      setPassword(formPassword);
+
+      // Validation with explicit checks
+      if (!formUsername || formUsername.trim() === '') {
+        throw new Error("Please enter a character name");
       }
-      if (password.length < 6) {
+      if (!formEmail || formEmail.trim() === '') {
+        throw new Error("Please enter an email address");
+      }
+      if (!formPassword) {
+        throw new Error("Please enter a password");
+      }
+      if (formPassword.length < 6) {
         throw new Error("Password must be at least 6 characters long");
       }
 
@@ -46,11 +64,11 @@ const Signup = () => {
         data,
         error
       } = await supabase.auth.signUp({
-        email,
-        password,
+        email: formEmail.trim(),
+        password: formPassword,
         options: {
           data: {
-            username: username
+            username: formUsername.trim()
           }
         }
       });
@@ -96,6 +114,7 @@ const Signup = () => {
                 <User className="auth-icon" />
                 <Input 
                   id="username" 
+                  name="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="BraveHero"
@@ -110,6 +129,7 @@ const Signup = () => {
                 <Mail className="auth-icon" />
                 <Input 
                   id="email" 
+                  name="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -125,6 +145,7 @@ const Signup = () => {
                 <KeyRound className="auth-icon" />
                 <Input 
                   id="password" 
+                  name="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

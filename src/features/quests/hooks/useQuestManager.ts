@@ -1,7 +1,7 @@
 import { Quest } from "@/types/quests";
 import { GameDataUpdater } from "@/utils/contextTypes";
 import { generateId } from "@/utils/idGenerator";
-import { upsertQuest, deleteQuest as deleteQuestService } from "@/services/questService";
+import { upsertQuest, deleteQuest as deleteQuestService } from "@/services";
 import { useAchievementManager } from "@/features/achievements/hooks/useAchievementManager";
 import { toast } from "sonner";
 import { useState } from "react";
