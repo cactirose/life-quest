@@ -94,22 +94,44 @@ export const useHabitManager = (
       if (!habit) return prevData;
 
       let updatedSkills = [...prevData.skills];
+      let updatedCharacter = { ...prevData.character };
 
       // Update habit completion
       const updatedHabits = prevData.habits.map(h => {
         if (h.id === habitId) {
+          // Get today's date in ISO format (YYYY-MM-DD)
+          const today = new Date().toISOString().split('T')[0];
+          
+          // Create new completion record
+          const newCompletion = {
+            date: today,
+            completed: true
+          };
+          
+          // Update completion history
+          const updatedCompletionHistory = [...(h.completionHistory || []), newCompletion];
+          
+          // Calculate new streak
+          const newStreak = (h.streak || 0) + 1;
+          
           return {
             ...h,
-            lastCompletedAt: new Date(),
-            completionCount: (h.completionCount || 0) + 1
+            completionHistory: updatedCompletionHistory,
+            streak: newStreak
           };
         }
         return h;
       });
 
+      // Update character XP and coins
+      updatedCharacter = {
+        ...updatedCharacter,
+        xp: updatedCharacter.xp + habit.xpReward,
+        coins: updatedCharacter.coins + habit.coinReward
+      };
+
       // If habit has skill reward, update skill XP
       if (habit.skillId && habit.skillXpReward) {
-        // Update local state immediately for UI responsiveness
         updatedSkills = updatedSkills.map(skill => {
           if (skill.id === habit.skillId) {
             return {
@@ -144,7 +166,8 @@ export const useHabitManager = (
       return {
         ...prevData,
         habits: updatedHabits,
-        skills: updatedSkills
+        skills: updatedSkills,
+        character: updatedCharacter
       };
     });
   };
