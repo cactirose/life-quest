@@ -1,7 +1,7 @@
-
 import { GameData } from '@/types/gameData';
 import { upsertHabit } from "@/services";
 import { retrySyncOperation, validateEntity, safeStringify, safeAsync } from './syncUtils';
+import { supabase } from "@/integrations/supabase/client";
 
 // Sync habits data
 export const syncHabitsData = async (gameData: GameData, changedFields: Set<string>): Promise<boolean> => {
@@ -11,6 +11,13 @@ export const syncHabitsData = async (gameData: GameData, changedFields: Set<stri
   if (!gameData.habits || !Array.isArray(gameData.habits)) {
     console.warn("Habits data is undefined or not an array, skipping sync");
     return true;
+  }
+  
+  // AUTH CHECK: Skip syncing if not authenticated
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    console.log("No authenticated user, skipping habit sync");
+    return true; // Prevent retries if logged out
   }
   
   let allHabitsSuccess = true;
