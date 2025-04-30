@@ -111,6 +111,8 @@ const Signup = () => {
                 <Input 
                   id="email" 
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="hero@example.com"
                   className="auth-input"
                   required 
@@ -124,6 +126,8 @@ const Signup = () => {
                 <Input 
                   id="password" 
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="auth-input"
                   required 
                 />

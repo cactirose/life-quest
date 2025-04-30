@@ -1,14 +1,22 @@
 import { GameData } from '@/types/gameData';
-import { upsertQuest } from "@/services";
+import { upsertQuest, deleteQuest as deleteQuestService } from "@/services";
 import { retrySyncOperation } from './syncUtils';
 import { supabase } from '@/integrations/supabase/client';
+
+// Keep track of deleted quest IDs that need to be synced
+const deletedQuestIds = new Set<string>();
+
+// Add a quest ID to the deleted set
+export const trackDeletedQuest = (questId: string) => {
+  deletedQuestIds.add(questId);
+};
 
 // Sync quests data
 export const syncQuestsData = async (gameData: GameData, changedFields: Set<string>): Promise<boolean> => {
   console.log('Starting syncQuestsData with changedFields:', Array.from(changedFields));
   
-  if (!changedFields.has('quests')) {
-    console.log('Quests not in changedFields, skipping sync');
+  if (!changedFields.has('quests') && deletedQuestIds.size === 0) {
+    console.log('No quest changes to sync');
     return true;
   }
 
@@ -20,6 +28,27 @@ export const syncQuestsData = async (gameData: GameData, changedFields: Set<stri
       return true; // Return true to prevent retries
     }
     
+    // First, handle deleted quests
+    if (deletedQuestIds.size > 0) {
+      console.log('Processing deleted quests:', Array.from(deletedQuestIds));
+      
+      for (const questId of deletedQuestIds) {
+        try {
+          await deleteQuestService(questId);
+          deletedQuestIds.delete(questId); // Remove from tracking after successful deletion
+          console.log('Successfully deleted quest from server:', questId);
+        } catch (error) {
+          if (error.message?.includes('No authenticated user')) {
+            console.log('Authentication error during quest deletion, will retry later');
+            continue;
+          }
+          console.error('Error deleting quest:', questId, error);
+          return false;
+        }
+      }
+    }
+
+    // Then handle existing quests
     if (!gameData.quests || !Array.isArray(gameData.quests)) {
       console.error('Invalid quests data:', gameData.quests);
       return false;
@@ -29,6 +58,11 @@ export const syncQuestsData = async (gameData: GameData, changedFields: Set<stri
     let allQuestsSuccess = true;
     
     for (const quest of gameData.quests) {
+      // Skip if this quest was deleted
+      if (deletedQuestIds.has(quest.id)) {
+        continue;
+      }
+
       console.log('Attempting to sync quest:', { id: quest.id, title: quest.title });
       
       const success = await retrySyncOperation(

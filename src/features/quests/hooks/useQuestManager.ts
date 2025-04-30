@@ -5,6 +5,7 @@ import { upsertQuest, deleteQuest as deleteQuestService } from "@/services/quest
 import { useAchievementManager } from "@/features/achievements/hooks/useAchievementManager";
 import { toast } from "sonner";
 import { useState } from "react";
+import { trackDeletedQuest } from "@/hooks/gameData/persistence/syncQuests";
 
 export const useQuestManager = (
   quests: Quest[],
@@ -50,38 +51,24 @@ export const useQuestManager = (
       
       setIsDeletingQuest(questId);
       
-      // Optimistically update UI first
+      // Track the quest for deletion sync
+      trackDeletedQuest(questId);
+      
+      // Update local state immediately
       setGameData(prevData => ({
         ...prevData,
         quests: prevData.quests.filter(q => q.id !== questId)
       }));
       
-      // Then send delete request to Supabase
+      // Attempt immediate deletion from Supabase
       await deleteQuestService(questId);
       
       toast.success("Quest deleted successfully");
     } catch (error) {
       console.error("Error deleting quest:", error);
-      
-      // Revert the optimistic update if the server request fails
-      setGameData(prevData => {
-        const questExists = prevData.quests.some(q => q.id === questId);
-        
-        if (!questExists) {
-          // Quest was already removed from state, need to add it back
-          const originalQuest = quests.find(q => q.id === questId);
-          if (originalQuest) {
-            return {
-              ...prevData,
-              quests: [...prevData.quests, originalQuest]
-            };
-          }
-        }
-        
-        return prevData;
-      });
-      
-      toast.error("Failed to delete quest. Please try again.");
+      toast.error("Failed to delete quest. Will retry during sync.");
+      // Note: We don't revert the local state or remove from deletedQuestIds
+      // The sync process will handle the retry
     } finally {
       setIsDeletingQuest(null);
     }
