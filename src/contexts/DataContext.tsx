@@ -1,3 +1,4 @@
+
 import { createContext, useContext } from "react";
 import { GameData } from "@/types/gameData";
 import { useGameDataManager } from "@/hooks/gameData/useGameDataManager";
@@ -29,7 +30,6 @@ import {
   MoodContext 
 } from "./MoodContext";
 import {
-  createAchievementContextValue,
   AchievementContext,
   AchievementProvider,
 } from "./AchievementContext";

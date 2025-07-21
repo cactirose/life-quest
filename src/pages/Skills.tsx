@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -109,6 +110,7 @@ const SkillForm = ({
   const [name, setName] = useState(initialData?.name || "");
   const [icon, setIcon] = useState(initialData?.icon || "🌟");
   const [description, setDescription] = useState(initialData?.description || "");
+  const [color, setColor] = useState(initialData?.color || "#4CAF50");
 
   const handleSubmit = () => {
     if (!name.trim()) {
@@ -120,6 +122,7 @@ const SkillForm = ({
       name,
       icon,
       description,
+      color,
       xp: initialData?.xp || 0
     });
   };
@@ -163,6 +166,19 @@ const SkillForm = ({
           onChange={(e) => setIcon(e.target.value)}
           placeholder="Custom icon (emoji)"
           className="w-full"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="color" className="block text-sm font-medium mb-1">
+          Color
+        </label>
+        <Input
+          id="color"
+          type="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          className="w-full h-10"
         />
       </div>
 

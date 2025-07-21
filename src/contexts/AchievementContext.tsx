@@ -1,3 +1,4 @@
+
 import { createContext, useContext } from "react";
 import { Achievement } from "../types/achievements";
 import { useAchievementManager } from "@/features/achievements/hooks/useAchievementManager";
@@ -8,6 +9,7 @@ interface AchievementContextType {
   updateAchievement: (achievement: Achievement) => void;
   deleteAchievement: (achievementId: string) => void;
   addXPToAchievementAndCheckUnlock: (achievementId: string, xp: number) => Promise<boolean>;
+  checkAndUnlockAchievement: (achievementId: string) => Promise<void>;
 }
 
 export const AchievementContext = createContext<AchievementContextType | null>(null);
@@ -33,9 +35,26 @@ export const AchievementProvider: React.FC<AchievementProviderProps> = ({
 }) => {
   const achievementManager = useAchievementManager(achievements, setGameData);
 
+  const checkAndUnlockAchievement = async (achievementId: string) => {
+    const achievement = achievements.find(a => a.id === achievementId);
+    if (!achievement || achievement.unlocked) return;
+
+    // Check if conditions are met and unlock if necessary
+    const shouldUnlock = achievement.currentXp >= achievement.requiredXp;
+    if (shouldUnlock) {
+      const updatedAchievement = {
+        ...achievement,
+        unlocked: true,
+        dateUnlocked: new Date().toISOString()
+      };
+      achievementManager.updateAchievement(updatedAchievement);
+    }
+  };
+
   const contextValue: AchievementContextType = {
     achievements,
-    ...achievementManager
+    ...achievementManager,
+    checkAndUnlockAchievement
   };
 
   return (

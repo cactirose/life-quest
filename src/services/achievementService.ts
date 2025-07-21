@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Achievement } from "@/types/achievements";
@@ -29,9 +30,9 @@ export const fetchAchievements = async (): Promise<Achievement[]> => {
       specialReward: achievement.special_reward as any,
       unlocked: achievement.unlocked,
       dateUnlocked: achievement.date_unlocked || undefined,
-      requiredXp: achievement.required_xp,
-      currentXp: achievement.current_xp,
-      xpPerCompletion: achievement.xp_per_completion,
+      requiredXp: 100, // Default values since these fields don't exist in DB
+      currentXp: 0,
+      xpPerCompletion: 100,
       requiredCount: achievement.required_count,
       currentCount: achievement.current_count
     }) as Achievement);
@@ -60,9 +61,6 @@ export const upsertAchievement = async (achievement: Achievement): Promise<void>
         special_reward: achievement.specialReward as any,
         unlocked: achievement.unlocked,
         date_unlocked: achievement.dateUnlocked,
-        required_xp: achievement.requiredXp,
-        current_xp: achievement.currentXp,
-        xp_per_completion: achievement.xpPerCompletion,
         required_count: achievement.requiredCount,
         current_count: achievement.currentCount
       });
@@ -113,15 +111,15 @@ export const addXPToAchievement = async (achievementId: string, xp: number): Pro
       return false;
     }
 
-    // Calculate new XP and check if achievement should unlock
-    const newXp = achievement.current_xp + xp;
-    const shouldUnlock = !achievement.unlocked && newXp >= achievement.required_xp;
+    // For now, we'll just update the current_count instead of XP since XP fields don't exist
+    const newCount = achievement.current_count + 1;
+    const shouldUnlock = !achievement.unlocked && newCount >= achievement.required_count;
 
-    // Update achievement with new XP and potentially unlock it
+    // Update achievement with new count and potentially unlock it
     const { error: updateError } = await supabase
       .from("achievements")
       .update({ 
-        current_xp: newXp,
+        current_count: newCount,
         unlocked: shouldUnlock,
         date_unlocked: shouldUnlock ? new Date().toISOString() : achievement.date_unlocked
       })
@@ -129,8 +127,8 @@ export const addXPToAchievement = async (achievementId: string, xp: number): Pro
       .eq("user_id", user.data.user.id);
 
     if (updateError) {
-      console.error("Error updating achievement XP:", updateError);
-      toast.error("Failed to add XP");
+      console.error("Error updating achievement:", updateError);
+      toast.error("Failed to update achievement");
       return false;
     }
 

@@ -2,7 +2,7 @@
 import { Character, DEFAULT_CHARACTER } from "@/types/character";
 import { Quest } from "@/types/quests";
 import { GearItem } from "@/types/inventory";
-import { SkillNode } from "@/types/skills";
+import { Skill } from "@/types/skills";
 
 /**
  * Prepares character data for reset
@@ -10,11 +10,11 @@ import { SkillNode } from "@/types/skills";
 export const prepareCharacterReset = (
   character: Character,
   quests: Quest[],
-  skillTree: SkillNode[]
+  skills: Skill[]
 ): {
   character: Character;
   quests: Quest[];
-  skillTree: SkillNode[];
+  skills: Skill[];
   inventory: GearItem[];
 } => {
   const resetCharacter = {
@@ -31,16 +31,15 @@ export const prepareCharacterReset = (
     }))
   }));
   
-  const resetSkillTree = skillTree.map(node => 
-    node.name === "Adventurer Basics" 
-      ? { ...node, unlocked: true } 
-      : { ...node, unlocked: false }
-  );
+  const resetSkills = skills.map(skill => ({
+    ...skill,
+    xp: 0
+  }));
   
   return {
     character: resetCharacter,
     quests: resetQuests,
-    skillTree: resetSkillTree,
+    skills: resetSkills,
     inventory: []
   };
 };

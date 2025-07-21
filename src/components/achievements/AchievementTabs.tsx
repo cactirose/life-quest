@@ -14,7 +14,6 @@ interface AchievementTabsProps {
   unlockedAchievements: Achievement[];
   onEdit: (achievement: Achievement) => void;
   onDelete: (id: string) => void;
-  onUnlock: (id: string) => void;
   onAddNew: () => void;
 }
 
@@ -27,7 +26,6 @@ const AchievementTabs = ({
   unlockedAchievements,
   onEdit,
   onDelete,
-  onUnlock,
   onAddNew
 }: AchievementTabsProps) => {
   const filterAchievementsByCategory = (category: string) => {
@@ -105,7 +103,6 @@ const AchievementTabs = ({
                           achievement={achievement}
                           onEdit={onEdit}
                           onDelete={onDelete}
-                          onUnlock={onUnlock}
                         />
                       ))}
                   </div>
@@ -124,7 +121,6 @@ const AchievementTabs = ({
                           achievement={achievement}
                           onEdit={onEdit}
                           onDelete={onDelete}
-                          onUnlock={onUnlock}
                         />
                       ))}
                   </div>

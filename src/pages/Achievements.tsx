@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Achievement } from "@/contexts/DataContext";
 import { useAchievements } from "@/contexts/AchievementContext";
@@ -72,9 +73,9 @@ const Achievements = () => {
     }
   };
   
-  const handleUnlockAchievement = async (achievement: Achievement) => {
+  const handleUnlockAchievement = async (id: string) => {
     try {
-      await checkAndUnlockAchievement(achievement.id);
+      await checkAndUnlockAchievement(id);
       toast.success("Achievement unlocked!");
     } catch (error) {
       toast.error("Failed to unlock achievement");
@@ -139,7 +140,6 @@ const Achievements = () => {
         unlockedAchievements={unlockedAchievements}
         onEdit={setEditingAchievement}
         onDelete={handleDeleteAchievement}
-        onUnlock={handleUnlockAchievement}
         onAddNew={() => setShowAddDialog(true)}
       />
     </div>

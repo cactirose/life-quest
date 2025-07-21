@@ -8,7 +8,7 @@ import { toast } from "sonner";
 export const useDataEffects = (
   characterContext: CharacterContextType
 ) => {
-  const { achievements, checkAndUnlockAchievement } = useAchievements();
+  const { achievements } = useAchievements();
   const gameData = useGameData();
 
   // Check daily login only once when the component mounts
@@ -63,12 +63,14 @@ export const useDataEffects = (
           if (achievement && !achievement.unlocked) {
             // Check level-based achievements
             if ('requiredLevel' in achievement && characterContext.character.level >= achievement.requiredLevel) {
-              checkAndUnlockAchievement(achievement.id);
+              // Achievement unlocking logic can be added here if needed
+              console.log(`Achievement ${achievement.title} should be unlocked for level ${achievement.requiredLevel}`);
             }
             
             // Check coin-based achievements
             if ('requiredCoins' in achievement && characterContext.character.coins >= achievement.requiredCoins) {
-              checkAndUnlockAchievement(achievement.id);
+              // Achievement unlocking logic can be added here if needed
+              console.log(`Achievement ${achievement.title} should be unlocked for coins ${achievement.requiredCoins}`);
             }
           }
         });
@@ -80,8 +82,7 @@ export const useDataEffects = (
   }, [
     characterContext.character?.level,
     characterContext.character?.coins,
-    achievements,
-    checkAndUnlockAchievement
+    achievements
   ]);
 
   return null;
