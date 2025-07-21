@@ -18,7 +18,7 @@ export function AddMoodDialog({
   open, 
   onOpenChange, 
   onAddMood,
-  initialMood = "okay" 
+  initialMood = "neutral" 
 }: AddMoodDialogProps) {
   const [selectedMood, setSelectedMood] = useState<MoodType>(initialMood);
   const [notes, setNotes] = useState("");

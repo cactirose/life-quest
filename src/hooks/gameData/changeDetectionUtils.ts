@@ -1,80 +1,64 @@
+
 import { GameData } from "@/types/gameData";
-import { Quest } from "@/types/quests";
 
-/**
- * Deep comparison of arrays
- */
-function areArraysEqual<T>(arr1: T[] = [], arr2: T[] = [], compareFunc?: (a: T, b: T) => boolean): boolean {
-  arr1 = arr1 || [];
-  arr2 = arr2 || [];
-  if (arr1.length !== arr2.length) return false;
+export const detectChanges = (
+  previousData: GameData | null,
+  currentData: GameData
+): Set<string> => {
+  const changes = new Set<string>();
   
-  if (compareFunc) {
-    return arr1.every((item, index) => compareFunc(item, arr2[index]));
+  if (!previousData) {
+    // First load - everything is new
+    return new Set([
+      'character', 'quests', 'inventory', 'skills', 'habits', 
+      'moods', 'achievements', 'journalEntries', 'shoppingLists'
+    ]);
   }
-  
-  return arr1.every((item, index) => JSON.stringify(item) === JSON.stringify(arr2[index]));
-}
-
-/**
- * Compare quests specifically
- */
-function areQuestsEqual(quest1: Quest, quest2: Quest): boolean {
-  if (quest1.id !== quest2.id) return false;
-  if (quest1.title !== quest2.title) return false;
-  if (quest1.description !== quest2.description) return false;
-  if (quest1.status !== quest2.status) return false;
-  if (quest1.type !== quest2.type) return false;
-  if (quest1.difficulty !== quest2.difficulty) return false;
-  if (quest1.xpReward !== quest2.xpReward) return false;
-  if (quest1.coinReward !== quest2.coinReward) return false;
-  
-  // Compare steps
-  if (!areArraysEqual(quest1.steps, quest2.steps)) return false;
-  
-  return true;
-}
-
-/**
- * Utility to detect which fields have changed between previous and current game data
- */
-export function detectChangedFields(previousData: GameData, currentData: GameData): Set<string> {
-  const changedFields = new Set<string>();
   
   // Character changes
   if (JSON.stringify(previousData.character) !== JSON.stringify(currentData.character)) {
-    changedFields.add('character');
+    changes.add('character');
   }
   
-  // Quest changes - using specific quest comparison
-  if (!areArraysEqual(previousData.quests, currentData.quests, areQuestsEqual)) {
-    changedFields.add('quests');
+  // Quests changes
+  if (JSON.stringify(previousData.quests) !== JSON.stringify(currentData.quests)) {
+    changes.add('quests');
   }
   
   // Inventory changes
-  if (!areArraysEqual(previousData.inventory, currentData.inventory)) {
-    changedFields.add('inventory');
+  if (JSON.stringify(previousData.inventory) !== JSON.stringify(currentData.inventory)) {
+    changes.add('inventory');
   }
   
-  // Skill tree changes
-  if (!areArraysEqual(previousData.skillTree, currentData.skillTree)) {
-    changedFields.add('skillTree');
+  // Skills changes
+  if (JSON.stringify(previousData.skills) !== JSON.stringify(currentData.skills)) {
+    changes.add('skills');
   }
   
-  // Habit changes
-  if (!areArraysEqual(previousData.habits, currentData.habits)) {
-    changedFields.add('habits');
+  // Habits changes
+  if (JSON.stringify(previousData.habits) !== JSON.stringify(currentData.habits)) {
+    changes.add('habits');
   }
   
-  // Mood changes
-  if (!areArraysEqual(previousData.moods, currentData.moods)) {
-    changedFields.add('moods');
+  // Moods changes
+  if (JSON.stringify(previousData.moods) !== JSON.stringify(currentData.moods)) {
+    changes.add('moods');
   }
   
-  // Achievement changes
-  if (!areArraysEqual(previousData.achievements, currentData.achievements)) {
-    changedFields.add('achievements');
+  // Achievements changes
+  if (JSON.stringify(previousData.achievements) !== JSON.stringify(currentData.achievements)) {
+    changes.add('achievements');
   }
   
-  return changedFields;
-}
+  // Journal entries changes
+  if (JSON.stringify(previousData.journalEntries) !== JSON.stringify(currentData.journalEntries)) {
+    changes.add('journalEntries');
+  }
+  
+  // Shopping lists changes
+  if (JSON.stringify(previousData.shoppingLists) !== JSON.stringify(currentData.shoppingLists)) {
+    changes.add('shoppingLists');
+  }
+  
+  return changes;
+};

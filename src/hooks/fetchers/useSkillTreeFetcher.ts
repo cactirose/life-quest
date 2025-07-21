@@ -8,7 +8,7 @@ export const useSkillTreeFetcher = (
 ) => {
   const fetchSkillTree = async (signal?: AbortSignal) => {
     try {
-      updateStatus('skillTree', 'loading');
+      updateStatus('skills', 'loading');
       
       const { fetchSkillTree } = await import('@/services/skillTreeService');
       
@@ -22,7 +22,7 @@ export const useSkillTreeFetcher = (
       if (data && data.length > 0) {
         setGameData(prev => ({ ...prev, skillTree: data }));
       }
-      updateStatus('skillTree', 'loaded');
+      updateStatus('skills', 'loaded');
       return data;
     } catch (error) {
       // Check if the request was aborted
@@ -32,7 +32,7 @@ export const useSkillTreeFetcher = (
       }
       
       console.error("Error loading skill tree:", error);
-      updateStatus('skillTree', 'error');
+      updateStatus('skills', 'error');
       return null;
     }
   };

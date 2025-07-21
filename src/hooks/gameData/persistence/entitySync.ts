@@ -1,3 +1,4 @@
+
 // Re-export all sync functions from their respective modules
 export { syncCharacterData } from './syncCharacter';
 export { syncQuestsData } from './syncQuests';
@@ -11,11 +12,12 @@ export { validateEntity } from './syncUtils';
 export { retrySyncOperation } from './syncUtils';
 
 import { supabase } from "@/integrations/supabase/client";
+import { GameData } from "@/types/gameData";
 
 export const loadCharacterData = async () => {
   const { data, error } = await supabase
     .from('characters')
-    .select('id, username, level, experience, stats, login_streak')  // Only select needed fields
+    .select('id, name, level, xp, stats, login_streak')  // Only select needed fields
     .single();
     
   if (error) throw error;
@@ -25,7 +27,7 @@ export const loadCharacterData = async () => {
 export const loadQuestsData = async () => {
   const { data, error } = await supabase
     .from('quests')
-    .select('id, title, description, status, due_date, rewards')  // Only select needed fields
+    .select('id, title, description, status, due_date, xp_reward, coin_reward')  // Only select needed fields
     .order('due_date', { ascending: true })
     .limit(10);  // Limit initial load to recent quests
     
@@ -40,14 +42,14 @@ export const syncSkillsData = async (gameData: GameData, changedFields: Set<stri
     const { data: existingSkills, error: fetchError } = await supabase
       .from('skills')
       .select('*')
-      .eq('user_id', gameData.userId);
+      .eq('user_id', gameData.character.id);
 
     if (fetchError) throw fetchError;
 
     // Get skills that need to be updated or inserted
     const skillsToSync = gameData.skills
       .filter(skill => {
-        const valid = skill.id && typeof skill.id === 'string' && skill.userId && typeof gameData.userId === 'string';
+        const valid = skill.id && typeof skill.id === 'string' && gameData.character.id;
         if (!valid) {
           console.warn('Skipping skill with invalid id or user_id:', skill);
         }
@@ -55,7 +57,7 @@ export const syncSkillsData = async (gameData: GameData, changedFields: Set<stri
       })
       .map(skill => ({
         id: skill.id,
-        user_id: gameData.userId,
+        user_id: gameData.character.id,
         name: skill.name,
         icon: skill.icon,
         color: skill.color,

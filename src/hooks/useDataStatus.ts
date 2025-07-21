@@ -7,7 +7,7 @@ export interface DataStatus {
   character: DataLoadingStatus;
   quests: DataLoadingStatus;
   inventory: DataLoadingStatus;
-  skillTree: DataLoadingStatus;
+  skills: DataLoadingStatus;
   habits: DataLoadingStatus;
   moods: DataLoadingStatus;
   achievements: DataLoadingStatus;
@@ -18,7 +18,7 @@ export const useDataStatus = () => {
     character: 'loading',
     quests: 'loading',
     inventory: 'loading',
-    skillTree: 'loading',
+    skills: 'loading',
     habits: 'loading',
     moods: 'loading',
     achievements: 'loading'

@@ -4,7 +4,6 @@ import { GameData } from "@/types/gameData";
 import { useGameDataManager } from "@/hooks/gameData/useGameDataManager";
 import { useDataEffects } from "@/hooks/useDataEffects";
 import { Skill } from "@/types/skills";
-import { generateId } from "@/utils/idGenerator";
 import { addSkill as addSkillService, updateSkill as updateSkillService, deleteSkill as deleteSkillService } from "@/services/skillService";
 import { toast } from "sonner";
 
@@ -81,7 +80,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const moodContextValue = createMoodContextValue(gameData.moods, setGameData);
 
   // Add these functions
-  const addSkill = async (skillData: Omit<Skill, "id" | "createdAt">) => {
+  const addSkill = async (skillData: Omit<Skill, "id" | "createdAt">): Promise<string> => {
     try {
       // First add to Supabase to get the real ID
       const skillId = await addSkillService(skillData);
@@ -106,7 +105,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error("Error in addSkill:", error);
       toast.error("Failed to add skill");
-      return null;
+      throw error;
     }
   };
 

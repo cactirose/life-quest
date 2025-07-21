@@ -1,3 +1,4 @@
+
 import { Character, StatName } from "./character";
 import { Quest } from "./quests";
 import { GearItem } from "./inventory";
@@ -45,7 +46,7 @@ export interface GameData {
   deleteShopItem: (itemId: string) => void;
   
   // Skill methods
-  addSkill: (skill: Omit<Skill, "id" | "createdAt">) => string;
+  addSkill: (skill: Omit<Skill, "id" | "createdAt">) => Promise<string>;
   updateSkill: (skill: Skill) => void;
   deleteSkill: (skillId: string) => void;
   
