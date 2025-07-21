@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Skill } from "@/types/skills";
@@ -47,10 +48,10 @@ export const fetchSkills = async (): Promise<Skill[]> => {
     return data.map(skill => ({
       id: skill.id,
       name: skill.name,
-      icon: skill.icon,
-      color: skill.color,
+      icon: skill.icon || "🌟",
+      color: "#4CAF50", // Default color since it's not in the database
       description: skill.description || "",
-      xp: skill.xp,
+      xp: skill.xp || 0,
       createdAt: new Date(skill.created_at)
     }));
   }, "fetchSkills");
@@ -68,7 +69,6 @@ export const addSkill = async (skill: Omit<Skill, "id" | "createdAt">): Promise<
         user_id: user.data.user.id,
         name: skill.name,
         icon: skill.icon,
-        color: skill.color,
         description: skill.description,
         xp: skill.xp
       })
@@ -95,7 +95,6 @@ export const updateSkill = async (skill: Skill): Promise<boolean> => {
       .update({
         name: skill.name,
         icon: skill.icon,
-        color: skill.color,
         description: skill.description,
         xp: skill.xp
       })
@@ -154,7 +153,7 @@ export const addXPToSkill = async (skillId: string, xp: number): Promise<boolean
     // Then update with new XP
     const { error: updateError } = await supabase
       .from("skills")
-      .update({ xp: skill.xp + xp })
+      .update({ xp: (skill.xp || 0) + xp })
       .eq("id", skillId)
       .eq("user_id", user.data.user.id);
 

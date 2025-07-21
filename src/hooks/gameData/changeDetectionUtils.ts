@@ -1,7 +1,7 @@
 
 import { GameData } from "@/types/gameData";
 
-export const detectChanges = (
+export const detectChangedFields = (
   previousData: GameData | null,
   currentData: GameData
 ): Set<string> => {
@@ -62,3 +62,6 @@ export const detectChanges = (
   
   return changes;
 };
+
+// For backwards compatibility
+export const detectChanges = detectChangedFields;

@@ -60,7 +60,6 @@ export const syncSkillsData = async (gameData: GameData, changedFields: Set<stri
         user_id: gameData.character.id,
         name: skill.name,
         icon: skill.icon,
-        color: skill.color,
         description: skill.description,
         xp: skill.xp,
         created_at: skill.createdAt.toISOString()

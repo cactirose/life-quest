@@ -28,7 +28,7 @@ export interface GameData {
   
   // Quest methods
   addQuest: (quest: Omit<Quest, "id">) => void;
-  updateQuest: (quest: Quest) => void;
+  updateQuest: (questId: string, updates: Partial<Quest>) => void;
   deleteQuest: (questId: string) => void;
   completeQuestStep: (questId: string, stepId: string) => void;
   completeQuest: (questId: string) => Promise<void>;
@@ -47,8 +47,8 @@ export interface GameData {
   
   // Skill methods
   addSkill: (skill: Omit<Skill, "id" | "createdAt">) => Promise<string>;
-  updateSkill: (skill: Skill) => void;
-  deleteSkill: (skillId: string) => void;
+  updateSkill: (skill: Skill) => Promise<void>;
+  deleteSkill: (skillId: string) => Promise<void>;
   
   // Habit methods
   addHabit: (habit: Omit<Habit, "id" | "completionHistory" | "streak">) => void;
