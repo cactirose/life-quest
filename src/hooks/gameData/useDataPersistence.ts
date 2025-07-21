@@ -20,32 +20,12 @@ export function useDataPersistence(gameData: GameData) {
   // Different sync delays for mobile vs desktop
   const getSyncDelay = () => {
     if (isInitialSync.current) {
-      return isMobile ? 3000 : 2000; // Longer delay for initial sync
+      return isMobile ? 1000 : 500; // Reduced initial sync delay
     }
-    return isMobile ? 1500 : 1000;
+    return isMobile ? 300 : 200; // Much faster regular sync
   };
-  
-  const { syncWithSupabase } = useSyncWithSupabase();
-  
-  const debouncedSync = useDebounce(async () => {
-    if (pendingSyncRef.current) {
-      // If a sync is already in progress, queue this one
-      syncQueueRef.current.push(async () => {
-        try {
-          await performSync();
-        } catch (error) {
-          console.error("Queued sync error:", error);
-        }
-      });
-      return;
-    }
 
-    try {
-      await performSync();
-    } catch (error) {
-      console.error("Sync error:", error);
-    }
-  }, getSyncDelay());
+  const { syncWithSupabase } = useSyncWithSupabase();
 
   const performSync = async () => {
     pendingSyncRef.current = true;
@@ -80,6 +60,37 @@ export function useDataPersistence(gameData: GameData) {
       pendingSyncRef.current = false;
     }
   };
+
+  // Immediate sync function for critical operations
+  const syncImmediately = useCallback(async () => {
+    if (!pendingSyncRef.current) {
+      try {
+        await performSync();
+      } catch (error) {
+        console.error("Immediate sync error:", error);
+      }
+    }
+  }, [gameData, syncWithSupabase, syncErrorCount]);
+  
+  const debouncedSync = useDebounce(async () => {
+    if (pendingSyncRef.current) {
+      // If a sync is already in progress, queue this one
+      syncQueueRef.current.push(async () => {
+        try {
+          await performSync();
+        } catch (error) {
+          console.error("Queued sync error:", error);
+        }
+      });
+      return;
+    }
+
+    try {
+      await performSync();
+    } catch (error) {
+      console.error("Sync error:", error);
+    }
+  }, getSyncDelay());
 
   // Add sync recovery
   useEffect(() => {
@@ -141,6 +152,7 @@ export function useDataPersistence(gameData: GameData) {
 
   return {
     syncErrorCount: syncErrorCount.current,
-    isInitialSync: isInitialSync.current
+    isInitialSync: isInitialSync.current,
+    syncImmediately
   };
 }

@@ -6,6 +6,7 @@ import { useAchievementManager } from "@/features/achievements/hooks/useAchievem
 import { toast } from "sonner";
 import { useState } from "react";
 import { trackDeletedQuest } from "@/hooks/gameData/persistence/syncQuests";
+import { useSyncWithSupabase } from "@/hooks/gameData/persistence/useSyncWithSupabase";
 
 export const useQuestManager = (
   quests: Quest[],
@@ -13,6 +14,7 @@ export const useQuestManager = (
 ) => {
   const [isDeletingQuest, setIsDeletingQuest] = useState<string | null>(null);
   const achievementManager = useAchievementManager([], setGameData);
+  const { syncGameData } = useSyncWithSupabase();
 
   const addQuest = (quest: Omit<Quest, "id" | "createdAt" | "completed">) => {
     const newQuest = {
@@ -76,6 +78,7 @@ export const useQuestManager = (
 
   const completeQuest = async (questId: string) => {
     let completed = false;
+    let updatedGameData = null;
     
     setGameData(prevData => {
       const quest = prevData.quests.find(q => q.id === questId);
@@ -128,12 +131,25 @@ export const useQuestManager = (
         q.id === questId ? updatedQuest : q
       );
       
-      return {
+      updatedGameData = {
         ...prevData,
         character: updatedCharacter,
         quests: updatedQuests
       };
+      
+      return updatedGameData;
     });
+
+    // Immediately sync the completed quest to avoid data loss
+    if (completed && updatedGameData) {
+      try {
+        await syncGameData(updatedGameData);
+        console.log("Quest completion synced immediately");
+      } catch (error) {
+        console.error("Failed to immediately sync quest completion:", error);
+        // Still return success since local state was updated
+      }
+    }
     
     return completed;
   };
