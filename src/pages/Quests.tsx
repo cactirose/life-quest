@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useGameData } from "@/contexts/DataContext";
 import { Quest } from "@/types/quests";
-import QuestDialog from "@/components/quests/QuestDialog";
-import QuestEditDialog from "@/components/quests/QuestEditDialog";
+import { EditQuestDialog } from "@/features/quests/components/EditQuestDialog";
 
 export default function Quests() {
   const gameData = useGameData();
@@ -42,10 +42,19 @@ export default function Quests() {
     setIsDialogOpen(false);
   };
 
-  const handleAddQuest = (quest: Omit<Quest, "id">) => {
-    addQuest(quest);
-    setIsDialogOpen(false);
-    toast.success("Quest added successfully!");
+  const handleAddQuest = async (quest: Omit<Quest, "id" | "status">) => {
+    try {
+      const newQuest = {
+        ...quest,
+        status: "active" as const
+      };
+      addQuest(newQuest);
+      setIsDialogOpen(false);
+      toast.success("Quest added successfully!");
+    } catch (error) {
+      console.error("Error adding quest:", error);
+      toast.error("Failed to add quest");
+    }
   };
 
   const handleDeleteQuest = (questId: string) => {
@@ -73,10 +82,17 @@ export default function Quests() {
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdateQuest = (updatedQuest: Quest) => {
-    updateQuest(updatedQuest.id, updatedQuest);
-    setIsEditDialogOpen(false);
-    setSelectedQuest(null);
+  const handleUpdateQuest = async (updatedQuest: Omit<Quest, "id" | "status">) => {
+    if (selectedQuest) {
+      const fullQuest = {
+        ...selectedQuest,
+        ...updatedQuest
+      };
+      updateQuest(selectedQuest.id, fullQuest);
+      setIsEditDialogOpen(false);
+      setSelectedQuest(null);
+      toast.success("Quest updated successfully!");
+    }
   };
 
   return (
@@ -179,13 +195,18 @@ export default function Quests() {
         </div>
       </section>
 
-      <QuestDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} onAdd={handleAddQuest} />
+      <EditQuestDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onAddQuest={handleAddQuest}
+      />
+      
       {selectedQuest && (
-        <QuestEditDialog
-          open={isEditDialogOpen}
+        <EditQuestDialog
+          isOpen={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
-          quest={selectedQuest}
-          onUpdate={handleUpdateQuest}
+          onUpdateQuest={handleUpdateQuest}
+          editingQuest={selectedQuest}
         />
       )}
     </div>

@@ -87,7 +87,7 @@ export const upsertCharacter = async (character: Character): Promise<Character |
       throw checkError;
     }
 
-    // Prepare the data for upsert
+    // Prepare the data for upsert - convert Stats to Json
     const characterData = {
       user_id: user.id,
       name: character.name,
@@ -97,7 +97,7 @@ export const upsertCharacter = async (character: Character): Promise<Character |
       coins: character.coins,
       portrait: character.portrait,
       bio: character.bio,
-      stats: character.stats,
+      stats: character.stats as any, // Cast to any to satisfy Json type
       last_login_date: character.lastLoginDate,
       login_streak: character.loginStreak,
       daily_bonus_claimed: character.dailyBonusClaimed
@@ -121,7 +121,7 @@ export const upsertCharacter = async (character: Character): Promise<Character |
       console.log("No existing character found, inserting new record");
       const { error: insertError } = await supabase
         .from("characters")
-        .insert([characterData]);
+        .insert(characterData);
 
       if (insertError) {
         // Check for duplicate key violation

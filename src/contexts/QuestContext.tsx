@@ -1,3 +1,4 @@
+
 import { createContext, useContext } from "react";
 import { Quest, QuestStatus, QuestRepeatInterval, StatReward } from "../types/quests";
 import { generateId } from "../utils/idGenerator";
@@ -14,7 +15,7 @@ import { Skill } from "@/types/skills";
 interface QuestContextType {
   quests: Quest[];
   addQuest: (quest: Omit<Quest, "id">) => void;
-  updateQuest: (questId: string, updates: Partial<Quest>) => void;
+  updateQuest: (questId: string, updates: Quest) => void;
   deleteQuest: (questId: string) => void;
   completeQuestStep: (questId: string, stepId: string) => void;
   completeQuest: (questId: string) => Promise<void>;
@@ -55,7 +56,7 @@ export const createQuestContextValue = (
     });
   };
 
-  const updateQuest = (questId: string, updates: Partial<Quest>) => {
+  const updateQuest = (questId: string, updates: Quest) => {
     console.log('Updating quest:', questId, updates);
     
     setGameData((prevData) => {
@@ -63,10 +64,7 @@ export const createQuestContextValue = (
       if (questIndex === -1) return prevData;
 
       const updatedQuests = [...prevData.quests];
-      updatedQuests[questIndex] = {
-        ...updatedQuests[questIndex],
-        ...updates,
-      };
+      updatedQuests[questIndex] = updates;
 
       return {
         ...prevData,
@@ -100,7 +98,7 @@ export const createQuestContextValue = (
       }
 
       // Update quest status
-      updateQuest(questId, { status: "completed" });
+      updateQuest(questId, { ...quest, status: "completed" });
 
       // Update character XP and coins in local state
       setGameData(prevData => {
