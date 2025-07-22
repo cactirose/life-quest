@@ -61,8 +61,12 @@ export const createMoodContextValue = (
 
   return {
     moods,
+    setMoods: () => {}, // Add placeholder function
+    addMood: addMoodEntry,
     addMoodEntry,
+    updateMood: updateMoodEntry,
     updateMoodEntry,
+    deleteMood: deleteMoodEntry,
     deleteMoodEntry
   };
 };

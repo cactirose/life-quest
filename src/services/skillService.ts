@@ -15,7 +15,7 @@ export const fetchSkills = async (): Promise<Skill[]> => {
     
     console.log('Fetching skills for user:', user.id);
     const { data, error } = await supabase
-      .from("skills")
+      .from("user_skills")
       .select("*")
       .eq("user_id", user.id);
 
@@ -29,10 +29,10 @@ export const fetchSkills = async (): Promise<Skill[]> => {
     // Map database fields to Skill type
     const mappedSkills = data.map(skill => ({
       id: skill.id,
-      name: skill.name,
-      icon: skill.icon || "🌟",
+      name: skill.skill_name,
+      icon: "🌟", // Default icon since user_skills doesn't have icon field
       color: "#4CAF50", // Default color since it's not in DB
-      description: skill.description || "",
+      description: "", // Default description since user_skills doesn't have description field
       xp: skill.xp || 0,
       createdAt: new Date(skill.created_at || Date.now())
     })) as Skill[];
@@ -58,15 +58,13 @@ export const addSkill = async (skillData: Omit<Skill, "id" | "createdAt">): Prom
 
     const newSkillData = {
       user_id: user.id,
-      name: skillData.name,
-      icon: skillData.icon,
-      description: skillData.description,
+      skill_name: skillData.name,
       xp: skillData.xp || 0,
     };
     console.log('Prepared skill data for insert:', newSkillData);
 
     const { data, error } = await supabase
-      .from("skills")
+      .from("user_skills")
       .insert(newSkillData)
       .select()
       .single();
@@ -87,11 +85,9 @@ export const addSkill = async (skillData: Omit<Skill, "id" | "createdAt">): Prom
 export const updateSkill = async (skill: Skill): Promise<boolean> => {
   try {
     const { error } = await supabase
-      .from("skills")
+      .from("user_skills")
       .update({
-        name: skill.name,
-        icon: skill.icon,
-        description: skill.description,
+        skill_name: skill.name,
         xp: skill.xp,
       })
       .eq("id", skill.id);
@@ -111,7 +107,7 @@ export const updateSkill = async (skill: Skill): Promise<boolean> => {
 export const deleteSkill = async (skillId: string): Promise<boolean> => {
   try {
     const { error } = await supabase
-      .from("skills")
+      .from("user_skills")
       .delete()
       .eq("id", skillId);
 
@@ -131,7 +127,7 @@ export const addXPToSkill = async (skillId: string, xp: number): Promise<boolean
   try {
     // First get the current skill data
     const { data: currentSkill, error: fetchError } = await supabase
-      .from("skills")
+      .from("user_skills")
       .select("xp")
       .eq("id", skillId)
       .single();
@@ -143,7 +139,7 @@ export const addXPToSkill = async (skillId: string, xp: number): Promise<boolean
 
     // Update the skill with new XP
     const { error } = await supabase
-      .from("skills")
+      .from("user_skills")
       .update({
         xp: (currentSkill.xp || 0) + xp,
       })
