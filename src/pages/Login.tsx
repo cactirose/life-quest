@@ -69,9 +69,10 @@ export default function Login() {
             // Map from database schema to Character type
             const statsData = typeof data.stats === 'string' 
               ? JSON.parse(data.stats) as Stats 
-              : data.stats as Stats;
+              : data.stats as unknown as Stats;
               
             const characterData: Character = {
+              id: data.id,
               name: data.name,
               level: data.level,
               xp: data.xp,

@@ -20,7 +20,33 @@ export interface Character {
   portrait: string;
   bio: string;
   stats: Stats;
-  lastLoginDate?: Date;
+  lastLoginDate?: string | null;
   loginStreak: number;
   dailyBonusClaimed: boolean;
 }
+
+// Default stats
+export const DEFAULT_STATS: Stats = {
+  strength: 10,
+  dexterity: 10,
+  constitution: 10,
+  intelligence: 10,
+  wisdom: 10,
+  charisma: 10
+};
+
+// Default character
+export const DEFAULT_CHARACTER: Character = {
+  id: "",
+  name: "Adventurer",
+  level: 1,
+  xp: 0,
+  nextLevelXp: 100,
+  coins: 50,
+  portrait: "/placeholder.svg",
+  bio: "A brave adventurer ready to conquer life's challenges.",
+  stats: { ...DEFAULT_STATS },
+  lastLoginDate: null,
+  loginStreak: 0,
+  dailyBonusClaimed: false
+};

@@ -1,180 +1,193 @@
-
-import { useState, useCallback } from "react";
+import React, { useState } from "react";
+import { Plus, Edit, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import { useGameData } from "@/contexts/DataContext";
 import { Quest } from "@/types/quests";
-import { toast } from "sonner";
+import QuestDialog from "@/components/quests/QuestDialog";
+import QuestEditDialog from "@/components/quests/QuestEditDialog";
 
-// Import refactored components
-import { QuestHeader } from "@/features/quests/components/QuestHeader";
-import { QuestSearch } from "@/features/quests/components/QuestSearch";
-import { QuestTabs } from "@/features/quests/components/QuestTabs";
-import { EditQuestDialog } from "@/features/quests/components/EditQuestDialog";
-import { useQuestFiltering } from "@/features/quests/hooks/useQuestFiltering";
-
-const Quests = () => {
+export default function Quests() {
+  const gameData = useGameData();
   const { 
     quests, 
     addQuest, 
     updateQuest, 
     deleteQuest, 
-    completeQuestStep,
-    completeQuest
-  } = useGameData();
-  
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [editingQuest, setEditingQuest] = useState<Quest | null>(null);
-  const [activeTab, setActiveTab] = useState("active");
+    completeQuest, 
+    completeQuestStep 
+  } = gameData;
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  // Use the custom hook for filtering quests
-  const { filteredActiveQuests, filteredCompletedQuests } = useQuestFiltering(quests, searchQuery);
-  
-  const handleAddQuest = useCallback(async (newQuest: Omit<Quest, "id" | "status">) => {
-    try {
-      setIsProcessing(true);
-      
-      // Add the quest (explicitly await)
-      await new Promise<void>((resolve) => {
-        addQuest({
-          ...newQuest,
-          status: "active",
-          difficulty: newQuest.difficulty || "medium" // Ensure difficulty is set
-        });
-        // Short delay to ensure state updates properly
-        setTimeout(resolve, 100);
-      });
-      
-      // Success message
-      toast.success("Quest created successfully!");
-      return Promise.resolve();
-    } catch (error) {
-      console.error("Failed to add quest:", error);
-      toast.error("Failed to create quest. Please try again.");
-      return Promise.reject(error);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [addQuest]);
-  
-  const handleEditQuest = useCallback(async (updatedQuest: Omit<Quest, "id" | "status">) => {
-    if (!editingQuest) return Promise.reject(new Error("No quest selected for editing"));
-    
-    try {
-      setIsProcessing(true);
-      
-      // Update the quest (explicitly await)
-      await new Promise<void>((resolve) => {
-        updateQuest({
-          ...editingQuest,
-          ...updatedQuest,
-        });
-        // Short delay to ensure state updates properly
-        setTimeout(resolve, 100);
-      });
-      
-      // Clear editing state
-      setEditingQuest(null);
-      
-      // Success message
-      toast.success("Quest updated successfully!");
-      return Promise.resolve();
-    } catch (error) {
-      console.error("Failed to update quest:", error);
-      toast.error("Failed to update quest. Please try again.");
-      return Promise.reject(error);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [editingQuest, updateQuest]);
-  
-  const handleStepToggle = useCallback(async (questId: string, stepId: string) => {
-    const quest = quests.find(q => q.id === questId);
-    if (!quest) return;
-    
-    const step = quest.steps.find(s => s.id === stepId);
-    if (!step) return;
-    
-    try {
-      if (!step.completed) {
-        await completeQuestStep(questId, stepId);
-        toast.success("Step completed!");
-      } else {
-        const updatedSteps = quest.steps.map(s => 
-          s.id === stepId ? { ...s, completed: false } : s
-        );
-        
-        await updateQuest({
-          ...quest,
-          steps: updatedSteps
-        });
-        toast.info("Step marked as incomplete");
-      }
-    } catch (error) {
-      console.error("Failed to toggle step completion:", error);
-      toast.error("Failed to update step. Please try again.");
-    }
-  }, [quests, completeQuestStep, updateQuest]);
-  
-  const handleDeleteQuest = useCallback(async (questId: string) => {
-    try {
-      await deleteQuest(questId);
-      toast.success("Quest deleted successfully!");
-    } catch (error) {
-      console.error("Failed to delete quest:", error);
-      toast.error("Failed to delete quest. Please try again.");
-    }
-  }, [deleteQuest]);
-  
-  const handleCompleteQuest = useCallback(async (questId: string) => {
-    try {
-      setIsProcessing(true);
-      await completeQuest(questId);
-    } catch (error) {
-      console.error("Failed to complete quest:", error);
-      toast.error("Failed to complete quest. Please try again.");
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [completeQuest]);
-  
+
+  const handleOpenDialog = () => {
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+  };
+
+  const handleAddQuest = (quest: Omit<Quest, "id">) => {
+    addQuest(quest);
+    setIsDialogOpen(false);
+    toast.success("Quest added successfully!");
+  };
+
+  const handleDeleteQuest = (questId: string) => {
+    deleteQuest(questId);
+    toast.success("Quest deleted successfully!");
+  };
+
+  const handleCompleteStep = (questId: string, stepId: string) => {
+    completeQuestStep(questId, stepId);
+  };
+
+  const handleCompleteQuest = (questId: string) => {
+    completeQuest(questId);
+  };
+
+  const filteredQuests = quests.filter((quest) =>
+    quest.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const activeQuests = filteredQuests.filter((quest) => quest.status === "active");
+  const completedQuests = filteredQuests.filter((quest) => quest.status === "completed");
+
+  const handleEditQuest = (quest: Quest) => {
+    setSelectedQuest(quest);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateQuest = (updatedQuest: Quest) => {
+    updateQuest(updatedQuest.id, updatedQuest);
+    setIsEditDialogOpen(false);
+    setSelectedQuest(null);
+  };
+
   return (
-    <div className="container mx-auto animate-fade-in">
-      <QuestHeader onAddQuest={() => setShowAddDialog(true)} />
-      
-      <EditQuestDialog 
-        isOpen={showAddDialog}
-        onOpenChange={setShowAddDialog}
-        onAddQuest={handleAddQuest}
-        isProcessing={isProcessing}
-      />
-      
-      <EditQuestDialog 
-        editingQuest={editingQuest}
-        isOpen={!!editingQuest}
-        onOpenChange={(open) => !open && setEditingQuest(null)}
-        onUpdateQuest={handleEditQuest}
-        isProcessing={isProcessing}
-      />
-      
-      <QuestSearch 
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
-      
-      <QuestTabs 
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        activeQuests={filteredActiveQuests}
-        completedQuests={filteredCompletedQuests}
-        onEdit={setEditingQuest}
-        onDelete={handleDeleteQuest}
-        onStepToggle={handleStepToggle}
-        onComplete={handleCompleteQuest}
-        onCreateQuest={() => setShowAddDialog(true)}
-      />
+    <div className="container mx-auto py-10">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">Quests</h1>
+        <div className="flex items-center space-x-4">
+          <Input
+            type="text"
+            placeholder="Search quests..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Button onClick={handleOpenDialog}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Quest
+          </Button>
+        </div>
+      </div>
+
+      <section className="mb-8">
+        <h2 className="text-2xl font-semibold mb-4">Active Quests</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {activeQuests.map((quest) => (
+            <Card key={quest.id}>
+              <CardHeader>
+                <CardTitle>{quest.title}</CardTitle>
+                <CardDescription>{quest.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul>
+                  {quest.steps.map((step) => (
+                    <li key={step.id} className="flex items-center justify-between">
+                      <span>{step.description}</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCompleteStep(quest.id, step.id)}
+                        disabled={step.completed}
+                      >
+                        {step.completed ? "Completed" : "Complete"}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter className="flex justify-between items-center">
+                <div>
+                  <Badge variant="secondary">Reward: {quest.xpReward} XP</Badge>
+                  <Badge variant="secondary">Reward: {quest.coinReward} Coins</Badge>
+                </div>
+                <div className="flex space-x-2">
+                  <Button size="icon" onClick={() => handleEditQuest(quest)}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleDeleteQuest(quest.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <Button size="sm" onClick={() => handleCompleteQuest(quest.id)}>
+                    Complete Quest
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-semibold mb-4">Completed Quests</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {completedQuests.map((quest) => (
+            <Card key={quest.id}>
+              <CardHeader>
+                <CardTitle>{quest.title}</CardTitle>
+                <CardDescription>{quest.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>Quest completed!</p>
+              </CardContent>
+              <CardFooter className="flex justify-between items-center">
+                <div>
+                  <Badge variant="secondary">Reward: {quest.xpReward} XP</Badge>
+                  <Badge variant="secondary">Reward: {quest.coinReward} Coins</Badge>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => handleDeleteQuest(quest.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <QuestDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} onAdd={handleAddQuest} />
+      {selectedQuest && (
+        <QuestEditDialog
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          quest={selectedQuest}
+          onUpdate={handleUpdateQuest}
+        />
+      )}
     </div>
   );
-};
-
-export default Quests;
+}

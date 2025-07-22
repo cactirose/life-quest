@@ -41,6 +41,7 @@ export const fetchCharacter = async (signal?: AbortSignal): Promise<Character | 
 
       // Map database fields to Character type
       return {
+        id: data.id,
         name: data.name,
         level: data.level,
         xp: data.xp,

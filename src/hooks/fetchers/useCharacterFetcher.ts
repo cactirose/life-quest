@@ -1,7 +1,7 @@
 
 import { GameData } from "@/types/gameData";
 import { DataLoadingStatus } from "../useDataStatus";
-import { Character, Stats } from "@/types/character";
+import { Character, Stats, DEFAULT_CHARACTER } from "@/types/character";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -35,6 +35,7 @@ export const useCharacterFetcher = (
       if (data) {
         // Map database fields to Character type
         const character: Character = {
+          id: data.id,
           name: data.name,
           level: data.level,
           xp: data.xp,
@@ -42,7 +43,7 @@ export const useCharacterFetcher = (
           coins: data.coins,
           portrait: data.portrait,
           bio: data.bio,
-          stats: data.stats as Stats, // Cast the Json type to Stats
+          stats: data.stats as unknown as Stats,
           lastLoginDate: data.last_login_date,
           loginStreak: data.login_streak,
           dailyBonusClaimed: data.daily_bonus_claimed
@@ -54,12 +55,11 @@ export const useCharacterFetcher = (
       }
 
       // Create new character if none exists
-      const { DEFAULT_CHARACTER } = await import('@/types/character');
       const { upsertCharacter } = await import('@/services/characterService');
       
       const newCharacterData = {
         ...DEFAULT_CHARACTER,
-        user_id: user.id
+        id: user.id
       };
       
       const newCharacter = await upsertCharacter(newCharacterData);
