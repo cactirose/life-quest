@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { QuestStep, Quest, QuestType } from "@/types/quests";
 import { 
   Edit, 
@@ -10,7 +12,9 @@ import {
   Circle,
   Trophy,
   Calendar,
-  BookOpen
+  BookOpen,
+  Coins,
+  Star
 } from "lucide-react";
 import { format } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
@@ -22,7 +26,6 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useGameData } from "@/contexts/DataContext";
-import { getSkillLevelAndProgress } from "@/types/skills";
 
 interface QuestCardProps {
   quest: Quest;
@@ -50,20 +53,21 @@ export const QuestCard = ({
   const linkedSkill = quest.skillId ? skills.find(s => s.id === quest.skillId) : null;
   
   const questTypeColors = {
-    main: "bg-rpg-red text-white",
-    side: "bg-rpg-blue text-white",
-    boss: "bg-rpg-purple text-white"
+    main: "bg-destructive text-destructive-foreground",
+    side: "bg-primary text-primary-foreground", 
+    boss: "bg-accent text-accent-foreground"
   };
   
   const difficultyColors = {
-    easy: "bg-rpg-green text-white",
-    medium: "bg-rpg-yellow text-white",
-    hard: "bg-rpg-red text-white"
+    easy: "bg-secondary text-secondary-foreground",
+    medium: "bg-muted text-muted-foreground",
+    hard: "bg-destructive text-destructive-foreground"
   };
   
   const isCompleted = quest.status === "completed";
   const areAllStepsCompleted = totalSteps > 0 && completedSteps === totalSteps;
   const hasNoSteps = totalSteps === 0;
+  const canComplete = !isCompleted && (areAllStepsCompleted || hasNoSteps);
   
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -81,7 +85,7 @@ export const QuestCard = ({
     e.preventDefault();
     e.stopPropagation();
     
-    if (quest.status === "completed") {
+    if (!canComplete) {
       return;
     }
     
@@ -92,202 +96,172 @@ export const QuestCard = ({
     setIsExpanded(!isExpanded);
   };
   
-  const statRewardDisplay = quest.statRewards && quest.statRewards.length > 0 ? (
-    <div className="flex flex-wrap gap-1 mb-2">
-      {quest.statRewards.map((reward, index) => (
-        <span key={index} className="text-xs bg-rpg-brown text-white px-2 py-0.5 rounded">
-          +{reward.value} {reward.stat}
-        </span>
-      ))}
-    </div>
-  ) : null;
-  
   return (
-    <div 
-      className={cn(
-        "parchment flex flex-col rounded-md overflow-hidden shadow-md", 
-        isCompleted ? "opacity-80" : ""
-      )}
-      style={{ borderTop: 'none' }}
-    >
-      <div 
-        className="px-4 py-3 cursor-pointer flex justify-between items-start"
-        onClick={toggleExpand}
-      >
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className={`text-xs px-2 py-0.5 rounded ${questTypeColors[quest.type as QuestType]}`}>
+    <Card className={cn("transition-all duration-200 hover:shadow-lg", isCompleted ? "opacity-75" : "")}>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge className={questTypeColors[quest.type as QuestType]}>
                 {quest.type}
-              </span>
-              <span className={`text-xs px-2 py-0.5 rounded ${difficultyColors[quest.difficulty]}`}>
+              </Badge>
+              <Badge variant="outline" className={difficultyColors[quest.difficulty]}>
                 {quest.difficulty}
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              {!isCompleted && (
-                <div className="flex items-center">
-                  {quest.dueDate && (
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Calendar className="h-4 w-4 text-rpg-brown mr-1" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Due: {format(new Date(quest.dueDate), "MMM d, yyyy")}
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </div>
+              </Badge>
+              {quest.dueDate && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        Due
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Due: {format(new Date(quest.dueDate), "MMM d, yyyy")}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
-              
+            </div>
+            <CardTitle className="text-lg font-bold">{quest.title}</CardTitle>
+            {quest.description && (
+              <CardDescription className="mt-1">{quest.description}</CardDescription>
+            )}
+          </div>
+          <div className="flex items-center gap-1 ml-4">
+            {!isCompleted && (
               <Button
-                variant="ghost" 
+                variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0"
                 onClick={handleEdit}
+                className="h-8 w-8 p-0"
               >
-                <Edit className="h-4 w-4 text-rpg-brown" />
+                <Edit className="h-4 w-4" />
               </Button>
-              
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            {totalSteps > 0 && (
               <Button
-                variant="ghost" 
+                variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0"
-                onClick={handleDelete}
+                onClick={toggleExpand}
+                className="h-8 w-8 p-0"
               >
-                <Trash2 className="h-4 w-4 text-rpg-red" />
+                {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </Button>
-              
-              <div className="h-6 w-6 flex items-center justify-center">
-                {isExpanded ? (
-                  <ChevronUp className="h-4 w-4 text-rpg-brown" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-rpg-brown" />
-                )}
-              </div>
-            </div>
+            )}
           </div>
-          
-          <h3 className="text-xl font-pixel text-rpg-brown mb-1">{quest.title}</h3>
-          
-          {quest.description && (
-            <p className="text-sm text-rpg-brown mb-3">{quest.description}</p>
-          )}
-          
-          <div className="w-full bg-rpg-tan/50 rounded-full h-2 mb-2">
-            <div 
-              className="bg-rpg-brown h-2 rounded-full" 
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          
-          <div className="flex justify-between text-xs text-rpg-brown">
-            <span>{completedSteps}/{totalSteps} steps</span>
-            <span>{progress}% complete</span>
-          </div>
-          
-          {linkedSkill && quest.skillXpReward && (
-            <div className="flex items-center gap-2 text-xs text-rpg-brown mb-3">
-              <BookOpen size={14} />
-              <span>{linkedSkill.icon} {linkedSkill.name}: +{quest.skillXpReward} XP</span>
-            </div>
-          )}
-          
-          {!isCompleted && hasNoSteps && (
-            <div className="mt-4">
-              <Button 
-                onClick={handleComplete}
-                className="w-full bg-rpg-green hover:bg-rpg-green/80 text-white"
-              >
-                <Trophy className="mr-2 h-4 w-4" />
-                Complete Quest
-              </Button>
-            </div>
-          )}
         </div>
-      </div>
-      
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="px-4 pb-4 border-t border-rpg-tan"
-          >
-            <div className="pt-3">
-              {totalSteps > 0 ? (
-                <>
-                  <h4 className="font-pixel text-rpg-brown mb-2">Steps:</h4>
-                  
-                  <ul className="space-y-2 mb-4">
-                    {quest.steps.map((step) => (
-                      <StepItem 
-                        key={step.id} 
-                        step={step} 
-                        questId={quest.id}
-                        isQuestCompleted={isCompleted}
-                        onToggle={() => onToggleStep(quest.id, step.id)} 
-                      />
-                    ))}
-                  </ul>
-                </>
-              ) : (
-                <div className="text-center py-2 text-rpg-brown mb-4">
-                  No steps for this quest
-                </div>
-              )}
-              
-              <div className="mt-4">
-                <h4 className="font-pixel text-rpg-brown mb-2">Rewards:</h4>
-                
-                <div className="flex flex-wrap gap-3">
-                  {quest.xpReward > 0 && (
-                    <div className="flex items-center text-rpg-brown">
-                      <span className="bg-rpg-blue/20 px-2 py-1 rounded text-sm">
-                        +{quest.xpReward} XP
-                      </span>
-                    </div>
-                  )}
-                  
-                  {quest.coinReward > 0 && (
-                    <div className="flex items-center text-rpg-brown">
-                      <span className="bg-rpg-yellow/20 px-2 py-1 rounded text-sm">
-                        +{quest.coinReward} Coins
-                      </span>
-                    </div>
-                  )}
+      </CardHeader>
 
-                  {linkedSkill && quest.skillXpReward && (
-                    <div className="flex items-center text-rpg-brown">
-                      <span className="bg-rpg-green/20 px-2 py-1 rounded text-sm">
-                        +{quest.skillXpReward} {linkedSkill.name} XP
-                      </span>
-                    </div>
-                  )}
-                </div>
-                
-                {statRewardDisplay}
-              </div>
-              
-              {!isCompleted && (areAllStepsCompleted && totalSteps > 0) && (
-                <div className="mt-4">
-                  <Button 
-                    onClick={handleComplete}
-                    className="w-full bg-rpg-green hover:bg-rpg-green/80 text-white"
-                  >
-                    <Trophy className="mr-2 h-4 w-4" />
-                    Complete Quest
-                  </Button>
-                </div>
-              )}
+      <CardContent className="py-3">
+        {/* Progress Bar */}
+        {totalSteps > 0 && (
+          <div className="mb-4">
+            <div className="flex justify-between text-sm text-muted-foreground mb-1">
+              <span>Progress</span>
+              <span>{completedSteps}/{totalSteps} steps ({progress}%)</span>
             </div>
-          </motion.div>
+            <div className="w-full bg-muted rounded-full h-2">
+              <div 
+                className="bg-primary h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
         )}
-      </AnimatePresence>
-    </div>
+
+        {/* Rewards Section */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold flex items-center gap-2">
+            <Trophy className="h-4 w-4" />
+            Rewards
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {quest.xpReward > 0 && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Star className="h-3 w-3" />
+                {quest.xpReward} XP
+              </Badge>
+            )}
+            {quest.coinReward > 0 && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Coins className="h-3 w-3" />
+                {quest.coinReward} Coins
+              </Badge>
+            )}
+            {linkedSkill && quest.skillXpReward && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <BookOpen className="h-3 w-3" />
+                +{quest.skillXpReward} {linkedSkill.name} XP
+              </Badge>
+            )}
+            {quest.statRewards && quest.statRewards.length > 0 && (
+              quest.statRewards.map((reward, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  +{reward.value} {reward.stat}
+                </Badge>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Steps Section (Expandable) */}
+        <AnimatePresence>
+          {isExpanded && totalSteps > 0 && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-4 pt-4 border-t"
+            >
+              <h4 className="text-sm font-semibold mb-3">Quest Steps</h4>
+              <ul className="space-y-2">
+                {quest.steps.map((step) => (
+                  <StepItem 
+                    key={step.id} 
+                    step={step} 
+                    questId={quest.id}
+                    isQuestCompleted={isCompleted}
+                    onToggle={() => onToggleStep(quest.id, step.id)} 
+                  />
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </CardContent>
+
+      <CardFooter className="pt-3">
+        {canComplete && (
+          <Button 
+            onClick={handleComplete}
+            className="w-full"
+            size="lg"
+          >
+            <Trophy className="mr-2 h-4 w-4" />
+            Complete Quest
+          </Button>
+        )}
+        {isCompleted && (
+          <div className="w-full text-center">
+            <Badge variant="secondary" className="px-4 py-2">
+              <CheckIcon className="mr-2 h-4 w-4" />
+              Quest Completed!
+            </Badge>
+          </div>
+        )}
+      </CardFooter>
+    </Card>
   );
 };
 
@@ -309,24 +283,25 @@ const StepItem = ({ step, questId, isQuestCompleted, onToggle }: StepItemProps) 
   
   return (
     <li 
-      className={`flex items-start gap-2 p-2 rounded ${
-        step.completed ? "bg-rpg-green/10" : "bg-rpg-tan/30"
-      }`}
+      className={cn(
+        "flex items-start gap-2 p-2 rounded border transition-colors",
+        step.completed ? "bg-muted/50 border-primary/30" : "bg-background border-border",
+        !isQuestCompleted && "hover:bg-muted/30 cursor-pointer"
+      )}
+      onClick={handleToggle}
     >
-      <div 
-        className="mt-0.5 cursor-pointer"
-        onClick={handleToggle}
-      >
+      <div className="mt-0.5">
         {step.completed ? (
-          <CheckIcon className="h-5 w-5 text-rpg-green" />
+          <CheckIcon className="h-4 w-4 text-primary" />
         ) : (
-          <Circle className="h-5 w-5 text-rpg-brown" />
+          <Circle className="h-4 w-4 text-muted-foreground" />
         )}
       </div>
       <span 
-        className={`text-sm flex-1 ${
-          step.completed ? "text-rpg-brown line-through" : "text-rpg-brown"
-        }`}
+        className={cn(
+          "text-sm flex-1",
+          step.completed && "line-through text-muted-foreground"
+        )}
       >
         {step.description}
       </span>
