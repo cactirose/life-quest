@@ -31,6 +31,7 @@ export const fetchSkills = async (): Promise<Skill[]> => {
       id: skill.id,
       name: skill.name,
       icon: skill.icon || "🌟",
+      color: "#4CAF50", // Default color since it's not in DB
       description: skill.description || "",
       xp: skill.xp || 0,
       createdAt: new Date(skill.created_at || Date.now())
@@ -122,6 +123,40 @@ export const deleteSkill = async (skillId: string): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error("Error in deleteSkill:", error);
+    return false;
+  }
+};
+
+export const addXPToSkill = async (skillId: string, xp: number): Promise<boolean> => {
+  try {
+    // First get the current skill data
+    const { data: currentSkill, error: fetchError } = await supabase
+      .from("skills")
+      .select("xp")
+      .eq("id", skillId)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching current skill:", fetchError);
+      return false;
+    }
+
+    // Update the skill with new XP
+    const { error } = await supabase
+      .from("skills")
+      .update({
+        xp: (currentSkill.xp || 0) + xp,
+      })
+      .eq("id", skillId);
+
+    if (error) {
+      console.error("Error adding XP to skill:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in addXPToSkill:", error);
     return false;
   }
 };

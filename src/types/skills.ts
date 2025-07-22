@@ -1,3 +1,4 @@
+
 import { StatName } from "./character";
 
 // Skill types
@@ -9,6 +10,18 @@ export interface Skill {
   description?: string;
   xp: number;
   createdAt: Date;
+}
+
+// Skill Node type for skill tree (legacy support)
+export interface SkillNode {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  unlocked: boolean;
+  statBonuses: Record<StatName, number>;
+  position: { x: number; y: number };
+  connectedTo: string[];
 }
 
 // Helper function to calculate level and progress

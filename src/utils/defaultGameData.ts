@@ -9,6 +9,7 @@ export const DEFAULT_GAME_DATA: GameData = {
   inventory: [],
   shopItems: [],
   skills: [],
+  skillTree: [],
   habits: [],
   moods: [],
   achievements: [],
@@ -39,10 +40,11 @@ export const DEFAULT_GAME_DATA: GameData = {
   deleteShopItem: () => {},
   
   // Skill methods
-  addSkill: () => "",
-  updateSkill: () => {},
-  deleteSkill: () => {},
-  
+  addSkill: async () => "",
+  updateSkill: async () => {},
+  deleteSkill: async () => {},
+  addXpToSkill: async () => {},
+
   // Habit methods
   addHabit: () => {},
   updateHabit: () => {},
