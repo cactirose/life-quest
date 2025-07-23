@@ -123,7 +123,9 @@
 
   body {
     @apply bg-background text-foreground font-pixel;
-    background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='currentColor' fill-opacity='0.03'%3E%3Cpath d='M20 30l10-10 10 10v20l-10 10-10-10zm60 0l10-10 10 10v20l-10 10-10-10zm-30 40l10-10 10 10v20l-10 10-10-10zM20 90l10-10 10 10v20l-10 10-10-10zm60 0l10-10 10 10v20l-10 10-10-10zM10 15l5-8 5 8-5 8zm20 0l5-8 5 8-5 8zm20 0l5-8 5 8-5 8zm20 0l5-8 5 8-5 8zm20 0l5-8 5 8-5 8zM10 55l5-8 5 8-5 8zm20 0l5-8 5 8-5 8zm20 0l5-8 5 8-5 8zm20 0l5-8 5 8-5 8zm20 0l5-8 5 8-5 8zM10 95l5-8 5 8-5 8zm20 0l5-8 5 8-5 8zm20 0l5-8 5 8-5 8zm20 0l5-8 5 8-5 8zm20 0l5-8 5 8-5 8z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-image: radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0);
+    background-size: 40px 40px;
+    background-color: hsl(var(--background));
   }
   
   /* Ensure all buttons have consistent theming with proper text colors */
