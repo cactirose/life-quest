@@ -95,64 +95,24 @@ export default function Quests() {
 
       {/* Quest Tabs */}
       <Tabs defaultValue="active" className="w-full">
-        <div className="w-full mb-8">
-          <TabsList className="grid grid-cols-2 gap-4 w-full bg-transparent p-0 h-auto">
-            <TabsTrigger 
-              value="active" 
-              className="flex items-center justify-center gap-3 px-6 py-3 text-base font-medium
-                        data-[state=active]:bg-rpg-brown data-[state=active]:text-white 
-                        data-[state=inactive]:parchment data-[state=inactive]:text-rpg-brown
-                        data-[state=inactive]:hover:bg-rpg-brown/10 
-                        rounded-lg w-full h-10 min-h-10"
-              style={{ 
-                transition: 'none !important', 
-                transform: 'none !important',
-                animation: 'none !important',
-                willChange: 'auto'
-              }}
-            >
-              <span className="whitespace-nowrap">Active Quests</span>
-              <span className="rounded-full text-sm font-bold min-w-8 h-6 flex items-center justify-center px-2
-                             data-[state=active]:bg-white data-[state=active]:text-rpg-brown 
-                             data-[state=inactive]:bg-rpg-brown data-[state=inactive]:text-white"
-                    style={{ 
-                      transition: 'none !important', 
-                      transform: 'none !important',
-                      animation: 'none !important',
-                      willChange: 'auto'
-                    }}>
+        <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsTrigger value="active" className="flex items-center gap-2">
+            Active Quests
+            {activeQuests.length > 0 && (
+              <span className="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
                 {activeQuests.length}
               </span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="completed" 
-              className="flex items-center justify-center gap-3 px-6 py-3 text-base font-medium
-                        data-[state=active]:bg-rpg-brown data-[state=active]:text-white 
-                        data-[state=inactive]:parchment data-[state=inactive]:text-rpg-brown
-                        data-[state=inactive]:hover:bg-rpg-brown/10 
-                        rounded-lg w-full h-10 min-h-10"
-              style={{ 
-                transition: 'none !important', 
-                transform: 'none !important',
-                animation: 'none !important',
-                willChange: 'auto'
-              }}
-            >
-              <span className="whitespace-nowrap">Completed Quests</span>
-              <span className="rounded-full text-sm font-bold min-w-8 h-6 flex items-center justify-center px-2
-                             data-[state=active]:bg-white data-[state=active]:text-rpg-brown 
-                             data-[state=inactive]:bg-rpg-brown data-[state=inactive]:text-white"
-                    style={{ 
-                      transition: 'none !important', 
-                      transform: 'none !important',
-                      animation: 'none !important',
-                      willChange: 'auto'
-                    }}>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="flex items-center gap-2">
+            Completed Quests
+            {completedQuests.length > 0 && (
+              <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
                 {completedQuests.length}
               </span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+            )}
+          </TabsTrigger>
+        </TabsList>
         
         <TabsContent value="active">
           <QuestList
