@@ -77,118 +77,122 @@ export const QuestCard = ({
   return (
     <div 
       className={cn(
-        "bg-card border border-border rounded-lg p-6 transition-all duration-200 hover:shadow-md",
+        "parchment transition-all duration-200 hover:shadow-md",
         isCompleted && "opacity-60"
       )}
     >
       {/* Header with Quest Info */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1 min-w-0">
-          {/* Quest Type Badge */}
-          <div className="mb-3">
-            <span className={cn(
-              "inline-flex px-3 py-1 text-xs font-semibold rounded-full",
-              quest.type === "main" && "bg-destructive/10 text-destructive",
-              quest.type === "side" && "bg-primary/10 text-primary", 
-              quest.type === "boss" && "bg-accent/10 text-accent-foreground"
-            )}>
-              {quest.type.charAt(0).toUpperCase() + quest.type.slice(1)} Quest
+      <div className="flex justify-between mb-3">
+        <div className="flex items-center gap-2">
+          {/* Quest Type Icon/Badge */}
+          <div className="h-6 w-6 flex items-center justify-center rounded-full bg-primary text-primary-foreground">
+            <span className="text-xs font-bold">
+              {quest.type === "main" ? "M" : quest.type === "side" ? "S" : "B"}
             </span>
           </div>
-          
-          {/* Title */}
-          <h3 className="text-xl font-bold text-foreground mb-2 pr-4">
-            {quest.title}
-          </h3>
-          
-          {/* Description */}
-          {quest.description && (
-            <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-              {quest.description}
-            </p>
-          )}
+          <h3 className="font-pixel text-lg text-foreground">{quest.title}</h3>
         </div>
         
-        {/* Action Buttons */}
-        <div className="flex items-center gap-1 ml-4">
+        <div className="flex items-center">
+          <div className="flex items-center gap-1 mr-2">
+            <Star size={14} className="text-foreground" />
+            <span className="text-xs text-foreground">{progress}%</span>
+          </div>
+          
           {!isCompleted && (
-            <Button
-              variant="ghost"
-              size="sm"
+            <Button 
               onClick={handleEdit}
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+              variant="outline"
+              size="sm"
+              className="p-1 h-8 w-8 mr-1"
             >
-              <Edit className="h-4 w-4" />
+              <Edit size={14} />
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
+          
+          <Button 
             onClick={handleDelete}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            variant="outline"
+            size="sm"
+            className="p-1 h-8 w-8 text-destructive hover:text-destructive-foreground hover:bg-destructive"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 size={14} />
           </Button>
         </div>
       </div>
 
-      {/* Progress Bar */}
+      {/* Description */}
+      {quest.description && (
+        <p className="text-sm text-muted-foreground mb-3">{quest.description}</p>
+      )}
+
+      {/* Quest Type and Skill Info */}
+      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+        <Trophy size={14} />
+        <span>{quest.type.charAt(0).toUpperCase() + quest.type.slice(1)} Quest</span>
+        {linkedSkill && (
+          <>
+            <BookOpen size={14} className="ml-2" />
+            <span>{linkedSkill.icon} {linkedSkill.name}</span>
+          </>
+        )}
+      </div>
+
+      {/* Rewards Section - Similar to habits card */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          {quest.xpReward > 0 && (
+            <div className="flex items-center">
+              <Star size={14} className="mr-1" />
+              <span>+{quest.xpReward} XP</span>
+            </div>
+          )}
+          {quest.coinReward > 0 && (
+            <div className="flex items-center">
+              <Coins size={14} className="mr-1" />
+              <span>+{quest.coinReward}</span>
+            </div>
+          )}
+          {linkedSkill && quest.skillXpReward && (
+            <div className="flex items-center">
+              <BookOpen size={14} className="mr-1" />
+              <span>+{quest.skillXpReward} {linkedSkill.name} XP</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Progress Bar - Compact version */}
       {totalSteps > 0 && (
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-foreground">Progress</span>
-            <span className="text-sm text-muted-foreground">
-              {completedSteps}/{totalSteps} ({progress}%)
+        <div className="mb-3">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-xs text-muted-foreground">Progress</span>
+            <span className="text-xs text-muted-foreground">
+              {completedSteps}/{totalSteps}
             </span>
           </div>
-          <div className="w-full bg-muted rounded-full h-2">
+          <div className="w-full bg-muted rounded-full h-2 mb-2">
             <div 
               className="bg-primary h-full rounded-full transition-all duration-300" 
               style={{ width: `${progress}%` }}
             />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleExpand}
-            className="w-full mt-2 text-muted-foreground hover:text-foreground"
-          >
-            {isExpanded ? (
-              <>Hide Steps <ChevronUp className="ml-1 h-4 w-4" /></>
-            ) : (
-              <>Show Steps <ChevronDown className="ml-1 h-4 w-4" /></>
-            )}
-          </Button>
+          {totalSteps > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleExpand}
+              className="w-full h-6 text-xs text-muted-foreground hover:text-secondary hover:bg-secondary/10 hover:font-medium"
+            >
+              {isExpanded ? (
+                <>Hide Steps <ChevronUp className="ml-1 h-3 w-3" /></>
+              ) : (
+                <>Show Steps <ChevronDown className="ml-1 h-3 w-3" /></>
+              )}
+            </Button>
+          )}
         </div>
       )}
-
-      {/* Rewards Section - More Prominent */}
-      <div className="bg-muted/50 rounded-lg p-4 mb-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Trophy className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-foreground">Quest Rewards</span>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {quest.xpReward > 0 && (
-            <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-2 rounded-md">
-              <Star className="h-4 w-4" />
-              <span className="font-medium">{quest.xpReward} XP</span>
-            </div>
-          )}
-          {quest.coinReward > 0 && (
-            <div className="flex items-center gap-2 bg-secondary/10 text-secondary-foreground px-3 py-2 rounded-md">
-              <Coins className="h-4 w-4" />
-              <span className="font-medium">{quest.coinReward} Coins</span>
-            </div>
-          )}
-          {linkedSkill && quest.skillXpReward && (
-            <div className="flex items-center gap-2 bg-accent/10 text-accent-foreground px-3 py-2 rounded-md">
-              <BookOpen className="h-4 w-4" />
-              <span className="font-medium">+{quest.skillXpReward} {linkedSkill.name} XP</span>
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* Steps Section (Expandable) */}
       <AnimatePresence>
@@ -198,10 +202,10 @@ export const QuestCard = ({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="border-t border-border pt-4 mb-4"
+            className="border-t border-muted pt-3 mb-3"
           >
-            <h4 className="text-sm font-semibold text-foreground mb-3">Quest Steps</h4>
-            <ul className="space-y-2">
+            <h4 className="text-xs font-semibold text-foreground mb-2">Quest Steps</h4>
+            <ul className="space-y-1">
               {quest.steps.map((step) => (
                 <StepItem 
                   key={step.id} 
@@ -216,12 +220,12 @@ export const QuestCard = ({
         )}
       </AnimatePresence>
 
-      {/* Complete Quest Button */}
+      {/* Complete Quest Button - Similar to habits card */}
       {canComplete && (
         <Button 
           onClick={handleComplete}
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-          size="lg"
+          className="w-full pixel-button"
+          size="sm"
         >
           <Trophy className="mr-2 h-4 w-4" />
           Complete Quest
@@ -231,9 +235,9 @@ export const QuestCard = ({
       {/* Completed Status */}
       {isCompleted && (
         <div className="w-full text-center">
-          <div className="inline-flex items-center gap-2 bg-secondary/20 text-secondary-foreground px-4 py-2 rounded-lg font-medium">
+          <div className="inline-flex items-center gap-2 bg-primary/20 text-primary px-3 py-1 rounded-md text-sm font-medium">
             <CheckIcon className="h-4 w-4" />
-            Quest Completed!
+            Completed!
           </div>
         </div>
       )}
@@ -260,27 +264,25 @@ const StepItem = ({ step, questId, isQuestCompleted, onToggle }: StepItemProps) 
   return (
     <li 
       className={cn(
-        "flex items-start gap-3 p-3 rounded-lg border transition-all duration-200",
+        "flex items-center gap-2 p-2 rounded border transition-all duration-200 text-xs",
         step.completed 
-          ? "bg-primary/10 border-primary/30" 
-          : "bg-background border-border hover:bg-muted/50",
+          ? "bg-primary/10 border-primary/30 text-muted-foreground" 
+          : "bg-muted/30 border-muted hover:bg-muted/50 text-foreground",
         !isQuestCompleted && "cursor-pointer"
       )}
       onClick={handleToggle}
     >
-      <div className="mt-0.5">
+      <div>
         {step.completed ? (
-          <CheckIcon className="h-5 w-5 text-primary" />
+          <CheckIcon className="h-4 w-4 text-primary" />
         ) : (
-          <Circle className="h-5 w-5 text-muted-foreground" />
+          <Circle className="h-4 w-4 text-muted-foreground" />
         )}
       </div>
       <span 
         className={cn(
-          "text-sm flex-1",
-          step.completed 
-            ? "line-through text-muted-foreground" 
-            : "text-foreground"
+          "flex-1",
+          step.completed && "line-through"
         )}
       >
         {step.description}
