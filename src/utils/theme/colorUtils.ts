@@ -87,5 +87,6 @@ export function ensureReadableText(hex: string, themeType: string = ''): string 
     return '#FFFFFF';
   }
   
+  // For all other themes, use the normal contrast calculation
   return contrastColor(hex);
 }

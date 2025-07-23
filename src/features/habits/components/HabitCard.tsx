@@ -274,14 +274,15 @@ export const HabitCard = ({
         className={cn(
           "w-full font-pixel",
           isTodayCompleted
-            ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+            ? "bg-secondary hover:bg-secondary/90"
             : "bg-primary text-primary-foreground hover:bg-primary/90"
         )}
+        style={isTodayCompleted ? { color: '#FFFFFF' } : undefined}
       >
         {isTodayCompleted ? (
           <>
-            <Check size={16} className="mr-2" />
-            Completed
+            <Check size={16} className="mr-2" style={{ color: '#FFFFFF' }} />
+            <span style={{ color: '#FFFFFF' }}>Completed</span>
           </>
         ) : (
           <>

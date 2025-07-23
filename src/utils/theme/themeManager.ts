@@ -55,6 +55,11 @@ export function applyTheme(theme: ThemeColors, themeName: ThemeName = 'default')
   document.documentElement.style.setProperty('--destructive', convertToHSL(theme.negative));
   document.documentElement.style.setProperty('--destructive-foreground', convertToHSL(contrastColor(theme.negative)));
   
+  // Special handling for barbie theme secondary-foreground
+  if (themeName === 'barbie') {
+    document.documentElement.style.setProperty('--secondary-foreground', convertToHSL('#FFFFFF'));
+  }
+  
   // Navigation menu specific variables with improved contrast text colors
   document.documentElement.style.setProperty('--nav-bg', convertToHSL(theme.navbar));
   document.documentElement.style.setProperty('--nav-text', convertToHSL(navText));
