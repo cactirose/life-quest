@@ -4,6 +4,7 @@ import { GearItem } from "@/contexts/DataContext";
 import { generateId } from "@/utils/idGenerator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusCircle, Edit } from "lucide-react";
 import ShopItemForm from "./shop/ShopItemForm";
 
@@ -44,19 +45,21 @@ export function ShopItemEditor({ item, onSave, onDelete, trigger }: ShopItemEdit
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-md parchment border-none">
+      <DialogContent className="max-w-md parchment border-none max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-pixel text-rpg-brown">
             {item ? "Edit Shop Item" : "Create New Shop Item"}
           </DialogTitle>
         </DialogHeader>
 
-        <ShopItemForm
-          initialData={item}
-          onSave={handleSave}
-          onDelete={onDelete ? handleDelete : undefined}
-          onCancel={() => setOpen(false)}
-        />
+        <ScrollArea className="max-h-[70vh] pr-4">
+          <ShopItemForm
+            initialData={item}
+            onSave={handleSave}
+            onDelete={onDelete ? handleDelete : undefined}
+            onCancel={() => setOpen(false)}
+          />
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

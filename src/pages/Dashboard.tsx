@@ -98,7 +98,10 @@ const Dashboard = () => {
                         <span>{completedSteps}/{totalSteps} steps</span>
                         <div className="flex items-center gap-2">
                           <span>+{quest.xpReward || 0} XP</span>
-                          <span>+{quest.coinReward || 0} 🪙</span>
+                          <span className="flex items-center gap-1">
+                            +{quest.coinReward || 0}
+                            <img src="/images/coin.png" alt="Coins" className="w-5 h-5 inline" />
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -161,7 +164,12 @@ const Dashboard = () => {
                       <div className="flex justify-between text-sm">
                         <div className="flex gap-2">
                           {(achievement.xpReward && achievement.xpReward > 0) && <span>+{achievement.xpReward} XP</span>}
-                          {(achievement.coinReward && achievement.coinReward > 0) && <span>+{achievement.coinReward} 🪙</span>}
+                          {(achievement.coinReward && achievement.coinReward > 0) && (
+                            <span className="flex items-center gap-1">
+                              +{achievement.coinReward}
+                              <img src="/images/coin.png" alt="Coins" className="w-5 h-5 inline" />
+                            </span>
+                          )}
                         </div>
                         {achievement.dateUnlocked && (
                           <span className="text-xs text-rpg-brown/70">
@@ -246,7 +254,7 @@ const Dashboard = () => {
               </div>
               
               <div className="flex items-center gap-2">
-                <span className="text-xl">🪙</span>
+                <img src="/images/coin.png" alt="Coins" className="w-6 h-6" />
                 <span className="font-pixel text-rpg-brown">{safeCharacter.coins} Coins</span>
               </div>
             </div>
