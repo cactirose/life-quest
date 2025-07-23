@@ -106,7 +106,7 @@ export default function Quests() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <Button onClick={handleOpenDialog}>
+          <Button onClick={handleOpenDialog} variant="outline" className="text-foreground border-foreground hover:bg-muted hover:text-foreground hover:font-bold">
             <Plus className="mr-2 h-4 w-4" />
             Add Quest
           </Button>
@@ -114,24 +114,25 @@ export default function Quests() {
       </div>
 
       <section className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Active Quests</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-foreground">Active Quests</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {activeQuests.map((quest) => (
             <Card key={quest.id}>
               <CardHeader>
-                <CardTitle>{quest.title}</CardTitle>
+                <CardTitle className="text-foreground">{quest.title}</CardTitle>
                 <CardDescription>{quest.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ul>
                   {quest.steps.map((step) => (
                     <li key={step.id} className="flex items-center justify-between">
-                      <span>{step.description}</span>
+                      <span className="text-foreground">{step.description}</span>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleCompleteStep(quest.id, step.id)}
                         disabled={step.completed}
+                        className="text-foreground"
                       >
                         {step.completed ? "Completed" : "Complete"}
                       </Button>
@@ -145,8 +146,8 @@ export default function Quests() {
                   <Badge variant="secondary">Reward: {quest.coinReward} Coins</Badge>
                 </div>
                 <div className="flex space-x-2">
-                  <Button size="icon" onClick={() => handleEditQuest(quest)}>
-                    <Edit className="h-4 w-4" />
+                  <Button variant="outline" size="icon" onClick={() => handleEditQuest(quest)} className="hover:border-2 hover:border-foreground hover:bg-transparent">
+                    <Edit className="h-4 w-4 text-foreground hover:stroke-2" />
                   </Button>
                   <Button
                     variant="destructive"
@@ -155,7 +156,12 @@ export default function Quests() {
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
-                  <Button size="sm" onClick={() => handleCompleteQuest(quest.id)}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleCompleteQuest(quest.id)} 
+                    className="text-foreground border-foreground bg-primary hover:bg-primary/90 hover:text-foreground hover:font-bold" 
+                  >
                     Complete Quest
                   </Button>
                 </div>
@@ -166,16 +172,16 @@ export default function Quests() {
       </section>
 
       <section>
-        <h2 className="text-2xl font-semibold mb-4">Completed Quests</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-foreground">Completed Quests</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {completedQuests.map((quest) => (
             <Card key={quest.id}>
               <CardHeader>
-                <CardTitle>{quest.title}</CardTitle>
+                <CardTitle className="text-foreground">{quest.title}</CardTitle>
                 <CardDescription>{quest.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p>Quest completed!</p>
+                <p className="text-foreground">Quest completed!</p>
               </CardContent>
               <CardFooter className="flex justify-between items-center">
                 <div>

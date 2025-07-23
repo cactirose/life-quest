@@ -9,19 +9,11 @@ import {
   CheckCircle as CheckIcon,
   Circle,
   Trophy,
-  Calendar,
   BookOpen,
   Coins,
   Star
 } from "lucide-react";
-import { format } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useGameData } from "@/contexts/DataContext";
 
@@ -85,59 +77,46 @@ export const QuestCard = ({
   return (
     <div 
       className={cn(
-        "quest-card transition-all duration-200 hover:shadow-lg relative",
-        isCompleted && "opacity-75"
+        "bg-card border border-border rounded-lg p-6 transition-all duration-200 hover:shadow-md",
+        isCompleted && "opacity-60"
       )}
     >
-      {/* Header with title and action buttons */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
+      {/* Header with Quest Info */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1 min-w-0">
+          {/* Quest Type Badge */}
+          <div className="mb-3">
             <span className={cn(
-              "px-2 py-1 text-xs font-bold rounded",
-              quest.type === "main" && "bg-destructive text-destructive-foreground",
-              quest.type === "side" && "bg-primary text-primary-foreground",
-              quest.type === "boss" && "bg-accent text-accent-foreground"
+              "inline-flex px-3 py-1 text-xs font-semibold rounded-full",
+              quest.type === "main" && "bg-destructive/10 text-destructive",
+              quest.type === "side" && "bg-primary/10 text-primary", 
+              quest.type === "boss" && "bg-accent/10 text-accent-foreground"
             )}>
-              {quest.type.toUpperCase()}
+              {quest.type.charAt(0).toUpperCase() + quest.type.slice(1)} Quest
             </span>
-            <span className={cn(
-              "px-2 py-1 text-xs rounded border",
-              quest.difficulty === "easy" && "bg-secondary/20 border-secondary text-secondary-foreground",
-              quest.difficulty === "medium" && "bg-muted border-muted-foreground text-muted-foreground",
-              quest.difficulty === "hard" && "bg-destructive/20 border-destructive text-destructive-foreground"
-            )}>
-              {quest.difficulty}
-            </span>
-            {quest.dueDate && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <span className="px-2 py-1 text-xs rounded border border-border text-muted-foreground flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      Due
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Due: {format(new Date(quest.dueDate), "MMM d, yyyy")}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
           </div>
-          <h3 className="text-xl font-bold text-foreground mb-1">{quest.title}</h3>
+          
+          {/* Title */}
+          <h3 className="text-xl font-bold text-foreground mb-2 pr-4">
+            {quest.title}
+          </h3>
+          
+          {/* Description */}
           {quest.description && (
-            <p className="text-sm text-muted-foreground mb-3">{quest.description}</p>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+              {quest.description}
+            </p>
           )}
         </div>
         
+        {/* Action Buttons */}
         <div className="flex items-center gap-1 ml-4">
           {!isCompleted && (
             <Button
               variant="ghost"
               size="sm"
               onClick={handleEdit}
-              className="h-8 w-8 p-0 hover:bg-muted"
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -146,70 +125,67 @@ export const QuestCard = ({
             variant="ghost"
             size="sm"
             onClick={handleDelete}
-            className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
           >
             <Trash2 className="h-4 w-4" />
           </Button>
-          {totalSteps > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleExpand}
-              className="h-8 w-8 p-0 hover:bg-muted"
-            >
-              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
-          )}
         </div>
       </div>
 
       {/* Progress Bar */}
       {totalSteps > 0 && (
         <div className="mb-4">
-          <div className="flex justify-between text-sm text-muted-foreground mb-2">
-            <span>Progress</span>
-            <span>{completedSteps}/{totalSteps} steps ({progress}%)</span>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-foreground">Progress</span>
+            <span className="text-sm text-muted-foreground">
+              {completedSteps}/{totalSteps} ({progress}%)
+            </span>
           </div>
-          <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+          <div className="w-full bg-muted rounded-full h-2">
             <div 
-              className="bg-primary h-full rounded-full transition-all duration-500 ease-out" 
+              className="bg-primary h-full rounded-full transition-all duration-300" 
               style={{ width: `${progress}%` }}
             />
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleExpand}
+            className="w-full mt-2 text-muted-foreground hover:text-foreground"
+          >
+            {isExpanded ? (
+              <>Hide Steps <ChevronUp className="ml-1 h-4 w-4" /></>
+            ) : (
+              <>Show Steps <ChevronDown className="ml-1 h-4 w-4" /></>
+            )}
+          </Button>
         </div>
       )}
 
-      {/* Rewards Section - Prominently displayed */}
-      <div className="bg-muted/30 rounded-lg p-3 mb-4">
-        <div className="flex items-center gap-2 mb-2">
+      {/* Rewards Section - More Prominent */}
+      <div className="bg-muted/50 rounded-lg p-4 mb-4">
+        <div className="flex items-center gap-2 mb-3">
           <Trophy className="h-4 w-4 text-primary" />
-          <span className="text-sm font-semibold text-foreground">Rewards</span>
+          <span className="text-sm font-medium text-foreground">Quest Rewards</span>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
           {quest.xpReward > 0 && (
-            <div className="flex items-center gap-1 bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium">
-              <Star className="h-3 w-3" />
-              {quest.xpReward} XP
+            <div className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-2 rounded-md">
+              <Star className="h-4 w-4" />
+              <span className="font-medium">{quest.xpReward} XP</span>
             </div>
           )}
           {quest.coinReward > 0 && (
-            <div className="flex items-center gap-1 bg-secondary/20 text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
-              <Coins className="h-3 w-3" />
-              {quest.coinReward} Coins
+            <div className="flex items-center gap-2 bg-secondary/10 text-secondary-foreground px-3 py-2 rounded-md">
+              <Coins className="h-4 w-4" />
+              <span className="font-medium">{quest.coinReward} Coins</span>
             </div>
           )}
           {linkedSkill && quest.skillXpReward && (
-            <div className="flex items-center gap-1 bg-accent/20 text-accent-foreground px-3 py-1 rounded-full text-sm font-medium">
-              <BookOpen className="h-3 w-3" />
-              +{quest.skillXpReward} {linkedSkill.name} XP
+            <div className="flex items-center gap-2 bg-accent/10 text-accent-foreground px-3 py-2 rounded-md">
+              <BookOpen className="h-4 w-4" />
+              <span className="font-medium">+{quest.skillXpReward} {linkedSkill.name} XP</span>
             </div>
-          )}
-          {quest.statRewards && quest.statRewards.length > 0 && (
-            quest.statRewards.map((reward, index) => (
-              <div key={index} className="bg-muted text-muted-foreground px-3 py-1 rounded-full text-xs font-medium">
-                +{reward.value} {reward.stat}
-              </div>
-            ))
           )}
         </div>
       </div>
