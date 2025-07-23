@@ -12,9 +12,6 @@ export const AuthCheckFailed = () => {
     try {
       await logout();
       toast.success("Successfully signed out");
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 100);
     } catch (error) {
       console.error("Error during sign out:", error);
       toast.error("Failed to sign out properly");

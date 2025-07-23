@@ -82,16 +82,16 @@ export const logout = async (navigate?: (path: string) => void) => {
     await supabase.auth.signOut({ scope: 'global' });
     
     if (navigate) {
-      navigate('/auth');
+      navigate('/');
     } else {
-      window.location.href = '/auth';
+      window.location.href = '/';
     }
   } catch (error) {
     console.error("Logout error:", error);
     if (navigate) {
-      navigate('/auth');
+      navigate('/');
     } else {
-      window.location.href = '/auth';
+      window.location.href = '/';
     }
   }
 };
