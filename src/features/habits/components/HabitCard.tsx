@@ -115,10 +115,7 @@ export const HabitCard = ({
   };
   
   return (
-    <div className={cn(
-      "quest-card relative",
-      isTodayCompleted && "border-rpg-green bg-rpg-green/10"
-    )}>
+    <div className="parchment relative">
       <div className="flex justify-between mb-3">
         <div className="flex items-center gap-2">
           <div 
@@ -127,13 +124,13 @@ export const HabitCard = ({
           >
             <span className="text-white">{habit.icon}</span>
           </div>
-          <h3 className={"font-pixel text-lg text-rpg-brown"}>{habit.name}</h3>
+          <h3 className={"font-pixel text-lg text-foreground"}>{habit.name}</h3>
         </div>
         
         <div className="flex items-center">
           <div className="flex items-center gap-1 mr-2">
-            <Sparkle size={14} className="text-rpg-brown" />
-            <span className="text-xs text-rpg-brown">{habit.streak}</span>
+            <Sparkle size={14} className="text-foreground" />
+            <span className="text-xs text-foreground">{habit.streak}</span>
           </div>
           
           <Button 
@@ -149,7 +146,7 @@ export const HabitCard = ({
             onClick={() => onDelete(habit.id)}
             variant="outline"
             size="sm"
-            className="p-1 h-8 w-8 text-rpg-red hover:text-white hover:bg-rpg-red"
+            className="p-1 h-8 w-8 text-destructive hover:text-destructive-foreground hover:bg-destructive"
           >
             <Trash2 size={14} />
           </Button>
@@ -157,17 +154,17 @@ export const HabitCard = ({
       </div>
       
       {habit.description && (
-        <p className={"text-sm text-rpg-brown mb-3"}>{habit.description}</p>
+        <p className={"text-sm text-muted-foreground mb-3"}>{habit.description}</p>
       )}
       
       <div className="flex justify-between items-center mb-3">
-        <div className="flex items-center gap-2 text-xs text-rpg-brown">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <CalendarDays size={14} />
           <span>{formatFrequency(habit.frequency, habit.customDays)}</span>
         </div>
         
         {habit.reminder && (
-          <div className="flex items-center gap-2 text-xs text-rpg-brown">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Clock size={14} />
             <span>{habit.reminder}</span>
           </div>
@@ -176,17 +173,17 @@ export const HabitCard = ({
       
       {linkedSkill && skillLevelInfo && (
         <div className="mb-3">
-          <div className="flex items-center gap-2 text-xs text-rpg-brown mb-1">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
             <BookOpen size={14} />
             <span>{linkedSkill.icon} {linkedSkill.name} - Level {skillLevelInfo.level}</span>
           </div>
-          <div className="w-full bg-rpg-tan/50 rounded-full h-2">
+          <div className="w-full bg-muted rounded-full h-2">
             <div 
-              className="bg-rpg-brown h-2 rounded-full" 
+              className="bg-primary h-2 rounded-full" 
               style={{ width: `${(skillLevelInfo.currentXp / skillLevelInfo.nextLevelXp) * 100}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs text-rpg-brown mt-1">
+          <div className="flex justify-between text-xs text-muted-foreground mt-1">
             <span>{skillLevelInfo.currentXp} XP</span>
             <span>{skillLevelInfo.nextLevelXp} XP to next level</span>
           </div>
@@ -194,7 +191,7 @@ export const HabitCard = ({
       )}
       
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3 text-xs text-rpg-brown">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <div className="flex items-center">
             <Sparkle size={14} className="mr-1" />
             <span>+{habit.xpReward} XP</span>
@@ -277,8 +274,8 @@ export const HabitCard = ({
         className={cn(
           "w-full font-pixel",
           isTodayCompleted
-            ? "bg-secondary text-primary hover:bg-secondary/90"
-            : "bg-rpg-tan text-rpg-brown hover:bg-rpg-brown hover:text-rpg-tan"
+            ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+            : "bg-primary text-primary-foreground hover:bg-primary/90"
         )}
       >
         {isTodayCompleted ? (

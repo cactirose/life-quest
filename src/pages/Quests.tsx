@@ -117,13 +117,13 @@ export default function Quests() {
         <h2 className="text-2xl font-semibold mb-4 text-foreground">Active Quests</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {activeQuests.map((quest) => (
-            <Card key={quest.id}>
-              <CardHeader>
-                <CardTitle className="text-foreground">{quest.title}</CardTitle>
-                <CardDescription>{quest.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul>
+            <div key={quest.id} className="parchment">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-foreground mb-2">{quest.title}</h3>
+                <p className="text-muted-foreground mb-4">{quest.description}</p>
+              </div>
+              <div className="mb-4">
+                <ul className="space-y-2">
                   {quest.steps.map((step) => (
                     <li key={step.id} className="flex items-center justify-between">
                       <span className="text-foreground">{step.description}</span>
@@ -139,9 +139,9 @@ export default function Quests() {
                     </li>
                   ))}
                 </ul>
-              </CardContent>
-              <CardFooter className="flex justify-between items-center">
-                <div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="space-x-2">
                   <Badge variant="secondary">Reward: {quest.xpReward} XP</Badge>
                   <Badge variant="secondary">Reward: {quest.coinReward} Coins</Badge>
                 </div>
@@ -165,8 +165,8 @@ export default function Quests() {
                     Complete Quest
                   </Button>
                 </div>
-              </CardFooter>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       </section>
@@ -175,16 +175,16 @@ export default function Quests() {
         <h2 className="text-2xl font-semibold mb-4 text-foreground">Completed Quests</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {completedQuests.map((quest) => (
-            <Card key={quest.id}>
-              <CardHeader>
-                <CardTitle className="text-foreground">{quest.title}</CardTitle>
-                <CardDescription>{quest.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
+            <div key={quest.id} className="parchment">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-foreground mb-2">{quest.title}</h3>
+                <p className="text-muted-foreground mb-4">{quest.description}</p>
+              </div>
+              <div className="mb-4">
                 <p className="text-foreground">Quest completed!</p>
-              </CardContent>
-              <CardFooter className="flex justify-between items-center">
-                <div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="space-x-2">
                   <Badge variant="secondary">Reward: {quest.xpReward} XP</Badge>
                   <Badge variant="secondary">Reward: {quest.coinReward} Coins</Badge>
                 </div>
@@ -195,8 +195,8 @@ export default function Quests() {
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-              </CardFooter>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       </section>
