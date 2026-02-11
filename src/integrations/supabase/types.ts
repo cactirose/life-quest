@@ -14,13 +14,512 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          category: string
+          coin_reward: number
+          created_at: string
+          current_count: number
+          date_unlocked: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          required_count: number
+          special_reward: Json | null
+          title: string
+          unlocked: boolean
+          updated_at: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          category?: string
+          coin_reward?: number
+          created_at?: string
+          current_count?: number
+          date_unlocked?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          required_count?: number
+          special_reward?: Json | null
+          title: string
+          unlocked?: boolean
+          updated_at?: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          category?: string
+          coin_reward?: number
+          created_at?: string
+          current_count?: number
+          date_unlocked?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          required_count?: number
+          special_reward?: Json | null
+          title?: string
+          unlocked?: boolean
+          updated_at?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      characters: {
+        Row: {
+          bio: string | null
+          coins: number
+          created_at: string
+          daily_bonus_claimed: boolean
+          id: string
+          last_login_date: string | null
+          level: number
+          login_streak: number
+          name: string
+          next_level_xp: number
+          portrait: string | null
+          stats: Json
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          bio?: string | null
+          coins?: number
+          created_at?: string
+          daily_bonus_claimed?: boolean
+          id?: string
+          last_login_date?: string | null
+          level?: number
+          login_streak?: number
+          name?: string
+          next_level_xp?: number
+          portrait?: string | null
+          stats?: Json
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          bio?: string | null
+          coins?: number
+          created_at?: string
+          daily_bonus_claimed?: boolean
+          id?: string
+          last_login_date?: string | null
+          level?: number
+          login_streak?: number
+          name?: string
+          next_level_xp?: number
+          portrait?: string | null
+          stats?: Json
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
+      habits: {
+        Row: {
+          achievement_id: string | null
+          achievement_xp_reward: number | null
+          coin_reward: number
+          color: string | null
+          completion_history: Json | null
+          created_at: string
+          custom_days: Json | null
+          description: string | null
+          frequency: string
+          icon: string | null
+          id: string
+          name: string
+          reminder: string | null
+          skill_id: string | null
+          skill_xp_reward: number | null
+          steps: Json | null
+          streak: number
+          updated_at: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          achievement_id?: string | null
+          achievement_xp_reward?: number | null
+          coin_reward?: number
+          color?: string | null
+          completion_history?: Json | null
+          created_at?: string
+          custom_days?: Json | null
+          description?: string | null
+          frequency?: string
+          icon?: string | null
+          id?: string
+          name: string
+          reminder?: string | null
+          skill_id?: string | null
+          skill_xp_reward?: number | null
+          steps?: Json | null
+          streak?: number
+          updated_at?: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          achievement_id?: string | null
+          achievement_xp_reward?: number | null
+          coin_reward?: number
+          color?: string | null
+          completion_history?: Json | null
+          created_at?: string
+          custom_days?: Json | null
+          description?: string | null
+          frequency?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          reminder?: string | null
+          skill_id?: string | null
+          skill_xp_reward?: number | null
+          steps?: Json | null
+          streak?: number
+          updated_at?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      inventory_items: {
+        Row: {
+          cost: number
+          created_at: string
+          description: string | null
+          equipped: boolean
+          icon: string | null
+          id: string
+          level_required: number
+          name: string
+          rarity: string
+          stat_bonuses: Json | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          equipped?: boolean
+          icon?: string | null
+          id?: string
+          level_required?: number
+          name: string
+          rarity?: string
+          stat_bonuses?: Json | null
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          equipped?: boolean
+          icon?: string | null
+          id?: string
+          level_required?: number
+          name?: string
+          rarity?: string
+          stat_bonuses?: Json | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      journal_entries: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_favorite: boolean
+          is_private: boolean
+          mood: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_favorite?: boolean
+          is_private?: boolean
+          mood?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_favorite?: boolean
+          is_private?: boolean
+          mood?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mood_entries: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          mood: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          mood: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          mood?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      quests: {
+        Row: {
+          achievement_id: string | null
+          achievement_xp_reward: number | null
+          coin_reward: number
+          created_at: string
+          custom_reset_days: number[] | null
+          description: string | null
+          difficulty: string
+          due_date: string | null
+          id: string
+          quest_type: string
+          repeat_type: string | null
+          skill_id: string | null
+          skill_xp_reward: number | null
+          stat_rewards: Json | null
+          status: string
+          steps: Json | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          achievement_id?: string | null
+          achievement_xp_reward?: number | null
+          coin_reward?: number
+          created_at?: string
+          custom_reset_days?: number[] | null
+          description?: string | null
+          difficulty?: string
+          due_date?: string | null
+          id?: string
+          quest_type?: string
+          repeat_type?: string | null
+          skill_id?: string | null
+          skill_xp_reward?: number | null
+          stat_rewards?: Json | null
+          status?: string
+          steps?: Json | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          achievement_id?: string | null
+          achievement_xp_reward?: number | null
+          coin_reward?: number
+          created_at?: string
+          custom_reset_days?: number[] | null
+          description?: string | null
+          difficulty?: string
+          due_date?: string | null
+          id?: string
+          quest_type?: string
+          repeat_type?: string | null
+          skill_id?: string | null
+          skill_xp_reward?: number | null
+          stat_rewards?: Json | null
+          status?: string
+          steps?: Json | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      shop_items: {
+        Row: {
+          cost: number
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          level_required: number
+          name: string
+          rarity: string
+          stat_bonuses: Json | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          level_required?: number
+          name: string
+          rarity?: string
+          stat_bonuses?: Json | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          level_required?: number
+          name?: string
+          rarity?: string
+          stat_bonuses?: Json | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shopping_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          list_id: string
+          name: string
+          notes: string | null
+          purchased: boolean
+          quantity: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          list_id: string
+          name: string
+          notes?: string | null
+          purchased?: boolean
+          quantity?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          list_id?: string
+          name?: string
+          notes?: string | null
+          purchased?: boolean
+          quantity?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_lists: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_server_time: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
