@@ -514,6 +514,75 @@ export type Database = {
         }
         Relationships: []
       }
+      skill_nodes: {
+        Row: {
+          connected_to: Json | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          position: Json | null
+          stat_bonuses: Json | null
+          unlocked: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connected_to?: Json | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          position?: Json | null
+          stat_bonuses?: Json | null
+          unlocked?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connected_to?: Json | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          position?: Json | null
+          stat_bonuses?: Json | null
+          unlocked?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_skills: {
+        Row: {
+          created_at: string
+          id: string
+          skill_name: string
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          skill_name: string
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          skill_name?: string
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
