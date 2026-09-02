@@ -48,7 +48,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
   
   // Add timeout detection
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
     
     if (isLoading) {
       setLoadingTimeout(false);
@@ -119,7 +119,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       validateThemeImplementation();
     }
   }, []);

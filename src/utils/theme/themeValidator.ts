@@ -1,5 +1,5 @@
 export const validateThemeImplementation = () => {
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     const root = document.documentElement;
     const styles = window.getComputedStyle(root);
     
