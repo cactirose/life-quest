@@ -31,14 +31,13 @@ export const syncShoppingListsData = async (
     }
 
     // Properly format lists for upsert operation
+    // Properly format lists for upsert operation (items live in shopping_items table)
     const formattedLists = validLists.map(list => ({
       id: list.id,
       user_id: userData.user.id,
       name: list.name,
       description: list.description || null,
       updated_at: new Date().toISOString(),
-      // Ensure items is always an array if present
-      ...(list.items && { items: Array.isArray(list.items) ? list.items : [] })
     }));
 
     const { error } = await supabase
