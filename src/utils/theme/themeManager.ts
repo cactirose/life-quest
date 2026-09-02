@@ -99,7 +99,7 @@ export function applyTheme(theme: ThemeColors, themeName: ThemeName = 'default')
   const darkerBrown = shadeColor(brownColor, -15);
   document.documentElement.style.setProperty('--rpg-brown-dark', darkerBrown);
 
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     console.log('Applying theme:', {
       theme,
       computedStyles: {
